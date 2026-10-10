@@ -1,0 +1,55 @@
+/* ========================================================
+   🎨 EMPLEADOS.CSS - COMPLEMENTOS EXCLUSIVOS DE LA VISTA
+   ======================================================== */
+
+#tabla {
+    border-collapse: separate !important;
+    border-spacing: 0 10px !important;
+}
+
+#tabla tbody tr {
+    background-color: var(--lajama-white) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease !important;
+}
+
+#tabla tbody tr:hover {
+    background-color: var(--lajama-cream) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(27, 58, 44, 0.06), 0 0 1px var(--lajama-skin) !important;
+}
+
+/* 📦 FILTRO DE CONTROLES EXCLUSIVOS */
+.filtro-jama {
+    border: 2px solid var(--lajama-peach) !important;
+    background-color: var(--lajama-white) !important;
+    border-radius: 10px !important;
+    color: var(--lajama-green) !important;
+    font-weight: 600 !important;
+    height: 42px;
+    padding: 0 2rem 0 1rem !important;
+}
+
+.filtro-jama:focus {
+    border-color: var(--lajama-skin) !important;
+    box-shadow: 0 0 0 4px rgba(255, 179, 138, 0.2) !important;
+}
+
+/* Alineamiento centrado para columnas de control en pantallas de escritorio */
+@media (min-width: 768px) {
+    #tabla tbody td:nth-child(5),
+    #tabla tbody td:nth-child(6),
+    #tabla tbody td:nth-child(7) {
+        text-align: center;
+        vertical-align: middle;
+    }
+    #tabla .action-buttons-wrapper {
+        justify-content: center;
+    }
+}
+
+/* Estilo personalizado extra para los badges de turnos */
+.table-jama .badge {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 600;
+}

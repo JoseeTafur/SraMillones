@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-gestion :: layout(
+          title='La Jama - Monitor Logístico',
+          activeUri='/admin/despacho',
+          titleHeader='Monitor de Rutas y Despacho',
+          content=~{::#contenido-despacho},
+          modals=~{::#modales-despacho},
+          js='/js/despacho-operaciones.js'
+      )}">
+<head>
+</head>
+<body>
+
+<div id="contenido-despacho" class="jama-modulo-logistica">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <link rel="stylesheet" th:href="@{/css/despacho-estilo.css}">
+
+    <div class="jama-layout-despacho">
+
+        <aside class="jama-panel-lateral">
+            <div class="panel-cabecera">
+                <i class="bi bi-box-seam icono-preparados"></i>
+                <h2>Preparados</h2>
+            </div>
+
+            <div class="scroll-v lista-items" id="col-pedidos">
+                <div th:each="p : ${pedidos}" class="tarjeta-pedido"
+                     th:id="'pedido-' + ${p.id}"
+                     th:data-id="${p.id}"
+                     th:data-cliente="${p.cliente}"
+                     th:data-direccion="${p.direccion}"
+                     th:data-lat="${p.latitud}"
+                     th:data-lng="${p.longitud}"
+                     onclick="seleccionarPedido(this)">
+                    <div class="tarjeta-meta">
+                        <span class="id-pedido" th:text="${p.comprobanteNotaNumero != null ? p.comprobanteNotaNumero : '#ORD-' + p.id}">#ORD-0</span>
+                        <span class="monto-pedido">S/ [[${p.montoTotal}]]</span>
+                    </div>
+                    <h4 class="cliente-nombre">[[${p.cliente}]]</h4>
+                    <p class="direccion-texto">[[${p.direccion}]]</p>
+                </div>
+
+                <div th:if="${#lists.isEmpty(pedidos)}" class="mensaje-lista-vacia">
+                    No hay órdenes en espera de despacho logístico.
+                </div>
+            </div>
+
+            <button class="btn-despacho-kinetic" onclick="abrirConfirmacion()">
+                <i class="bi bi-send-check-fill"></i> Despachar Rutas
+            </button>
+        </aside>
+
+        <main class="jama-contenedor-mapa">
+            <div id="mapa-principal"></div>
+        </main>
+
+        <aside class="jama-panel-lateral">
+            <div class="panel-cabecera">
+                <i class="bi bi-person-badge icono-flota"></i>
+                <h2>Personal / Flota</h2>
+            </div>
+
+            <div class="scroll-v lista-items" id="col-repartidores">
+                <div th:each="r, iterStat : ${repartidores}"
+                     class="tarjeta-repartidor"
+                     th:data-id="${r.id}"
+                     onclick="vincularRepartidor(this)">
+                    <div class="repartidor-info-bloque">
+                        <div class="repartidor-perfil">
+                            <div class="avatar-circulo" th:text="${#strings.substring(r.nombre,0,1)}">R</div>
+                            <div class="repartidor-detalles">
+                                <h3 class="nombre-tag" th:data-nombre-original="${r.nombre}">[[${r.nombre}]]</h3>
+                                <span class="estado-texto estado-libre">Libre</span>
+                            </div>
+                        </div>
+                        <input type="color"
+                               class="selector-color-jama"
+                               th:id="'color-' + ${r.id}"
+                               th:value="${iterStat.index == 0 ? '#933D2D' : (iterStat.index == 1 ? '#1B3A2C' : '#4e73df')}"
+                               title="Color de ruta"
+                               onclick="event.stopPropagation()"
+                               onchange="cambiarColorRepartidor(this)">
+                    </div>
+                    <div class="contenedor-asignados" th:id="'asignados-rep-' + ${r.id}"></div>
+                </div>
+
+                <div th:if="${#lists.isEmpty(repartidores)}" class="mensaje-lista-vacia">
+                    No hay repartidores configurados en el turno.
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+    <script th:inline="javascript">
+        const PEDIDOS_DATA = /*[[${pedidosJS}]]*/ [];
+        const ORIGEN_COORDS = { lat: -6.787382, lng: -79.842961 };
+    </script>
+</div>
+
+<div id="modales-despacho">
+    <th:block th:replace="~{links :: scriptLinksPlus}"></th:block>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <link rel="stylesheet" th:href="@{/css/despacho-loader.css}">
+    <script th:src="@{/js/despacho-loader.js}"></script>
+    <script th:src="@{/js/utiles-comunes.js}"></script>
+</div>
+
+    <script th:src="@{/js/despacho-operaciones/asignaciones.js}"></script>
+    <script th:src="@{/js/despacho-operaciones/rutas-envio.js}"></script>
+</body>
+</html>

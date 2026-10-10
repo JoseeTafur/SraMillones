@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="modalCobro">
+
+    <div class="modal fade" id="modalFacturacion" data-bs-backdrop="static" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content jama-modal-core">
+
+                <div class="modal-header jama-header">
+                    <h5 class="modal-title jama-title">
+                        <i class="bi bi-receipt-cutoff text-jama-gold"></i>
+                        Caja — Mesa #<span id="cobroNumMesa"></span>
+                    </h5>
+                    <button type="button" class="jama-btn-close" data-bs-dismiss="modal" onclick="limpiarInstanciaCaja()">&times;</button>
+                </div>
+
+                <div class="modal-body jama-body-bg p-0">
+                    <div class="jama-layout-grid">
+
+                        <div class="jama-panel-lateral">
+                            <div class="jama-section-top">
+                                <div class="jama-meta-row">
+                                    <span class="jama-label-sm">TOTAL DE LA MESA</span>
+                                    <span class="jama-badge-total">S/. <span id="cobroTotalBase">0.00</span></span>
+                                </div>
+
+                                <div id="cobroIndicacionCliente" class="mb-2 animate__animated animate__flash">
+                                </div>
+
+                                <div class="jama-card-container">
+                                    <div class="jama-card-header-sm">Consumos Disponibles</div>
+                                    <div id="lista-items-repartir" class="jama-scroll-panel">
+                                    </div>
+                                </div>
+
+                                <div class="jama-card-container accent-border">
+                                    <div class="p-3">
+                                        <label class="jama-control-label">Cantidad de Comprobantes</label>
+                                        <select id="selectNumTickets" class="jama-select" onchange="reconstruirCanastas()">
+                                        </select>
+
+                                        <div class="jama-btn-group-row">
+                                            <button id="btnDivEquitativa" class="jama-btn-secondary" onclick="distribuirSaldos('EQUITATIVO')" disabled>
+                                                <i class="bi bi-pie-chart-fill"></i> Partes Iguales
+                                            </button>
+                                            <button id="btnDivPorcentual" class="jama-btn-secondary" onclick="distribuirSaldos('PORCENTUAL')" disabled>
+                                                <i class="bi bi-percent"></i> Porcentajes
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="jama-footer-action-box">
+                                <div class="jama-meta-row mb-3">
+                                    <span class="jama-label-muted">POR ASIGNAR / CUADRAR:</span>
+                                    <span id="txtMontoPorAsignar" class="jama-txt-status status-danger">S/. 0.00</span>
+                                </div>
+                                <button id="btnLiquidarMesaGlobal" class="jama-btn-primary w-100 py-3 text-uppercase" disabled onclick="procesarLiquidacion()">
+                                    <i class="bi bi-shield-check me-2"></i> Procesar Cierre Masivo
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="jama-panel-contenido">
+                            <div class="jama-carousel-wrapper">
+                                <div id="contenedor-tickets-dinamicos" class="jama-horizontal-carousel">
+                                </div>
+                            </div>
+
+                            <div class="jama-card-container accent-border mt-3 p-3 bg-white jama-preview-card">
+                                <div class="jama-card-header-sm d-flex justify-content-between align-items-center mb-2" style="border-bottom: 2px solid var(--lajama-peach);">
+                                    <span><i class="bi bi-printer-fill text-dark"></i> VISTA PREVIA (TICKET FISCAL)</span>
+                                    <span class="badge bg-dark text-light format-badge">Térmico 80mm</span>
+                                </div>
+
+                                <div id="visualizador-ticket-cajero" class="p-3 bg-light rounded shadow-inner code-terminal">
+                                    Selecciona o distribuye consumos para previsualizar el ticket del cajero...
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</th:block>
+</body>
+</html>

@@ -1,0 +1,852 @@
+/* ========================================================
+   📊 MICRO-AJUSTES OPERATIVOS EXCLUSIVOS: MÓDULO DE CAJA
+   ======================================================== */
+
+/* --- 1. Control Cinemático de los Paneles de Pestañas --- */
+.jama-tab-panel {
+    display: none; /* Por defecto todas las pestañas se esconden */
+    animation: fadeInCaliente 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.jama-tab-panel.activo {
+    display: block !important; /* Sólo la pestaña activa rompe el flujo */
+}
+
+@keyframes fadeInCaliente {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- 2. Micro-Badges Personalizados de Transacciones (Gaveta) --- */
+.jama-badge-pago {
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    padding: 3px 8px !important;
+    background-color: #f3f4f6 !important;
+    color: #374151 !important;
+    border-radius: 6px !important;
+    border: 1px solid rgba(0,0,0,0.05);
+    display: inline-flex;
+    align-items: center;
+}
+
+/* --- 3. Sintonización de Alertas y Banners Internos (Bajas) --- */
+.status-danger {
+    background-color: #fee2e2 !important;
+    color: #991b1b !important;
+}
+
+.status-ingreso {
+    background-color: #dcfce7 !important;
+    color: #166534 !important;
+}
+
+/* --- 4. Formato de Desglose de Cierre en Tablas Asíncronas --- */
+.cabecera-oscura th {
+    background-color: #374151 !important;
+    color: #ffffff !important;
+}
+
+.tabla-vacia-mensaje {
+    text-align: center !important;
+    padding: 2.5rem !important;
+    color: #6b7280 !important;
+    font-size: 0.85rem !important;
+    font-style: italic;
+}
+
+/* --- 5. Modal Split: Contenedor Desplazable de Selección de Platos --- */
+.split-platos-scroll {
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: 4px;
+    display: flex;
+    flex-column: column;
+    gap: 8px;
+}
+
+/* Estilización premium de la barra de desplazamiento táctil */
+.split-platos-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+.split-platos-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+.split-platos-scroll::-webkit-scrollbar-thumb {
+    background-color: rgba(27, 58, 44, 0.2);
+    border-radius: 10px;
+}
+
+/* --- 6. Clases de Apoyo de Visualización y Texto --- */
+.text-jama-gold {
+    color: #D97706 !important;
+}
+
+.fw-extrabold {
+    font-weight: 900 !important;
+    letter-spacing: -0.03em;
+}
+
+.bg-light-jama {
+    background-color: var(--lajama-cream) !important;
+    border-radius: 0.75rem !important;
+    border: 1px dashed rgba(27, 58, 44, 0.15) !important;
+}
+
+/*------------------------------------------------*/
+
+/* ========================================================
+   💎 INTERFAZ DE TARJETAS CONTABLES KINETIC COHESIVAS
+   ======================================================== */
+
+.tarjeta-financiera-jama {
+    min-height: 74px;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    /* Transición elástica avanzada */
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    cursor: pointer;
+}
+
+/* Transición suave para los logos PNG */
+.tarjeta-financiera-jama img {
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* Efecto al hacer Hover general sobre la imagen */
+.tarjeta-financiera-jama:hover img {
+    transform: scale(1.12); /* Escala sutil del 12% */
+}
+
+
+/* ── 🟢 INTERACCIÓN 1: EFECTIVO (Brillo Esmeralda Dual) ── */
+.tf-efectivo {
+    background: linear-gradient(135deg, #13291E 0%, #1B3A2C 45%, #2a5c45 100%) !important;
+}
+.tf-efectivo .esfera-diseno {
+    background-color: #539474;
+}
+.tf-efectivo:hover {
+    transform: translateY(-4px);
+    /* Inset: Brillo interno que ilumina los bordes por dentro.
+       Luego una sombra exterior suave y limpia */
+    box-shadow: inset 0 0 15px rgba(83, 148, 116, 0.6),
+                0 10px 25px rgba(16, 185, 129, 0.25) !important;
+    border-color: rgba(83, 148, 116, 0.5) !important; /* El borde se ilumina levemente */
+}
+
+
+/* ── 📱 INTERACCIÓN 2: DIGITAL YAPE / PLIN (Brillo Violeta/Celeste Dual) ── */
+.tf-digital {
+    background: linear-gradient(135deg, #4A148C 0%, #7B1FA2 40%, #00B0FF 100%) !important;
+}
+.tf-digital .esfera-diseno {
+    background-color: #ea80fc;
+}
+.tf-digital:hover {
+    transform: translateY(-4px);
+    /* Inset morado/celeste eléctrico que enciende el contenedor por dentro */
+    box-shadow: inset 0 0 18px rgba(234, 128, 252, 0.5),
+                0 10px 25px rgba(123, 31, 162, 0.25) !important;
+    border-color: rgba(234, 128, 252, 0.4) !important;
+}
+
+
+/* ── 💳 INTERACCIÓN 3: DEPÓSITO POR TARJETA (Brillo Azul Zafiro Dual) ── */
+.tf-tarjeta {
+    background: linear-gradient(135deg, #0D47A1 0%, #1976D2 50%, #78909C 100%) !important;
+}
+.tf-tarjeta .esfera-diseno {
+    background-color: #90caf9;
+}
+.tf-tarjeta:hover {
+    transform: translateY(-4px);
+    /* Inset azul cielo para el look metalizado interior */
+    box-shadow: inset 0 0 18px rgba(144, 202, 249, 0.5),
+                0 10px 25px rgba(25, 118, 210, 0.25) !important;
+    border-color: rgba(144, 202, 249, 0.4) !important;
+}
+
+
+/* ── 🌌 ESTRUCTURACIÓN DE ESFERAS ABSTRACTAS SUPERPUESTAS ── */
+.esfera-diseno {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.esfera-diseno.e-1 {
+    top: -50px;
+    right: -30px;
+    width: 120px;
+    height: 120px;
+    opacity: 0.18;
+}
+
+.esfera-diseno.e-2 {
+    bottom: -40px;
+    right: 30px;
+    width: 80px;
+    height: 80px;
+    opacity: 0.12;
+}
+
+/* Opacidad limpia para las etiquetas secundarias de control */
+.text-white-50 {
+    color: rgba(255, 255, 255, 0.72) !important;
+    font-size: 0.82rem !important;
+    letter-spacing: 0.02em;
+}
+
+/* ========================================================
+   🏷️ MINI-BADGES DE MÉTODOS DE PAGO PREMIUM (LA JAMA STYLE)
+   ======================================================== */
+
+.badge-metodo-jama {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.03em;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    font-family: var(--bs-font-monospace);
+    text-transform: uppercase;
+}
+
+.badge-metodo-jama img {
+    width: 14px;
+    height: 14px;
+    object-fit: contain;
+}
+
+/* Variación 1: Efectivo Mini */
+.badge-metodo-jama.bm-efectivo {
+    background: linear-gradient(135deg, #13291E 0%, #1B3A2C 100%) !important;
+    border-color: rgba(83, 148, 116, 0.3) !important;
+    box-shadow: inset 0 0 6px rgba(83, 148, 116, 0.3), 0 2px 4px rgba(0,0,0,0.15) !important;
+}
+
+/* Variación 2: Yape/Plin Mini */
+.badge-metodo-jama.bm-digital {
+    background: linear-gradient(135deg, #4A148C 0%, #7B1FA2 100%) !important;
+    border-color: rgba(234, 128, 252, 0.3) !important;
+    box-shadow: inset 0 0 6px rgba(234, 128, 252, 0.3), 0 2px 4px rgba(0,0,0,0.15) !important;
+}
+
+/* Variación 3: Tarjeta Mini */
+.badge-metodo-jama.bm-tarjeta {
+    background: linear-gradient(135deg, #0D47A1 0%, #1976D2 100%) !important;
+    border-color: rgba(144, 202, 249, 0.3) !important;
+    box-shadow: inset 0 0 6px rgba(144, 202, 249, 0.3), 0 2px 4px rgba(0,0,0,0.15) !important;
+}
+
+/* ========================================================
+   💎 TARJETAS DE RESUMEN CONTABLE PREMIUM (LA JAMA KINETIC)
+   ======================================================== */
+
+.card-resumen-jama {
+    min-height: 110px;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 14px !important; /* Bordes un poco más redondeados y modernos */
+    background-size: 120% 120%;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    cursor: pointer;
+}
+
+.style-monto-resumen {
+    font-size: 1.95rem !important;
+    letter-spacing: -0.02em;
+}
+
+/* 🟢 CONFIGURACIÓN 1: Fondo de Apertura (Esmeralda Gloss) */
+.cr-apertura {
+    background: linear-gradient(135deg, #0f2318 0%, #163524 50%, #225137 100%) !important;
+}
+.cr-apertura .esfera-diseno {
+    background-color: #34d399;
+}
+.cr-apertura:hover {
+    transform: translateY(-5px);
+    box-shadow: inset 0 0 20px rgba(52, 211, 153, 0.5),
+                0 12px 30px rgba(16, 185, 129, 0.3) !important;
+    border-color: rgba(52, 211, 153, 0.4) !important;
+}
+
+/* 🔵 CONFIGURACIÓN 2: Ventas del Turno (Zafiro Profundo) */
+.cr-ventas {
+    background: linear-gradient(135deg, #0a192f 0%, #0f2b5c 50%, #1a458a 100%) !important;
+}
+.cr-ventas .esfera-diseno {
+    background-color: #38bdf8;
+}
+.cr-ventas:hover {
+    transform: translateY(-5px);
+    box-shadow: inset 0 0 20px rgba(56, 189, 248, 0.5),
+                0 12px 30px rgba(14, 165, 233, 0.3) !important;
+    border-color: rgba(56, 189, 248, 0.4) !important;
+}
+
+/* 👑 CONFIGURACIÓN 3: Saldo Esperado (Oro Líquido Corporativo) */
+.cr-saldo {
+    background: linear-gradient(135deg, #1e1203 0%, #3a2202 45%, #613b05 100%) !important;
+}
+.style-titulo-oro {
+    color: rgba(245, 158, 11, 0.75) !important;
+}
+.font-gold-glow {
+    color: #f59e0b !important;
+    text-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
+}
+.cr-saldo .esfera-diseno {
+    background-color: #fbbf24;
+}
+.cr-saldo:hover {
+    transform: translateY(-5px);
+    box-shadow: inset 0 0 22px rgba(251, 191, 36, 0.45),
+                0 12px 32px rgba(245, 158, 11, 0.3) !important;
+    border-color: rgba(251, 191, 36, 0.45) !important;
+}
+
+/* ========================================================
+   🌌 ANIMACIÓN Y MOVIMIENTO SUAVE PARA ESFERAS EN HOVER
+   ======================================================== */
+
+/* 1. Base de las esferas: añadimos transición elástica para el movimiento */
+.esfera-diseno {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 1;
+    /* Transición ultra suave idéntica a la aceleración de la tarjeta */
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.6s ease !important;
+}
+
+/* ── 🟢 MOVIMIENTO EN TARJETAS DE RESUMEN (SUPERIORES) ── */
+
+/* Apertura: Esfera 1 va a la izquierda y abajo | Esfera 2 sube */
+.cr-apertura:hover .e-1 {
+    transform: translate(-15px, 10px) scale(1.05);
+    opacity: 0.28 !important; /* Brilla un poco más al activarse */
+}
+.cr-apertura:hover .e-2 {
+    transform: translate(10px, -15px) scale(1.1);
+    opacity: 0.22 !important;
+}
+
+/* Ventas: Esfera 1 sube y va a la derecha | Esfera 2 baja a la izquierda */
+.cr-ventas:hover .e-1 {
+    transform: translate(12px, -12px) scale(1.08);
+    opacity: 0.28 !important;
+}
+.cr-ventas:hover .e-2 {
+    transform: translate(-15px, 15px) scale(1.05);
+    opacity: 0.22 !important;
+}
+
+/* Saldo: Esfera 1 se expande y baja | Esfera 2 se desplaza a la derecha */
+.cr-saldo:hover .e-1 {
+    transform: translate(-5px, 18px) scale(1.1);
+    opacity: 0.28 !important;
+}
+.cr-saldo:hover .e-2 {
+    transform: translate(20px, -5px) scale(1.05);
+    opacity: 0.22 !important;
+}
+
+
+/* ── 💳 MOVIMIENTO EN TARJETAS FINANCIERAS (INFERIORES) ── */
+
+/* Efectivo */
+.tarjeta-financiera-jama.tf-efectivo:hover .e-1 {
+    transform: translate(-12px, 8px) scale(1.05);
+    opacity: 0.28 !important;
+}
+.tarjeta-financiera-jama.tf-efectivo:hover .e-2 {
+    transform: translate(8px, -12px) scale(1.1);
+    opacity: 0.22 !important;
+}
+
+/* ========================================================
+   💎 ESTILOS PREMIUM / AESTHETIC PARA TARJETAS FINANCIERAS
+   ======================================================== */
+
+/* Contenedor flexible de 5 columnas en escritorio */
+@media (min-width: 768px) {
+    .flex-fill-jama {
+        flex: 0 0 calc(20% - 12px);
+        max-width: calc(20% - 12px);
+    }
+}
+
+@media (max-width: 767px) {
+    .flex-fill-jama { width: 100%; }
+}
+
+/* Base unificada ultra-aesthetic con bordes de cristal */
+.tarjeta-financiera-jama {
+    min-height: 145px; /* Un poco más alta para dar aire visual */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: blur(8px);
+}
+
+/* 🚀 TEXTO Y NÚMEROS MÁS GRANDES E IMPONENTES */
+.tarjeta-financiera-jama .titulo-tarjeta-jama {
+    font-size: 0.85rem !important;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-weight: 700 !important;
+    opacity: 0.75;
+}
+
+.tarjeta-financiera-jama .monto-tarjeta-jama {
+    font-size: 1.85rem !important; /* Números gigantes y legibles */
+    font-weight: 900 !important;
+    letter-spacing: -0.5px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* 🚀 ÍCONOS FINANCIEROS MÁS GRANDES (Aesthetic Glow) */
+.img-financiera-grande {
+    width: 46px !important; /* De 36px sube a 46px */
+    height: 46px !important;
+    object-fit: contain;
+    filter: drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.3));
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Animaciones fluidas al pasar el mouse */
+.tarjeta-financiera-jama:hover {
+    transform: translateY(-6px);
+    border-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+.tarjeta-financiera-jama:hover .img-financiera-grande {
+    transform: scale(1.18) rotate(5deg);
+}
+
+/* Configuración de gradientes de marca */
+.tf-efectivo { background: linear-gradient(135deg, #0f5132 0%, #198754 100%) !important; }
+.tf-efectivo:hover { box-shadow: 0 15px 30px rgba(25, 135, 84, 0.25), inset 0 0 15px rgba(255,255,255,0.1) !important; }
+
+.tf-yape { background: linear-gradient(135deg, #4A148C 0%, #7B1FA2 100%) !important; }
+.tf-yape:hover { box-shadow: 0 15px 30px rgba(123, 31, 162, 0.25), inset 0 0 15px rgba(255,255,255,0.1) !important; }
+
+.tf-plin { background: linear-gradient(135deg, #00565B 0%, #00838F 100%) !important; }
+.tf-plin:hover { box-shadow: 0 15px 30px rgba(0, 131, 143, 0.3), inset 0 0 15px rgba(255,255,255,0.1) !important; }
+
+.tf-tarjeta { background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%) !important; }
+.tf-tarjeta:hover { box-shadow: 0 15px 30px rgba(13, 110, 253, 0.25), inset 0 0 15px rgba(255,255,255,0.1) !important; }
+
+.tf-manuales { background: linear-gradient(135deg, #1f2937 0%, #111827 100%) !important; }
+.tf-manuales:hover { box-shadow: 0 15px 30px rgba(17, 24, 39, 0.4), inset 0 0 15px rgba(255,255,255,0.05) !important; }
+
+
+/* ========================================================
+   🎨 SOLUCIÓN AL BADGE BLANCO DE PLIN EN LA TABLA
+   ======================================================== */
+
+/* Forzar color turquesa/celeste oficial de Plin en las celdas de la tabla */
+.badge-metodo-jama.bm-plin,
+span[class*="bm-plin"],
+span.badge:contains("PLIN") {
+    background: linear-gradient(135deg, #00838F 0%, #00B0FF 100%) !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 4px 8px;
+    border-radius: 6px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 4px rgba(0,131,143,0.2);
+}
+
+/* =========================================================================
+   ESTILOS DE APERTURA DE CAJA - LA JAMA (CSS NATIVO PURO)
+   ========================================================================= */
+
+.jama-container-apertura {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 550px;
+    margin: 40px auto;
+    padding: 0 20px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+/* 🚨 TARJETA DE BLOQUEO HORARIO */
+.jama-card-bloqueo {
+    display: flex;
+    gap: 16px;
+    background: #FFF5F5;
+    border: 1px solid #F8C4C4;
+    border-left: 5px solid #E05252;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(224, 82, 82, 0.08);
+}
+
+.alerta-icono-bloqueo {
+    display: flex;
+    align-items: center;
+}
+
+.alerta-bloqueo-cuerpo {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.jama-bloqueo-titulo {
+    margin: 0;
+    font-size: 16px;
+    color: #1e1e1e;
+    font-weight: 700;
+}
+
+.jama-bloqueo-texto {
+    margin: 0;
+    font-size: 14px;
+    color: #555555;
+    line-height: 1.4;
+}
+
+.jama-badge-reloj {
+    align-self: flex-start;
+    background: #E05252;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-top: 4px;
+}
+
+/* 📦 TARJETA DE APERTURA */
+.card-jama-apertura {
+    background: #ffffff;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.card-header-apertura {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 24px;
+    background: #1a1d20; /* Color corporativo oscuro */
+    color: #ffffff;
+}
+
+.icon-circle-apertura {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.header-texto-apertura {
+    display: flex;
+    flex-direction: column;
+}
+
+.apertura-titulo {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+}
+
+.apertura-subtitulo {
+    margin: 0;
+    font-size: 13px;
+    color: #a0aec0;
+}
+
+.card-body-apertura {
+    padding: 30px;
+}
+
+/* 💵 ALERTA MONTO SUGERIDO */
+.jama-alerta-sugerido {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #F0FDF4;
+    border: 1px solid #BBF7D0;
+    padding: 16px;
+    border-radius: 10px;
+    margin-bottom: 24px;
+}
+
+.alerta-cuerpo {
+    display: flex;
+    flex-direction: column;
+}
+
+.sugerido-etiqueta {
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: #166534;
+    letter-spacing: 0.5px;
+}
+
+.sugerido-monto {
+    font-size: 20px;
+    font-weight: 700;
+    color: #14532d;
+}
+
+/* フォーム CONTROLADORES FORM */
+.jama-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-label-jama {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.jama-input-group {
+    display: flex;
+    border: 2px solid #cbd5e1;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.2s ease;
+}
+
+.jama-input-group:focus-within {
+    border-color: #198754;
+}
+
+.jama-input-group-text {
+    background: #f1f5f9;
+    padding: 12px 16px;
+    font-weight: 700;
+    color: #64748b;
+    border-right: 1px solid #cbd5e1;
+    user-select: none;
+}
+
+.form-control-jama {
+    flex: 1;
+    border: none;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e293b;
+    outline: none;
+    background: #ffffff;
+}
+
+.form-control-jama:disabled {
+    background: #f8fafc;
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+.jama-form-help {
+    font-size: 12px;
+    color: #64748b;
+    font-style: italic;
+    margin-top: 4px;
+}
+
+/* 🚀 BOTÓN ACCIÓN */
+.jama-action-container {
+    margin-top: 28px;
+}
+
+.btn-jama-apertura {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-jama-apertura.habilitado {
+    background: #198754;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(25, 135, 84, 0.2);
+}
+
+.btn-jama-apertura.habilitado:hover {
+    background: #146c43;
+    transform: translateY(-1px);
+}
+
+.btn-jama-apertura.inhabilitado {
+    background: #e2e8f0;
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+/* ============================================================================
+   OPTIMIZACIÓN DE TABLA COMPLETA PARA PANTALLAS GRANDES (ESCRITORIO)
+   ============================================================================ */
+
+/* 1. Obligar al contenedor a no desbordar y usar el 100% real de la pantalla */
+.table-responsive-jama {
+    width: 100% !important;
+    overflow-x: auto; /* Muestra scrollbar solo si es estrictamente necesario */
+    background: #ffffff;
+    border-radius: 12px;
+}
+
+table.table-jama {
+    width: 100% !important;
+    table-layout: fixed;
+    font-size: 0.60rem !important;
+    margin-bottom: 0 !important;
+}
+
+/* 3. Controlar los espacios internos (paddings) para ganar espacio horizontal */
+table.table-jama th,
+table.table-jama td {
+    padding: 7px 6px !important;
+    vertical-align: middle !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.75rem !important;
+}
+
+table.table-jama thead th {
+    font-size: 0.68rem !important;
+    padding: 8px 6px !important;
+}
+
+/* 4. Distribución proporcional de las columnas para que no peleen por espacio */
+table.table-jama th:nth-child(1),
+table.table-jama td:nth-child(1) { width: 12%; } /* ID Comprobante */
+
+table.table-jama th:nth-child(2),
+table.table-jama td:nth-child(2) { width: 11%; } /* Tipo Operación */
+
+table.table-jama th:nth-child(3),
+table.table-jama td:nth-child(3) { width: 12%; } /* Tipo Servicio */
+
+table.table-jama th:nth-child(4),
+table.table-jama td:nth-child(4) { width: 22%; } /* Cliente / Origen (Más espacio por los nombres largos) */
+
+table.table-jama th:nth-child(5),
+table.table-jama td:nth-child(5) { width: 13%; } /* Fecha Emisión */
+
+table.table-jama th:nth-child(6),
+table.table-jama td:nth-child(6) { width: 11%; } /* Monto Cobrado */
+
+table.table-jama th:nth-child(7),
+table.table-jama td:nth-child(7) { width: 11%; } /* Método Pago */
+
+table.table-jama th:nth-child(8),
+table.table-jama td:nth-child(8) { width: 8%; }  /* Acciones (Botones juntos) */
+
+table.table-jama th:nth-child(9),
+table.table-jama td:nth-child(9) { width: 11%; } /* Estado */
+
+/* 5. Asegurar que los botones de acción se mantengan pequeños y juntos */
+.action-buttons-wrapper {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+
+
+/* ── 💎 BADGE OFICIAL DE PLIN PARA AMBAS TABLAS (Thymeleaf & JS) ── */
+.badge-metodo-jama.bm-plin {
+    background: linear-gradient(135deg, #00838F 0%, #00B0FF 100%) !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    padding: 4px 10px !important;
+    border-radius: 6px !important;
+    display: inline-block;
+    text-align: center;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 5px rgba(0, 131, 143, 0.3) !important;
+}
+
+/* Micro-ajuste por si la tabla global usa clases genéricas de Bootstrap */
+.bm-plin {
+    background: linear-gradient(135deg, #00838F 0%, #00B0FF 100%) !important;
+    color: white !important;
+}
+
+/* ========================================================
+   🎨 BADGES AESTHETIC PARA TABLAS (Thymeleaf & JavaScript)
+   ======================================================== */
+
+/* Base unificada para todos los mini-badges de la tabla */
+.badge-metodo-jama {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 5px 10px !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    border-radius: 6px !important;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: #ffffff !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    white-space: nowrap;
+}
+
+/* Forzar que las imágenes internas se alineen y escalen bien */
+.badge-metodo-jama img {
+    width: 14px !important;
+    height: 14px !important;
+    object-fit: contain;
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2));
+}
+
+/* 🟢 EFECTIVO (Verde Esmeralda) */
+.badge-metodo-jama.bm-efectivo {
+    background: linear-gradient(135deg, #135d37 0%, #198754 100%) !important;
+}
+
+/* 🟣 YAPE (Morado/Violeta Intenso Oficial) */
+.badge-metodo-jama.bm-yape {
+    background: linear-gradient(135deg, #4A148C 0%, #7B1FA2 100%) !important;
+}
+
+/* 🔵 PLIN (Turquesa / Celeste Eléctrico Oficial) */
+.badge-metodo-jama.bm-plin {
+    background: linear-gradient(135deg, #00727A 0%, #00B0FF 100%) !important;
+}
+
+/* 🟠 TARJETA / POS (Azul Eléctrico / Corporativo) */
+.badge-metodo-jama.bm-tarjeta {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%) !important;
+}

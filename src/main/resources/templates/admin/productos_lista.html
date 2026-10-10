@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-gestion :: layout(title='Gestión de Menú', content=~{::#contenido}, modals=~{::#modales}, js='/js/admin_productos.js')}">
+<body>
+
+<div id="contenido">
+
+    <link rel="stylesheet" th:href="@{/css/admin_productos.css}">
+
+    <div th:if="${errorProducto != null}"
+         class="alert alert-danger alert-dismissible fade show rounded-4 shadow-sm mb-4 border-0"
+         role="alert" style="background-color: #fce8e6; color: #a51d24;">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-exclamation-circle-fill me-2 fs-5"></i>
+            <span class="fw-semibold small" th:text="${errorProducto}"></span>
+        </div>
+        <button type="button" class="btn-close small" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="card rounded-lg card-color1">
+        <div class="card-body p-4">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="card-title h5 fw-bold">
+                    <i class="bi bi-egg-fried me-2"></i> Lista de Productos del Menú
+                </h1>
+                <button type="button" class="btn-jama-kinetic" onclick="abrirModalNuevo()">
+                    <i class="bi bi-plus-lg"></i>
+                    <span>Nuevo Registro</span>
+                </button>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0" style="border: 2px solid var(--lajama-peach); border-radius: 12px 0 0 12px;"><i class="bi bi-search"></i></span>
+                        <input type="text" id="busqueda" class="form-control border-start-0" style="border-radius: 0 12px 12px 0 !important;" placeholder="Buscar plato o categoría..." onkeyup="filtrarTabla()">
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive-jama">
+                <table id="tablaProductos" class="table table-jama responsive" style="width: 100%">
+                    <thead>
+                    <tr>
+                        <th>Imagen</th>
+                        <th>Producto</th>
+                        <th>Categoría</th>
+                        <th>Precio</th>
+                        <th>Estado (En Carta)</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="p : ${productos}" th:id="'prod-row-' + ${p.id}" class="producto-fila">
+                        <td>
+                            <img th:src="${p.imagen != null and p.imagen != '' ? p.imagen : '/img/not-found.png'}"
+                                 class="img-thumbnail rounded-3 shadow-sm"
+                                 style="width: 50px; height: 50px; object-fit: cover; border: 1px solid var(--border-color);"
+                                 alt="Imagen del plato">
+                        </td>
+                        <td>
+                            <span class="d-block fw-bold text-dark target-busqueda-nombre">[[${p.nombre}]]</span>
+                            <small class="text-muted d-block text-truncate" style="max-width: 250px;">[[${p.descripcion}]]</small>
+                        </td>
+                        <td>
+    <span th:class="${#strings.contains(#strings.toUpperCase(p.categoria.nombre), 'FRÍ') || #strings.contains(#strings.toUpperCase(p.categoria.nombre), 'FRI')} ? 'badge bg-info text-dark fw-bold px-3 py-2 rounded-pill' : 'badge bg-warning text-dark fw-bold px-3 py-2 rounded-pill'"
+          th:data-categoria="${p.categoria.nombre}" class="target-busqueda-cat-fix">
+        [[${p.categoria.nombre}]]
+    </span>
+                        </td>
+                        <td class="fw-bold text-jama-gold">S/ [[${#numbers.formatDecimal(p.precio, 1, 2)}]]</td>
+                        <td>
+                            <div class="form-check form-switch custom-switch-jama">
+                                <input class="form-check-input check-estado-switch" type="checkbox" th:checked="${p.estado == 1}"
+                                       th:onchange="'cambiarEstado(' + ${p.id} + ', this)'" style="cursor: pointer;">
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <div class="action-buttons-wrapper justify-content-center">
+
+                                <button type="button" class="action-jama-btn btn-action-edit" th:onclick="'editarProducto(' + ${p.id} + ')'" title="Editar Plato">
+                                    <svg viewBox="0 0 39 7" class="pencil-cap" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <line y1="3.5" x2="39" y2="3.5" stroke-width="4"/>
+                                    </svg>
+                                    <svg viewBox="0 0 33 39" class="pencil-body" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M6 2L2 15V37H31V15L27 2H6Z" stroke-width="3"/>
+                                        <path d="M12 15V30" stroke-width="4" stroke="white"/>
+                                        <path d="M21 15V30" stroke-width="4" stroke="white"/>
+                                    </svg>
+                                    <svg viewBox="0 0 89 80" class="sparks" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M40 0L50 30L80 40L50 50L40 80L30 50L0 40L30 30Z"/>
+                                    </svg>
+                                </button>
+
+                                <button type="button" class="action-jama-btn btn-action-delete" th:onclick="'eliminarProducto(' + ${p.id} + ')'" title="Eliminar Plato">
+                                    <svg viewBox="0 0 39 7" class="bin-top" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <line y1="5" x2="39" y2="5" stroke-width="4"/>
+                                        <line x1="12" y1="1.5" x2="26" y2="1.5" stroke-width="3"/>
+                                    </svg>
+                                    <svg viewBox="0 0 33 39" class="bin-bottom" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M0 0H33V35C33 37.2 31.2 39 29 39H4C1.8 39 0 37.2 0 35V0Z"/>
+                                        <path d="M12 6V29" stroke="white" stroke-width="4"/>
+                                        <path d="M21 6V29" stroke="white" stroke-width="4"/>
+                                    </svg>
+                                    <svg viewBox="0 0 89 80" class="garbage" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M20.5 10.5L37.5 15.5L42.5 11.5L51.5 12.5L68.75 0L72 11.5L79.5 12.5H88.5L87 22L68.75 31.5Z"/>
+                                    </svg>
+                                </button>
+
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr id="filaSinResultados" style="display: none;">
+                        <td colspan="6" class="text-center py-5 bg-light-jama">
+                            <div class="text-muted">
+                                <i class="bi bi-exclamation-triangle-fill text-warning fs-3 d-block mb-2"></i>
+                                <span class="fw-bold d-block text-dark">No se encontraron platos</span>
+                                <small>Intenta con otro término o revisa la ortografía.</small>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="jama-table-controls mt-4">
+                <div class="jama-length-changer">
+                    <span>Mostrar</span>
+                    <select id="maxRows" class="select-jama-pages" onchange="paginarTablaManual()">
+                        <option value="5">5 registros</option>
+                        <option value="10" selected>10 registros</option>
+                        <option value="20">20 registros</option>
+                        <option value="50">50 registros</option>
+                    </select>
+                </div>
+                <ul class="jama-pagination-wrapper" id="paginadorContenedor">
+                </ul>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div id="modales">
+    <div class="modal fade" id="modalProducto" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <form id="formProducto" th:action="@{/admin/productos/guardar}" method="post" enctype="multipart/form-data">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalTitulo">
+                            <i class="bi bi-sliders me-2"></i> Nuevo Producto
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <input type="hidden" id="prodId" name="id">
+                        <div class="row g-4">
+
+                            <div class="col-md-5 text-center border-end d-flex flex-column align-items-center justify-content-center p-3">
+                                <label class="form-label mb-3 fw-bold text-dark">Imagen del Plato</label>
+
+                                <div class="uiverse-wrapper-panel">
+                                    <div class="folder">
+                                        <div class="front-side">
+                                            <div class="tip"></div>
+                                            <div class="cover"></div>
+                                        </div>
+                                        <div class="custom-paper-inside">
+                                            <img id="imgPrevia" th:src="@{/img/not-found.png}" class="folder-preview-img" alt="Vista Previa">
+                                        </div>
+                                        <div class="back-side cover"></div>
+                                    </div>
+                                    <label class="custom-file-upload">
+                                        <input class="title" type="file" name="archivoImagen" accept="image/jpeg, image/png, image/webp" />
+                                        <i class="bi bi-cloud-arrow-up-fill me-1"></i> Seleccionar Imagen
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-7">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-dark">Nombre del Plato</label>
+                                    <input type="text" id="prodNombre" name="nombre" class="form-control" required placeholder="Ej. Lomo Saltado" maxlength="30">
+                                    <div class="d-flex justify-content-between">
+                                        <div id="prodNombre-error" class="text-danger small mt-1 fw-semibold" style="font-size: 0.75rem;"></div>
+                                        <small id="contadorNombre" class="text-muted mt-1 small">0/30</small>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-dark">Descripción / Detalles de cocina</label>
+                                    <textarea id="prodDesc" name="descripcion" class="form-control" rows="2" placeholder="Ingredientes básicos o guarnición..." maxlength="150"></textarea>
+                                    <div class="d-flex justify-content-end">
+                                        <small id="contadorDesc" class="text-muted mt-1 small">0/150</small>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold small text-dark">Precio de Venta (S/)</label>
+                                        <input type="number" id="prodPrecio" name="precio" class="form-control" step="0.01" min="10.00" max="70.00" required placeholder="0.00">
+                                        <div id="prodPrecio-error" class="text-danger small mt-1 fw-semibold" style="font-size: 0.75rem;"></div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold small text-dark">Categoría Estación</label>
+                                        <select id="prodCat" name="categoria.id" class="form-select" required>
+                                            <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nombre}"></option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar Producto</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script th:src="@{/js/admin-productos/tabla.js}"></script>
+    <script th:src="@{/js/admin-productos/crud.js}"></script>
+</body>
+</html>

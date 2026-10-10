@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Jama - Iniciar Sesión</title>
+    <link rel="icon" type="image/png" th:href="@{/favicon.png}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/login.css}">
+</head>
+<body>
+
+<div class="login-page-container">
+    <div class="bg-cursor-glow" id="bg-interactive-glow"></div>
+    <div class="pattern-bg ripple-container" id="ripple-grid"></div>
+
+    <div class="login-card-wrapper">
+        <div class="login-card">
+            <div class="login-grid">
+
+                <form class="login-form" id="loginForm" th:action="@{/login}" method="POST"
+                      th:data-video-src="@{/video/loader_lajama.webm}">
+                    <div class="form-header">
+                        <h1 class="form-title">¡Bienvenido de vuelta!</h1>
+                        <p class="form-subtitle">Ingresa tus credenciales para acceder al sistema administrativo.</p>
+                    </div>
+
+                    <div class="field-group">
+                        <label th:for="usuario" class="field-label">Usuario o Correo</label>
+                        <div class="input-relative">
+                            <input id="usuario" name="usuario" type="text" placeholder="Nombre de usuario" required autocomplete="username" autofocus />
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <div class="label-row">
+                            <label th:for="clave" class="field-label">Contraseña</label>
+                            <a href="#" class="form-link">¿Olvidaste tu contraseña?</a>
+                        </div>
+                        <div class="input-relative">
+                            <input id="clave" name="clave" type="password" placeholder="Contraseña" required autocomplete="current-password" style="padding-right: 45px;" />
+
+                            <label class="password-toggle-container">
+                                <input type="checkbox" id="togglePasswordCheckbox">
+                                <svg class="eye" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 576 512"><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM144 256a144 144 0 1 1 288 0 144 144 0 1 1 -288 0zm144-64c0 35.3-28.7 64-64 64c-7.1 0-13.9-1.2-20.3-3.3c-5.5-1.8-11.9 1.6-11.7 7.4c.3 6.9 1.3 13.8 3.2 20.7c13.7 51.2 66.4 81.6 117.6 67.9s81.6-66.4 67.9-117.6c-11.1-41.5-47.8-69.4-88.6-71.1c-5.8-.2-9.2 6.1-7.4 11.7c2.1 6.4 3.3 13.2 3.3 20.3z"></path></svg>
+                                <svg class="eye-slash" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 640 512"><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c8.4-19.3 10.6-41.4 4.8-63.3c-11.1-41.5-47.8-69.4-88.6-71.1c-5.8-.2-9.2 6.1-7.4 11.7c2.1 6.4 3.3 13.2 3.3 20.3c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zM373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5L373 389.9z"></path></svg>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="field-group pt-2">
+                        <button type="submit" class="btn-jama-submit">
+                            Ingresar al Sistema <i class="bi bi-arrow-right-short"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="login-banner-side" id="banner-derecho">
+                    <div class="cursor-glow" id="interactive-glow"></div>
+                    <div class="banner-overlay-text">
+                        <img th:src="@{/img/logo.png}" alt="Logo La Jama" class="login-logo-img">
+                        <p class="logo-slogan">Sazón Casera con Alma Peruana</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🎥 Tu overlay de carga premium intacto -->
+<div id="loading-overlay" class="premium-loading-overlay">
+    <video id="premium-video" loop muted playsinline preload="auto">
+        <source th:src="@{/video/loader_lajama.webm}" type="video/webm">
+    </video>
+    <div class="loader-matrix-jama"></div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- 🛡️ Mensajes de error devueltos por el backend -->
+<script th:if="${error}">
+    Swal.fire({
+        icon: 'error',
+        title: 'Error de Acceso',
+        text: '[[${error}]]',
+        confirmButtonColor: '#1B3A2C'
+    });
+</script>
+
+<script th:src="@{/js/main.js}"></script>
+
+<!-- ⚡ SCRIPTS DE INTERACTIVIDAD Y ADUANA DE CLIENTE UNIFICADOS -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+    const inputPassword = document.querySelector("#clave");
+    const toggleCheckbox = document.querySelector("#togglePasswordCheckbox");
+    const loginForm = document.getElementById("loginForm");
+    const linkOlvidaste = document.querySelector(".form-link");
+
+    // A) Link Olvidaste contraseña (Mantiene tu AppUtils operativo)
+    if (linkOlvidaste) {
+        linkOlvidaste.addEventListener("click", function (e) {
+            e.preventDefault();
+            if (typeof AppUtils !== 'undefined' && typeof AppUtils.showNotification === 'function') {
+                AppUtils.showNotification("Ponte en contacto con el administrador para recuperar tu contraseña", "info");
+            } else {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Recuperación de Credenciales',
+                    text: 'Ponte en contacto con el administrador para recuperar tu contraseña.',
+                    confirmButtonColor: '#1B3A2C'
+                });
+            }
+        });
+    }
+
+    // ─── 🟢 CONTROLADOR DEL OJITO SIN INTERRUPCIONES ───
+    if (toggleCheckbox && inputPassword) {
+        toggleCheckbox.addEventListener("change", function () {
+            // Si el checkbox está marcado (checked), se ve el ojito tachado por CSS y mostramos TEXTO
+            // Si no está marcado, se ve el ojo normal por CSS y mostramos PASSWORD
+            if (this.checked) {
+                inputPassword.setAttribute("type", "text");
+            } else {
+                inputPassword.setAttribute("type", "password");
+            }
+        });
+    }
+
+    // B) Validaciones de envío del Formulario
+    if (loginForm) {
+    loginForm.addEventListener("submit", function (e) {
+        const usuario = document.getElementById("usuario").value.trim();
+        const clave = document.getElementById("clave").value.trim();
+        const botonSubmit = this.querySelector(".btn-jama-submit");
+
+        if (!usuario) {
+            e.preventDefault();
+            Swal.fire({ icon: 'warning', title: 'Campo Requerido', text: 'Por favor, ingresa tu usuario.', confirmButtonColor: '#1B3A2C' });
+            return false;
+        }
+        if (!clave) {
+            e.preventDefault();
+            Swal.fire({ icon: 'warning', title: 'Campo Requerido', text: 'La contraseña es obligatoria.', confirmButtonColor: '#1B3A2C' });
+            return false;
+        }
+        if (clave.length < 4) {
+            e.preventDefault();
+            Swal.fire({ icon: 'error', title: 'Contraseña Inválida', text: 'Debe contener como mínimo 4 caracteres.', confirmButtonColor: '#1B3A2C' });
+            return false;
+        }
+
+        // ─── 🟢 ADUANA ANTI-SPAM DE CLIC ÚNICO ───
+        // Si el formulario es válido, desactivamos el botón inmediatamente
+        botonSubmit.disabled = true;
+
+        // Le agregamos una clase de carga para los estilos CSS modernos
+        botonSubmit.classList.add("btn-loading");
+
+        // Cambiamos el contenido visual para dar feedback al usuario
+        botonSubmit.innerHTML = 'Procesando... <span class="spinner-jama"></span>';
+    });
+}
+});
+</script>
+</body>
+</html>

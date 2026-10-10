@@ -1,0 +1,79 @@
+/* ========================================================
+   🎨 PERFILES.CSS - COMPLEMENTOS EXCLUSIVOS DE LA VISTA
+   ======================================================== */
+
+#tabla {
+    border-collapse: separate !important;
+    border-spacing: 0 10px !important;
+}
+
+#tabla tbody tr {
+    background-color: var(--lajama-white) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease !important;
+}
+
+#tabla tbody tr:hover {
+    background-color: var(--lajama-cream) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(27, 58, 44, 0.06), 0 0 1px var(--lajama-skin) !important;
+}
+
+/* 🔑 MICRO-BOTÓN EXCLUSIVO: ASIGNACIÓN DE PERMISOS (KEY INTERACTIVE LINK) */
+.btn-action-permissions {
+    background-color: #e0f2fe;
+    border-color: #bae6fd;
+    color: #0369a1;
+}
+
+.btn-action-permissions .key-icon {
+    font-size: 1rem;
+    z-index: 2;
+    color: #0369a1; /* Mantiene el color azul inicial en el icono */
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.3s ease;
+}
+
+/* 🌟 CORREGIDO: Al pasar el cursor, cambia a un azul profundo y se oscurece con filtro */
+.btn-action-permissions:hover {
+    background-color: #1e40af !important; /* Azul más oscuro (indigo-800) */
+    border-color: #1e3a8a !important;
+    color: var(--lajama-white) !important;
+    filter: brightness(0.9); /* 👈 El toque cinemático para oscurecer el bloque */
+}
+
+.btn-action-permissions:hover .key-icon {
+    color: var(--lajama-white) !important; /* Fuerza al icono a cambiar a blanco puro */
+    transform: rotate(-45deg) scale(1.18);
+}
+
+/* Efecto de presión física al pulsar */
+.btn-action-permissions:active {
+    transform: scale(0.9);
+    filter: brightness(0.75); /* Se oscurece aún más al hacer click real */
+}
+/* Alineamiento centrado para columnas de control en pantallas de escritorio */
+@media (min-width: 768px) {
+    #tabla tbody td:nth-child(4),
+    #tabla tbody td:nth-child(5) {
+        text-align: center;
+        vertical-align: middle;
+    }
+    #tabla .action-buttons-wrapper {
+        justify-content: center;
+    }
+}
+
+/* Lista de verificación de accesos del submodal */
+#listaOpciones .list-group-item {
+    border: 1px solid var(--border-color);
+    background-color: var(--lajama-white);
+    transition: background-color 0.2s ease;
+}
+
+#listaOpciones .list-group-item:hover {
+    background-color: var(--lajama-cream);
+}
+
+#listaOpciones .form-check-input:checked {
+    background-color: var(--lajama-green);
+    border-color: var(--lajama-green);
+}

@@ -1,0 +1,46 @@
+/* usuarios.css - Estilos específicos complementarios de la tabla */
+#tabla {
+    border-collapse: separate !important;
+    border-spacing: 0 10px !important;
+}
+#tabla tbody tr {
+    background-color: var(--lajama-white) !important;
+    transition: all 0.3s ease;
+}
+#tabla tbody tr:hover {
+    background-color: var(--lajama-cream) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(254, 215, 170, 0.4) !important;
+}
+
+/* ========================================================
+   📊 LIMITACIÓN DE FLUJO VERTICAL PARA DATATABLES
+   ======================================================== */
+
+/* 1. Forzamos a que el contenedor de la tabla tenga un alto máximo dinámico */
+.table-responsive-jama {
+    width: 100%;
+    max-height: calc(100vh - 240px); /* 🌟 SOLUCIÓN: Limita el alto restando el header y los márgenes */
+    overflow-y: auto;                /* Inyecta scroll vertical interno si hay muchos usuarios */
+    overflow-x: auto;                /* Mantiene el scroll horizontal para pantallas pequeñas */
+    padding: 4px;
+    -webkit-overflow-scrolling: touch;
+
+    /* Personalización estética del scrollbar para que se vea premium */
+    border-radius: 0.5rem;
+}
+
+/* 2. Estilizado del scrollbar interno para que no se vea tosco */
+.table-responsive-jama::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.table-responsive-jama::-webkit-scrollbar-thumb {
+    background: rgba(27, 58, 44, 0.2); /* Color verde sutil de La Jama */
+    border-radius: 9999px;
+}
+
+.table-responsive-jama::-webkit-scrollbar-track {
+    background: transparent;
+}

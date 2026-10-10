@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Jama · Carta Digital</title>
+    <!-- Iconos, Mapas y Fuentes -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link th:href="@{/css/carta.css}" rel="stylesheet" />
+</head>
+<body>
+
+<!-- ── NAV DE LA CORONA ── -->
+<nav class="navbar-carta">
+    <div class="logo-wrap">
+        <img th:src="@{/img/logo.png}" alt="La Jama" onerror="this.style.display='none'">
+        <div>
+            <div class="logo-nombre">La Jama</div>
+            <div class="logo-sub">Comida Peruana</div>
+        </div>
+    </div>
+</nav>
+
+<!-- ── BANNER HERO ── -->
+<div class="hero">
+    <div class="hero-content">
+        <div class="hero-badge">Delivery en Chiclayo</div>
+        <h1>Nuestra Carta</h1>
+        <p>Sabor peruano a tu puerta · Comer rico es ley</p>
+        <a href="https://maps.google.com" target="_blank" class="btn-ubicacion">
+            <i class="bi bi-geo-alt-fill"></i> Cómo llegar
+        </a>
+    </div>
+</div>
+
+<!-- ── MOTOR DE BÚSQUEDA ── -->
+<div class="buscador-wrap">
+    <div class="buscador-inner">
+        <div class="buscador-input-wrap">
+            <i class="bi bi-search"></i>
+            <input type="text" id="inputBuscar" class="input-buscar" placeholder="Buscar plato… ej: ceviche, pollo, arroz" autocomplete="off">
+            <button class="btn-limpiar-buscar" id="btnLimpiarBuscar" onclick="limpiarBusqueda()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <span class="buscar-counter" id="buscarCounter" style="display:none;"></span>
+    </div>
+</div>
+
+<!-- ── PANEL FEEDBACK VACÍO ── -->
+<div class="sin-resultados" id="sinResultados">
+    <i class="bi bi-search"></i>
+    No encontramos "<strong id="txtSinResultados"></strong>" en la carta
+</div>
+
+<!-- ── CUADRÍCULA DE SECCIONES ── -->
+<div class="catalogo-container">
+
+    <div th:each="cat : ${categorias}" th:id="'bloque-' + ${cat.id}" class="categoria-bloque">
+
+        <!-- Cabecera de Categoría Dinámica -->
+        <div class="cat-header">
+            <div class="cat-icon">
+                <span th:if="${#strings.containsIgnoreCase(cat.nombre, 'fría') or #strings.containsIgnoreCase(cat.nombre, 'fria') or #strings.containsIgnoreCase(cat.nombre, 'cevich') or #strings.containsIgnoreCase(cat.nombre, 'causa')}"></span>
+                <span th:if="${#strings.containsIgnoreCase(cat.nombre, 'caliente') or #strings.containsIgnoreCase(cat.nombre, 'fondo') or #strings.containsIgnoreCase(cat.nombre, 'lomo') or #strings.containsIgnoreCase(cat.nombre, 'pollo')}"></span>
+                <span th:if="${!#strings.containsIgnoreCase(cat.nombre, 'fría') and !#strings.containsIgnoreCase(cat.nombre, 'fria') and !#strings.containsIgnoreCase(cat.nombre, 'cevich') and !#strings.containsIgnoreCase(cat.nombre, 'causa') and !#strings.containsIgnoreCase(cat.nombre, 'caliente') and !#strings.containsIgnoreCase(cat.nombre, 'fondo') and !#strings.containsIgnoreCase(cat.nombre, 'lomo') and !#strings.containsIgnoreCase(cat.nombre, 'pollo')}"></span>
+            </div>
+            <h2 class="cat-nombre" th:text="${#strings.containsIgnoreCase(cat.nombre, 'fría') or #strings.containsIgnoreCase(cat.nombre, 'fria') ? 'Entradas Frescas' : (#strings.containsIgnoreCase(cat.nombre, 'caliente') ? 'Platos de Fondo' : cat.nombre)}"></h2>
+            <div class="cat-linea"></div>
+        </div>
+
+        <!-- Grilla Nativa Grid de Platos -->
+        <div class="grid-productos">
+            <div th:each="p : ${productos}" th:if="${p.categoria != null and p.categoria.id == cat.id}"
+                 th:with="agotado=${productosAgotados.get(p.id)}"
+                 class="card-prod"
+                 th:classappend="${agotado} ? 'card-agotado' : ''"
+                 th:id="'prod-' + ${p.id}"
+                 th:data-id="${p.id}"
+                 th:data-nombre="${p.nombre}"
+                 th:data-precio="${p.precio}"
+                 th:onclick="${agotado} ? 'Swal.fire({icon: `error`, title: `Plato Agotado`, text: `Lo sentimos, no quedan porciones disponibles de este plato por hoy.`, confirmButtonColor: `#1B3A2C`})' : 'agregarDesdeCard(this)'">
+
+                <!-- Overlay de Porciones Acabadas -->
+                <div th:if="${agotado}" class="agotado-overlay">
+                        <span class="agotado-badge">
+                            <i class="bi bi-x-octagon-fill me-1"></i> Porciones Acabadas
+                        </span>
+                </div>
+
+                <div class="prod-img-wrap">
+                    <img th:if="${p.imagen != null and !#strings.isEmpty(p.imagen)}"
+                         th:src="${#strings.startsWith(p.imagen, 'http') ? p.imagen : 'https://res.cloudinary.com/dyjnbddit/image/upload/' + p.imagen}"
+                         th:alt="${p.nombre}"
+                         loading="lazy"
+                         onerror="this.parentElement.innerHTML='<div class=\'prod-img-placeholder\'>🍽️</div>'">
+                    <div th:if="${p.imagen == null or #strings.isEmpty(p.imagen)}" class="prod-img-placeholder">🍽️</div>
+                </div>
+
+                <div class="prod-body">
+                    <div class="prod-nombre" th:text="${p.nombre}">Plato</div>
+                    <div class="prod-desc" th:text="${p.descripcion}">Descripción</div>
+                    <div class="prod-footer">
+                        <div class="prod-precio">S/ <span th:text="${p.precio}"></span></div>
+                        <button th:if="${!agotado}" class="btn-add" onclick="event.stopPropagation(); agregarDesdeCard(this.closest('.card-prod'))">+</button>
+                        <button th:if="${agotado}" class="btn-add btn-add-disabled" disabled>×</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── GATILLO DEL CARRITO FLOTANTE ── -->
+<button class="btn-carrito-float" id="btnCarrito" onclick="abrirCarrito()">
+    <i class="bi bi-bag-fill"></i>
+    Ver mi pedido
+    <span class="badge-count" id="badgeCount">0</span>
+</button>
+
+<!-- ── MODAL DE CHECKOUT (ESTRUCTURA DE ARQUITECTURA PURA) ── -->
+<div class="modal-carrito" id="modalCarrito" aria-hidden="true">
+    <div class="premium-modal">
+
+        <!-- Cabecera del Flujo -->
+        <div class="modal-header">
+            <div class="modal-header-top">
+                <h5 class="modal-title">
+                    <i class="bi bi-bag-check-fill text-gold"></i> Tu Pedido
+                </h5>
+                <button type="button" class="close-modal-x" onclick="document.getElementById('modalCarrito').classList.remove('show')">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <!-- Barra Contable del Wizard -->
+            <div class="jama-steps-indicator">
+                <div class="step-progress-line">
+                    <div id="stepProgressBar" class="progress-fill"></div>
+                </div>
+                <div class="jama-step-node active" id="indicator-step-1">
+                    <span class="node-num"><i class="bi bi-basket3-fill"></i></span>
+                    <span class="node-txt">Datos</span>
+                </div>
+                <div class="jama-step-node" id="indicator-step-2">
+                    <span class="node-num"><i class="bi bi-box-seam-fill"></i></span>
+                    <span class="node-txt">Entrega</span>
+                </div>
+                <div class="jama-step-node" id="indicator-step-3">
+                    <span class="node-num"><i class="bi bi-receipt-cutoff"></i></span>
+                    <span class="node-txt">Fiscal</span>
+                </div>
+                <div class="jama-step-node" id="indicator-step-4">
+                    <span class="node-num"><i class="bi bi-wallet2"></i></span>
+                    <span class="node-txt">Pago</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cuerpo Deslizable Interno -->
+        <div class="modal-body custom-scroll">
+
+            <!-- PASO 1: REVISIÓN DE ARTÍCULOS -->
+            <div class="jama-checkout-step step-fade-in active" id="checkout-step-1">
+                <h6 class="step-section-title"><i class="bi bi-card-checklist me-2"></i>Revisión de Consumos</h6>
+                <div class="ticket-receipt">
+                    <div id="listaCarrito" class="ticket-items"></div>
+                    <div class="ticket-total">
+                        <span class="total-label">Total a Pagar</span>
+                        <span class="total-monto">S/ <span id="totalCarrito">0.00</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 2: LOGÍSTICA DE REPARTO -->
+            <div class="jama-checkout-step step-fade-in d-none" id="checkout-step-2">
+                <h6 class="step-section-title"><i class="bi bi-truck me-2"></i>Logística de Despacho</h6>
+                <div class="form-group-premium">
+                    <label><i class="bi bi-shop me-1"></i> ¿Cómo lo recibes? *</label>
+
+                    <div class="selection-grid">
+                        <div class="btn-selection-premium" id="btnRecoger" role="button" onclick="seleccionarTipo('RECOGER')">
+                            <div class="esfera-logistica e-l-1"></div>
+                            <div class="esfera-logistica e-l-2"></div>
+                            <div class="selection-premium-content">
+                                <span class="icon-wrap-premium bg-local"><i class="bi bi-bag-heart-fill"></i></span>
+                                <span class="title-premium">Recoger</span>
+                                <span class="text-muted-premium">En el local</span>
+                            </div>
+                        </div>
+                        <div class="btn-selection-premium" id="btnDelivery" role="button" onclick="seleccionarTipo('DELIVERY')">
+                            <div class="esfera-logistica e-l-1"></div>
+                            <div class="esfera-logistica e-l-2"></div>
+                            <div class="selection-premium-content">
+                                <span class="icon-wrap-premium bg-envio"><i class="bi bi-bicycle"></i></span>
+                                <span class="title-premium">Delivery</span>
+                                <span class="text-muted-premium">A tu puerta</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sección de Dirección Blindada y Estilizada -->
+                    <div id="seccionDireccion" class="direccion-panel-dinamico">
+                        <label class="label-direccion-premium"><i class="bi bi-geo-alt-fill me-1"></i> ¿Dónde te entregamos? *</label>
+                        <div class="dir-input-premium">
+                            <i class="bi bi-search search-icon"></i>
+                            <input type="text" id="direccionCliente" placeholder="Busca tu calle, avenida o barrio en Chiclayo..." autocomplete="off">
+                        </div>
+                        <ul id="sugerencias-dir" class="sugerencias-lista"></ul>
+
+                        <div class="map-container-premium">
+                            <div class="map-overlay-tip"><i class="bi bi-cursor-fill me-1"></i>Toca el mapa para exactitud</div>
+                            <div id="mapa-pedido"></div>
+                        </div>
+                        <input type="hidden" id="latCliente">
+                        <input type="hidden" id="lngCliente">
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 3: CONTROL FISCAL COMPROBANTES -->
+            <div class="jama-checkout-step step-fade-in d-none" id="checkout-step-3">
+                <h6 class="step-section-title"><i class="bi bi-file-earmark-text-fill me-2"></i>Información Fiscal</h6>
+                <div class="form-row-split">
+                    <div class="form-group-premium">
+                        <label for="preferenciaComprobante">Comprobante</label>
+                        <select name="preferenciaComprobante" id="preferenciaComprobante" class="input-premium custom-select-box" onchange="conmutarTipoDocumento()">
+                            <option value="BOLETA">Boleta</option>
+                            <option value="FACTURA">Factura</option>
+                        </select>
+                    </div>
+                    <div class="form-group-premium">
+                        <label id="labelDocumento" for="numeroDocumento"><i class="bi bi-card-id me-1"></i>DNI (Opcional):</label>
+                        <input type="text" id="numeroDocumento" class="input-premium" placeholder="Ej: 74589632" maxlength="8">
+                    </div>
+                </div>
+
+                <div class="form-group-premium mt-3">
+                    <label for="nombreCliente"><i class="bi bi-person-badge me-1"></i> Nombre Completo / Razón Social *</label>
+                    <input type="text" id="nombreCliente" class="input-premium" placeholder="Ej: JUAN PEREZ" required>
+                </div>
+
+                <div class="form-group-premium mt-3">
+                    <label for="clienteCorreo"><i class="bi bi-envelope-at-fill me-1"></i> Correo Electrónico (Opcional)</label>
+                    <input type="email" id="clienteCorreo" class="input-premium" placeholder="ejemplo@correo.com">
+                </div>
+            </div>
+
+            <!-- PASO 4: INTERFAZ BANCARIA DE PAGOS -->
+            <div class="jama-checkout-step step-fade-in d-none" id="checkout-step-4">
+                <h6 class="step-section-title"><i class="bi bi-shield-lock-fill me-2"></i>Liquidación Contable</h6>
+
+                <div class="form-group-premium">
+                    <label><i class="bi bi-phone-vibrate-fill me-1"></i> Seleccione Billetera o Método de Pago *</label>
+
+                    <div class="selection-grid pago-grid-tres">
+                        <div class="btn-pago-cliente-card active" id="btnYape" role="button" onclick="seleccionarPago('YAPE')">
+                            <div class="esfera-bancaria e-b-1"></div>
+                            <div class="esfera-bancaria e-b-2"></div>
+                            <div class="pago-cliente-content">
+                                <div class="pago-cliente-logo-box">
+                                    <img th:src="@{/img/Yape.png}" alt="Yape" class="pago-cliente-logo"/>
+                                </div>
+                                <span class="pago-cliente-title">Yape</span>
+                            </div>
+                        </div>
+
+                        <div class="btn-pago-cliente-card" id="btnPlin" role="button" onclick="seleccionarPago('PLIN')">
+                            <div class="esfera-bancaria e-b-1"></div>
+                            <div class="esfera-bancaria e-b-2"></div>
+                            <div class="pago-cliente-content">
+                                <div class="pago-cliente-logo-box">
+                                    <img th:src="@{/img/Plin.png}" alt="Plin" class="pago-cliente-logo"/>
+                                </div>
+                                <span class="pago-cliente-title">Plin</span>
+                            </div>
+                        </div>
+
+                        <div class="btn-pago-cliente-card" id="btnTransferencia" role="button" onclick="seleccionarPago('TRANSFERENCIA')">
+                            <div class="esfera-bancaria e-b-1"></div>
+                            <div class="esfera-bancaria e-b-2"></div>
+                            <div class="pago-cliente-content">
+                                <div class="pago-cliente-logo-box">
+                                    <i class="bi bi-bank text-white fs-3"></i>
+                                </div>
+                                <span class="pago-cliente-title">Transferencia</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="seccionYape" style="display:none;" class="payment-instruction-box animate__animated animate__fadeIn">
+                        <div class="payment-header yape-text">
+                            <img src="https://res.cloudinary.com/dyjnbddit/image/upload/v1781449212/QR_vezbxv.png" alt="QR Yape" class="qr-thumbnail-premium">
+                            <div>
+                                <span class="d-block small text-muted">Yapea al titular de La Jama</span>
+                                <strong class="fs-5 text-dark">971 566 216</strong>
+                            </div>
+                        </div>
+                        <div class="uiverse-wrapper-panel max-width-voucher-panel">
+                            <div class="folder">
+                                <div class="front-side"><div class="tip"></div><div class="cover"></div></div>
+                                <div class="custom-paper-inside">
+                                    <img id="imgPreviaYape" src="" class="folder-preview-img" alt="Vista Previa" style="display:none;">
+                                </div>
+                                <div class="back-side cover"></div>
+                            </div>
+                            <label class="custom-file-upload">
+                                <input type="file" id="yapeImgInput" accept="image/jpeg, image/png, image/webp"/>
+                                <i class="bi bi-cloud-arrow-up-fill me-1"></i> Seleccionar Voucher Yape
+                            </label>
+                            <div id="loaderYape" class="loader-escaneo-jama">
+                                <div class="text-estado"><i class="bi bi-eye-fill"></i> Analizando legitimidad del voucher...</div>
+                                <div class="loading"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="seccionPlin" style="display:none;" class="payment-instruction-box animate__animated animate__fadeIn">
+                        <div class="payment-header plin-text">
+                            <img src="https://res.cloudinary.com/dyjnbddit/image/upload/v1781449329/QRPlin_s9ycit.png" alt="QR Plin" class="qr-thumbnail-premium">
+                            <div>
+                                <span class="d-block small text-muted">Plinea al número comercial</span>
+                                <strong class="fs-5 text-dark">999 888 777</strong>
+                            </div>
+                        </div>
+                        <div class="uiverse-wrapper-panel max-width-voucher-panel">
+                            <div class="folder">
+                                <div class="front-side"><div class="tip"></div><div class="cover"></div></div>
+                                <div class="custom-paper-inside">
+                                    <img id="imgPreviaPlin" src="" class="folder-preview-img" alt="Vista Previa" style="display:none;">
+                                </div>
+                                <div class="back-side cover"></div>
+                            </div>
+                            <label class="custom-file-upload">
+                                <input type="file" id="plinImgInput" accept="image/jpeg, image/png, image/webp"/>
+                                <i class="bi bi-cloud-arrow-up-fill me-1"></i> Seleccionar Voucher Plin
+                            </label>
+                            <div id="loaderPlin" class="loader-escaneo-jama">
+                                <div class="text-estado"><i class="bi bi-eye-fill"></i> Analizando legitimidad del voucher...</div>
+                                <div class="loading"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="seccionTransferencia" style="display:none;" class="payment-instruction-box animate__animated animate__fadeIn">
+                        <div class="payment-header bcp-text">
+                            <div class="qr-thumbnail-premium bg-dark text-white d-flex align-items-center justify-content-center" style="width:60px; height:60px; border-radius:12px;">
+                                <i class="bi bi-bank fs-3"></i>
+                            </div>
+                            <div>
+                                <span class="d-block small text-muted">Cuenta Corriente BCP — La Jama S.A.C.</span>
+                                <strong class="fs-6 text-dark d-block">CCI: 002-1911987654321098-54</strong>
+                                <strong class="small text-muted">Cuenta Fija: 191-98765432-1-09</strong>
+                            </div>
+                        </div>
+                        <div class="uiverse-wrapper-panel max-width-voucher-panel">
+                            <div class="folder">
+                                <div class="front-side"><div class="tip"></div><div class="cover"></div></div>
+                                <div class="custom-paper-inside">
+                                    <img id="imgPreviaTransferencia" src="" class="folder-preview-img" alt="Vista Previa" style="display:none;">
+                                </div>
+                                <div class="back-side cover"></div>
+                            </div>
+                            <label class="custom-file-upload">
+                                <input type="file" id="transferenciaImgInput" accept="image/jpeg, image/png, image/webp"/>
+                                <i class="bi bi-cloud-arrow-up-fill me-1"></i> Seleccionar Constancia BCP
+                            </label>
+                            <div id="loaderTransferencia" class="loader-escaneo-jama">
+                                <div class="text-estado"><i class="bi bi-eye-fill"></i> Analizando transferencia bancaria...</div>
+                                <div class="loading"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- PIE DE NAVEGACIÓN MODAL -->
+        <div class="modal-footer premium-footer">
+            <button type="button" class="btn-action btn-outline-secondary d-none" id="btnAtrasStep" onclick="navegarEtapa(-1)">
+                <i class="bi bi-arrow-left"></i> Atrás
+            </button>
+            <button type="button" class="btn-action btn-ghost" id="btnCancelarCheckout" onclick="document.getElementById('modalCarrito').classList.remove('show')">
+                Seguir Viendo
+            </button>
+            <button type="button" class="btn-action btn-primary-jama" id="btnSiguienteStep" onclick="navegarEtapa(1)">
+                Siguiente <i class="bi bi-arrow-right"></i>
+            </button>
+            <button type="button" class="btn-action btn-whatsapp d-none" id="btnFinalizarPedido" onclick="enviarPedido()" disabled style="opacity: 0.4; pointer-events: none;">
+                <i class="bi bi-whatsapp"></i> Confirmar Pedido
+            </button>
+        </div>
+
+    </div>
+</div>
+</div>
+
+<!-- ── FOOTER DE PÁGINA COMERCIAL ── -->
+<div class="footer-carta">
+    <div class="f-logo">La Jama</div>
+    <div class="f-sub">COMIDA PERUANA · CHICLAYO</div>
+    <div class="f-dato"><i class="bi bi-geo-alt-fill me-1"></i>Calle Amarantos 091, Santa Victoria</div>
+    <div class="f-dato"><i class="bi bi-whatsapp me-1"></i>+51 955 563 199</div>
+</div>
+<script th:src="@{/js/validation.js}"></script>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script th:src="@{/js/utiles-comunes.js}"></script>
+
+<script type="module">
+    import { agregarDesdeCard, removerItem, renderCarrito, actualizarUI } from '/js/carta/core-cart.js';
+    import { estadoCheckout, navegarEtapa } from '/js/carta/checkout-wizard.js';
+    import { iniciarMapa, enviarPedidoFinal } from '/js/carta/api-client.js';
+    import { inicializarAutocompletadoDocumentos } from '/js/carta/document-listener.js';
+    import { procesarYVerificarVoucher } from '/js/carta/voucher-validator.js';
+
+    // ── 📱 ADAPTADORES DINÁMICOS PARA ENTORNO MODULAR (ANTI-ASÍNCRONO) ──
+    document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById('yapeImgInput')?.addEventListener('change', (e) => {
+            procesarYVerificarVoucher(e, 'YAPE');
+        });
+
+        document.getElementById('plinImgInput')?.addEventListener('change', (e) => {
+            procesarYVerificarVoucher(e, 'PLIN');
+        });
+
+        document.getElementById('transferenciaImgInput')?.addEventListener('change', (e) => {
+            procesarYVerificarVoucher(e, 'TRANSFERENCIA');
+        });
+    });
+
+    // Mapeo global de seguridad
+    window.procesarYVerificarVoucher = procesarYVerificarVoucher;
+    window.agregarDesdeCard = agregarDesdeCard;
+    window.removerItemCarta = removerItem;
+
+    window.abrirCarrito = () => {
+        renderCarrito();
+        window.navegarEtapa(0);
+        document.getElementById('modalCarrito').classList.add('show');
+    };
+
+    window.navegarEtapa = (dir) => navegarEtapa(dir, iniciarMapa);
+
+    window.seleccionarTipo = (tipo) => {
+        estadoCheckout.tipoEntrega = (tipo === 'RECOGER') ? 'LLEVAR' : 'DELIVERY';
+        document.getElementById('btnRecoger').className = 'btn-selection-premium' + (tipo === 'RECOGER' ? ' activo' : '');
+        document.getElementById('btnDelivery').className = 'btn-selection-premium' + (tipo === 'DELIVERY' ? ' activo' : '');
+        document.getElementById('seccionDireccion').style.display = tipo === 'DELIVERY' ? 'block' : 'none';
+        if (tipo === 'DELIVERY' && estadoCheckout.etapa === 2) iniciarMapa();
+    };
+
+    window.seleccionarPago = (metodo) => {
+        estadoCheckout.metodoPago = metodo;
+        document.getElementById('btnYape').classList.toggle('activo', metodo === 'YAPE');
+        document.getElementById('btnPlin').classList.toggle('activo', metodo === 'PLIN');
+        document.getElementById('btnTransferencia').classList.toggle('activo', metodo === 'TRANSFERENCIA');
+
+        document.getElementById('seccionYape').style.display = metodo === 'YAPE' ? 'block' : 'none';
+        document.getElementById('seccionPlin').style.display = metodo === 'PLIN' ? 'block' : 'none';
+        document.getElementById('seccionTransferencia').style.display = metodo === 'TRANSFERENCIA' ? 'block' : 'none';
+
+        const btnFinalizar = document.getElementById('btnFinalizarPedido');
+        if (btnFinalizar) {
+            const refGlobal = window.estadoCheckout || {};
+
+            // Si el cliente regresa a la pestaña que ya aprobó con éxito, se reactiva el botón
+            if (refGlobal.codigoOperacion && refGlobal.codigoOperacion !== "PENDIENTE" && refGlobal.metodoPago === metodo) {
+                btnFinalizar.disabled = false;
+                btnFinalizar.style.opacity = "1";
+                btnFinalizar.style.pointerEvents = "auto";
+            } else {
+                // De lo contrario se mantiene bloqueado obligando a subir el voucher correspondiente
+                btnFinalizar.disabled = true;
+                btnFinalizar.style.opacity = "0.4";
+                btnFinalizar.style.pointerEvents = "none";
+            }
+        }
+    };
+
+    // 🎯 SINOPSIS DE FIRMA CORREGIDA: Sincroniza con onclick="enviarPedido()" de tu modal-footer
+    window.enviarPedido = enviarPedidoFinal;
+
+    window.conmutarTipoDocumento = () => {
+        const tipo = document.getElementById('preferenciaComprobante').value;
+        const label = document.getElementById('labelDocumento');
+        const input = document.getElementById('numeroDocumento');
+        const inputNombre = document.getElementById('nombreCliente');
+
+        inputNombre.value = "";
+        inputNombre.removeAttribute("readonly");
+        input.value = "";
+
+        if (tipo === 'FACTURA') {
+            label.innerHTML = '<i class="bi bi-building me-1"></i>RUC:';
+            input.placeholder = 'Ej: 20601234567';
+            input.setAttribute('maxlength', '11');
+        } else {
+            label.innerHTML = '<i class="bi bi-card-id me-1"></i>DNI (Opcional):';
+            input.placeholder = 'Ej: 74589632';
+            input.setAttribute('maxlength', '8');
+        }
+    };
+
+    inicializarAutocompletadoDocumentos();
+    actualizarUI();
+</script>
+</body>
+</html>

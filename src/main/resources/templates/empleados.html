@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-gestion :: layout(title='Empleados', content=~{::#contenido}, modals=~{::#modales}, js='/js/empleados.js')}">
+<body>
+
+<div id="contenido">
+    <div class="card rounded-lg card-color1">
+        <div class="card-body p-4">
+
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                <h1 class="card-title h5 fw-bold">
+                    <i class="bi bi-person-badge-fill me-2" style="color: var(--lajama-skin);"></i> Control de Empleados y Planillas
+                </h1>
+
+                <div class="d-flex align-items-center gap-3 w-sm-100 justify-content-end">
+                    <select id="filtroTurno" class="form-select filtro-jama" style="width:auto; cursor: pointer;">
+                        <option value="">Todos los turnos</option>
+                        <option value="DIA">Turno Día</option>
+                        <option value="NOCHE">Turno Noche</option>
+                    </select>
+
+                    <button type="button" id="btnNuevoRegistro" class="btn-jama-kinetic">
+                        <i class="bi bi-person-plus-fill"></i>
+                        <span>Nuevo Registro</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive-jama">
+                <table id="tabla" class="table table-jama responsive" style="width: 100%">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Apellidos y Nombres</th>
+                        <th>DNI</th>
+                        <th>Cargo</th>
+                        <th>Turno Activo</th>
+                        <th>Estado</th>
+                        <th class="text-center" style="width: 150px;">Acciones</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div id="modales">
+    <div class="modal fade" id="modal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Agregar Empleado</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="form" novalidate>
+                    <div class="modal-body p-4">
+                        <input type="hidden" id="id" name="id" />
+
+                        <div class="row g-3">
+
+                            <div class="col-md-6">
+                                <label for="id_usuario" class="form-label fw-semibold small text-dark">Cuenta de Usuario Vinculada</label>
+                                <select id="id_usuario" name="usuario" class="form-select">
+                                    <option value="">-- Sin acceso (Solo personal de planilla) --</option>
+                                </select>
+                                <div id="id_usuario-error" class="invalid-feedback d-block fw-semibold" style="font-size: 0.75rem;"></div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="id_cargo" class="form-label fw-semibold small text-dark">Cargo / Función Operativa</label>
+                                <select id="id_cargo" name="cargo" class="form-select" required>
+                                    <option value="">Cargando cargos de La Jama...</option>
+                                </select>
+                                <div id="id_cargo-error" class="invalid-feedback d-block fw-semibold" style="font-size: 0.75rem;"></div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="nombre" class="form-label fw-semibold small text-dark">Nombres del Colaborador</label>
+                                <input id="nombre" name="nombre" type="text" class="form-control" placeholder="Ej. Carlos" maxlength="50" required />
+                                <div id="nombre-error" class="invalid-feedback d-block fw-semibold" style="font-size: 0.75rem;"></div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="apellido" class="form-label fw-semibold small text-dark">Apellidos Completos</label>
+                                <input id="apellido" name="apellido" type="text" class="form-control" placeholder="Ej. Mendoza" maxlength="50" required />
+                                <div id="apellido-error" class="invalid-feedback d-block fw-semibold" style="font-size: 0.75rem;"></div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="dni" class="form-label fw-semibold small text-dark">Documento de Identidad (DNI)</label>
+                                <input id="dni" name="dni" type="text" class="form-control" maxlength="8" placeholder="Escriba los 8 dígitos" required />
+                                <div id="dni-error" class="invalid-feedback d-block fw-semibold" style="font-size: 0.75rem;"></div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="telefono" class="form-label fw-semibold small text-dark">Número de Teléfono Celular</label>
+                                <input id="telefono" name="telefono" type="text" class="form-control" maxlength="9" placeholder="Ej. 999111222" required />
+                                <div id="telefono-error" class="invalid-feedback d-block fw-semibold" style="font-size: 0.75rem;"></div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="turno" class="form-label fw-semibold small text-dark">Turno Laboral Asignado</label>
+                                <select id="turno" name="turno" class="form-select" required>
+                                    <option value="DIA">Turno Día (08:00 - 18:00)</option>
+                                    <option value="NOCHE">Turno Noche (19:00 - 07:00)</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="fechaIngreso" class="form-label fw-semibold small text-dark">Fecha de Ingreso de Labores</label>
+                                <input id="fechaIngreso" name="fechaIngreso" type="date" class="form-control" required />
+                                <div id="fechaIngreso-error" class="invalid-feedback d-block fw-semibold" style="font-size: 0.75rem;"></div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 px-4 pb-4">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar Empleado</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script th:src="@{/js/empleados/tabla.js}"></script>
+    <script th:src="@{/js/empleados/crud.js}"></script>
+</body>
+</html>

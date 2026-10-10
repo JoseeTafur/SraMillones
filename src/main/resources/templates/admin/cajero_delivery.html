@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-gestion :: layout(title='Terminal Pedidos - Caja Directa', content=~{::#contenido}, modals=~{::#modales}, js='/js/delivery-cajero.js')}">
+<head>
+</head>
+<body>
+
+<div id="contenido">
+    <link rel="stylesheet" th:href="@{/css/delivery-cajero.css}">
+    <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
+    <link href="https://unpkg.com/leaflet-geosearch@3.11.0/dist/geosearch.css" rel="stylesheet"/>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-geosearch@3.11.0/dist/bundle.min.js"></script>
+
+    <div class="jama-checkout-main-container">
+
+        <div class="checkout-master-header">
+            <div class="jama-steps-indicator">
+                <div class="jama-step-node paso-activo" id="indicator-step-1">1. Selección Carta</div>
+                <div class="jama-step-node paso-pendiente" id="indicator-step-2">2. Despacho Logístico</div>
+                <div class="jama-step-node paso-pendiente" id="indicator-step-3">3. Control Fiscal</div>
+                <div class="jama-step-node paso-pendiente" id="indicator-step-4">4. Cierre de Caja</div>
+            </div>
+        </div>
+
+        <div class="checkout-master-body">
+
+            <div class="checkout-left-pane">
+
+                <div class="jama-checkout-step" id="checkout-step-1">
+                    <div class="jama-modulo-header-inline">
+                        <span class="jama-step-title">Catálogo de Platos y Bebidas General</span>
+
+                        <form class="form" onsubmit="return false;">
+                            <button type="button">
+                                <svg width="17" height="16" fill="none" xmlns="http://www.w3.org/2000/svg" role="img">
+                                    <path d="M7.667 12.667A5.333 5.333 0 107.667 2a5.333 5.333 0 000 10.667zM14.334 14l-2.9-2.9" stroke="currentColor" stroke-width="1.333" stroke-linecap="round" stroke-linejoin="round"></path>
+                                </svg>
+                            </button>
+                            <input class="input" id="inputBuscar" placeholder="Buscar plato..." required="" type="text" autocomplete="off">
+                            <button class="reset" type="reset">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="grid-productos-scroll bg-crema-jama">
+                        <div class="jama-productos-grid-unificado">
+
+                            <div class="jama-card-cuadrada"
+                                 th:each="p : ${productos}"
+                                 th:with="agotado=${productosAgotados.get(p.id)}"
+                                 th:id="'prod-' + ${p.id}"
+                                 th:data-id="${p.id}"
+                                 th:data-nombre="${p.nombre}"
+                                 th:data-precio="${p.precio}"
+                                 th:classappend="${agotado} ? 'producto-agotado' : ''"
+                                 th:onclick="${agotado} ? 'Swal.fire({icon: `error`, title: `Agotado`, text: `No quedan porciones.`, confirmButtonColor: `#1B3A2C`})' : 'agregarDesdeCard(this)'">
+
+                                <div class="card__shine"></div>
+                                <div class="card__glow"></div>
+
+                                <div class="card__content">
+                                    <div th:if="${agotado}" class="card__badge bg-danger text-white">AGOTADO</div>
+                                    <div th:unless="${agotado}" class="card__badge" th:text="${p.categoria != null ? p.categoria.nombre : 'La Jama'}">Plato</div>
+
+                                    <div class="card__image">
+                                        <img th:if="${p.imagen != null and p.imagen != ''}" th:src="${p.imagen}" th:alt="${p.nombre}" loading="lazy"/>
+                                        <div th:unless="${p.imagen != null and p.imagen != ''}" class="jama-placeholder-avatar-cuadrado">
+                                            <i class="bi bi-egg-fried"></i>
+                                        </div>
+                                    </div>
+
+                                    <div class="card__text" th:style="${agotado} ? 'opacity: 0.5;' : ''">
+                                        <p class="card__title" th:text="${p.nombre}">Nombre del Plato</p>
+                                    </div>
+
+                                    <div class="card__footer" th:style="${agotado} ? 'opacity: 0.5;' : ''">
+                                        <div class="card__price" th:text="'S/ ' + ${#numbers.formatDecimal(p.precio, 1, 2)}">S/ 0.00</div>
+                                        <div class="card__button">
+                                            <svg height="14" width="14" viewBox="0 0 24 24">
+                                                <path stroke-width="3" stroke="currentColor" d="M4 12H20M12 4V20" fill="currentColor"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="jama-checkout-step jama-hidden" id="checkout-step-2">
+                    <h6 class="jama-step-section-title"><i class="bi bi-geo-fill"></i> Asignación de Cobertura Geográfica</h6>
+                    <div class="jama-flex-col-gap">
+                        <div class="jama-tabs-wrapper">
+                            <button id="btnRecoger" onclick="seleccionarTipo('RECOGER')" class="jama-btn-tab" type="button">🏪 Recojo Local</button>
+                            <button id="btnDelivery" onclick="seleccionarTipo('DELIVERY')" class="jama-btn-tab active" type="button">🏍️ Delivery</button>
+                        </div>
+                        <div id="seccionDireccion" class="jama-flex-col-gap animate__animated animate__fadeIn">
+                            <div class="jama-relative-box">
+                                <label class="jama-control-label">Dirección Física de Envío *</label>
+
+                                <form class="form w-100" onsubmit="return false;">
+                                    <button type="button">
+                                        <i class="bi bi-geo-alt" style="font-size: 0.95rem;"></i>
+                                    </button>
+                                    <input class="input" id="direccionCliente" placeholder="Calle, número, urbanización o barrio..." required="" type="text" autocomplete="off">
+                                    <button class="reset" type="reset">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </form>
+
+                                <ul id="sugerencias-dir" class="sugerencias-lista premium-shadow"></ul>
+                            </div>
+                            <input id="latCliente" type="hidden">
+                            <input id="lngCliente" type="hidden">
+                            <div id="mapa-pedido" class="jama-mapa-canvas"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="jama-checkout-step jama-hidden" id="checkout-step-3">
+                    <h6 class="jama-step-section-title"><i class="bi bi-file-earmark-text-fill"></i> Parámetros de Facturación Electrónica</h6>
+                    <div class="jama-flex-col-gap max-w-fiscal">
+                        <div>
+                            <label class="jama-control-label">Preferencia de Comprobante (CPE)</label>
+                            <select id="preferenciaComprobante" class="jama-input-text" onchange="conmutarTipoDocumento()">
+                                <option value="BOLETA">Boleta de Venta Electrónica</option>
+                                <option value="FACTURA">Factura Electrónica</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="jama-control-label" id="labelDocumento">DNI (Opcional)</label>
+
+                            <form class="form w-100" onsubmit="return false;" style="position: relative;">
+                                <button type="button">
+                                    <i class="bi bi-card-text" style="font-size: 0.95rem;"></i>
+                                </button>
+                                <input class="input" id="numeroDocumento" placeholder="Ej. 74589632" required="" type="text" maxlength="8" autocomplete="off">
+
+                                <span id="spinner-doc" style="position: absolute; right: 40px; top: 50%; transform: translateY(-50%); display: none;">
+            <i class="bi bi-arrow-repeat animate-spin text-success" style="font-size: 1.1rem; display: inline-block; animation: spin 1s linear infinite;"></i>
+        </span>
+
+                                <button class="reset" type="reset">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="jama-checkout-step jama-hidden" id="checkout-step-4">
+                    <h6 class="jama-step-section-title"><i class="bi bi-cash-coin"></i> Liquidación de Medios de Pago</h6>
+                    <div class="jama-flex-col-gap max-w-pago">
+                        <div>
+                            <label class="jama-control-label">Canal Bancario Validado</label>
+                            <div class="jama-grid-pagos-premium">
+
+                                <button type="button" class="btn-pago-card-selector selector-deshabilitado" id="btnPagoEfectivo" onclick="seleccionarPago('EFECTIVO')" disabled>
+                                    <div class="esfera-diseno-pago e-p-1"></div>
+                                    <div class="esfera-diseno-pago e-p-2"></div>
+                                    <div class="pago-card-content">
+                                        <div class="pago-card-icon-box">
+                                            <img th:src="@{/img/Efectivo.png}" alt="Efectivo" class="pago-brand-logo"/>
+                                        </div>
+                                        <span class="pago-card-title">Efectivo Gaveta</span>
+                                    </div>
+                                </button>
+
+                                <button type="button" class="btn-pago-card-selector active" id="btnPagoYape" onclick="seleccionarPago('YAPE')">
+                                    <div class="esfera-diseno-pago e-p-1"></div>
+                                    <div class="esfera-diseno-pago e-p-2"></div>
+                                    <div class="pago-card-content">
+                                        <div class="pago-card-icon-box">
+                                            <img th:src="@{/img/Yape.png}" alt="Yape" class="pago-brand-logo"/>
+                                        </div>
+                                        <span class="pago-card-title">Yape</span>
+                                    </div>
+                                </button>
+
+                                <button type="button" class="btn-pago-card-selector" id="btnPagoPlin" onclick="seleccionarPago('PLIN')">
+                                    <div class="esfera-diseno-pago e-p-1"></div>
+                                    <div class="esfera-diseno-pago e-p-2"></div>
+                                    <div class="pago-card-content">
+                                        <div class="pago-card-icon-box">
+                                            <img th:src="@{/img/Plin.png}" alt="Plin" class="pago-brand-logo"/>
+                                        </div>
+                                        <span class="pago-card-title">Plin</span>
+                                    </div>
+                                </button>
+
+                                <button type="button" class="btn-pago-card-selector" id="btnPagoTarjeta" onclick="seleccionarPago('TARJETA')">
+                                    <div class="esfera-diseno-pago e-p-1"></div>
+                                    <div class="esfera-diseno-pago e-p-2"></div>
+                                    <div class="pago-card-content">
+                                        <div class="pago-card-icon-box">
+                                            <img th:src="@{/img/Tarjeta.png}" alt="Tarjeta" class="pago-brand-logo"/>
+                                        </div>
+                                        <span class="pago-card-title">Tarjeta</span>
+                                    </div>
+                                </button>
+
+                            </div>
+                        </div>
+
+                        <div id="panelVuelto" class="jama-panel-vuelto jama-hidden">
+                            <div class="jama-flex-row-between">
+                                <div class="jama-input-vuelto-box">
+                                    <label class="jama-vuelto-sublabel">Monto Recibido:</label>
+                                    <input class="jama-input-text" id="inputPagaCon" placeholder="0.00" type="number" step="0.1" oninput="calcularVuelto()">
+                                </div>
+                                <div class="jama-text-right">
+                                    <span class="jama-vuelto-sublabel monospace-font">Vuelto a entregar:</span>
+                                    <strong class="jama-vuelto-monto">S/ <span id="lblVuelto">0.00</span></strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="panelMensajePagoDigital" class="jama-alert-info-box">
+                            ✨ Transacción liquidada de forma conforme por el cajero de turno. No requiere validación de voucher posterior.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="checkout-right-pane">
+                <div class="jama-right-top-content">
+                    <div class="comanda-pre-ticket">
+                        <h5 class="carrito-titulo">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            Pre-Ticket de Venta
+                        </h5>
+                        <div class="jama-tabla-contenedor">
+                            <table class="jama-table-comanda">
+                                <tbody id="listaCarrito"></tbody>
+                            </table>
+                        </div>
+                        <div class="jama-total-orden-row">
+                            <span class="jama-total-label">TOTAL ORDEN:</span>
+                            <span class="jama-total-monto">S/ <span id="totalCarrito">0.00</span></span>
+                        </div>
+                    </div>
+
+                    <div class="pre-ticket-inputs-reflection">
+                        <div>
+                            <label class="jama-control-label-sm">Cliente / Razón Social *</label>
+
+                            <form class="form w-100 bg-white" onsubmit="return false;">
+                                <button type="button">
+                                    <i class="bi bi-person" style="font-size: 0.95rem;"></i>
+                                </button>
+                                <input class="input" id="cliente_nombre" placeholder="Nombre dictado..." required="" type="text" autocomplete="off">
+                                <button class="reset" type="reset">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+                        <div>
+                            <label class="jama-control-label-sm">Correo del Receptor</label>
+
+                            <form class="form w-100 bg-white" onsubmit="return false;">
+                                <button type="button">
+                                    <i class="bi bi-envelope" style="font-size: 0.95rem;"></i>
+                                </button>
+                                <input class="input" id="cliente_correo" placeholder="ejemplo@correo.com" required="" type="email" autocomplete="off">
+                                <button class="reset" type="reset">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="terminal-actions-footer">
+                    <button type="button" class="jama-btn-action btn-atras jama-hidden" id="btnAtrasStep" onclick="navegarEtapa(-1)">
+                        ← Volver
+                    </button>
+                    <button type="button" class="jama-btn-action btn-siguiente" id="btnSiguienteStep" onclick="navegarEtapa(1)">
+                        Avanzar Paso →
+                    </button>
+                    <button type="button" class="jama-btn-action btn-finalizar jama-hidden" id="btnFinalizarPedido" onclick="enviarPedidoFinal()">
+                        Emitir Nota y CPE
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div id="modales"></div>
+    <script th:src="@{/js/delivery-cajero/ui.js}"></script>
+    <script th:src="@{/js/delivery-cajero/logistica.js}"></script>
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-gestion :: layout(title='Gestión de Reservas', content=~{::#contenido}, modals=~{::#modales}, js='/js/reservas.js')}">
+<body>
+
+<div id="contenido">
+    <link class="calendario-css" rel="stylesheet" th:href="@{/css/reservas.css}">
+    <link class="calendario-css" rel="stylesheet" th:href="@{/css/calendario.css}">
+
+    <div class="card-jama-main">
+        <div class="tablero-header">
+            <h1 class="tablero-title">
+                <i class="bi bi-calendar3 icon-accent"></i> Libro de Reservas
+            </h1>
+            <button type="button" id="btnNuevoRegistro" class="btn-jama-kinetic">
+                <i class="bi bi-calendar-plus"></i>
+                <span>Nuevo Registro</span>
+            </button>
+        </div>
+
+        <div class="table-container-fluid">
+            <table id="tablaReservas" class="table-jama">
+                <thead>
+                <tr>
+                    <th style="width: 5%;">ID</th>
+                    <th style="width: 20%;">Cliente</th>
+                    <th style="width: 10%;">Teléfono</th>
+                    <th style="width: 8%;">Personas</th>
+                    <th style="width: 15%;">Mesas Estimadas</th>
+                    <th style="width: 15%;">Fecha y Hora</th>
+                    <th style="width: 10%;">Estado</th>
+                    <th style="width: 12%;">Observación</th>
+                    <th class="text-center" style="width: 15%;">Acciones</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="modales">
+
+    <div class="modal fade" id="modalReserva" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" style="max-width: 820px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-calendar-check-fill text-jama-gold me-2"></i> Agregar Reserva
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="limpiarModal()"></button>
+                </div>
+
+                <form id="form" name="formReserva" novalidate>
+                    <div class="modal-body p-4">
+                        <div class="row g-3">
+
+                            <div class="col-md-6 d-flex flex-column gap-2">
+                                <div class="jama-form-group">
+                                    <label for="rNombre" class="form-label">Nombre del Cliente</label>
+                                    <input type="text" id="rNombre" name="nombreCliente" class="form-control" placeholder="Solo letras" maxlength="30" required />
+                                    <div id="rNombre-error" class="invalid-feedback d-block fw-semibold" style="font-size: 0.75rem;"></div>
+                                </div>
+
+                                <div class="jama-form-group">
+                                    <label for="rTelefono" class="form-label">Teléfono de Contacto</label>
+                                    <input type="text" id="rTelefono" name="telefono" class="form-control" placeholder="9 dígitos" maxlength="9" required />
+                                    <div id="rTelefono-error" class="invalid-feedback d-block fw-semibold" style="font-size: 0.75rem;"></div>
+                                </div>
+
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <label for="rPersonas" class="form-label">N° Personas</label>
+                                        <input type="number" id="rPersonas" name="numeroPersonas" class="form-control" min="1" max="50" placeholder="Ej: 6" required />
+                                        <div id="rPersonas-error" class="invalid-feedback d-block fw-semibold" style="font-size: 0.75rem;"></div>
+                                    </div>
+                                    <div class="col-6">
+                                        <label for="rHora" class="form-label">Hora Pactada</label>
+                                        <input type="time" id="rHora" name="hora" class="jama-input-time" required />
+                                        <div id="rHora-error" class="invalid-feedback d-block fw-semibold" style="font-size: 0.75rem;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 d-flex flex-column align-items-center">
+                                <label class="form-label align-self-start mb-2">Seleccionar Fecha de Reserva</label>
+
+                                <input type="date" id="rFecha" name="fecha" class="input-fecha-reserva" style="display: none;" required />
+
+                                <div class="calendar" id="cal_wrapper_r">
+                                    <div class="calendar__header">
+                                        <button type="button" class="calendar__nav-btn" onclick="window.cambiarMesCalendario('r', -1)">
+                                            <i class="bi bi-chevron-left"></i>
+                                        </button>
+                                        <div class="calendar__month-title" id="r_cal_title">Enero 2026</div>
+                                        <button type="button" class="calendar__nav-btn" onclick="window.cambiarMesCalendario('r', 1)">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </button>
+                                    </div>
+                                    <div class="calendar__body">
+                                        <div class="calendar__days">
+                                            <div>L</div><div>M</div><div>M</div><div>J</div><div>V</div><div>S</div><div>D</div>
+                                        </div>
+                                        <div class="calendar__dates" id="r_calendar__dates"></div>
+                                    </div>
+                                </div>
+                                <div id="rFecha-error" class="invalid-feedback d-block text-center fw-semibold" style="font-size: 0.75rem;"></div>
+                            </div>
+
+                            <div class="col-12 mt-2">
+                                <label for="rObservacion" class="form-label">Observación de Servicio (Opcional)</label>
+                                <textarea id="rObservacion" name="observacion" class="form-control" rows="2" maxlength="150" placeholder="Alergias..."></textarea>
+                            </div>
+                        </div>
+
+                        <div id="mesasInfo" class="mt-3 p-3 bg-light-jama" style="display: none;">
+                            <small id="mesasInfoTexto" class="fw-semibold text-success"></small>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer border-0 px-4 pb-4">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" id="btnGuardarReserva">Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalEditarReserva" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" style="max-width: 820px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil-square text-jama-gold me-2"></i> Modificar Datos de Reserva
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body p-4">
+                    <input type="hidden" id="eReservaId" />
+
+                    <div class="row g-3">
+                        <div class="col-md-6 d-flex flex-column gap-3">
+                            <div class="jama-form-group">
+                                <label for="eNombre" class="form-label">Nombre del Cliente</label>
+                                <input type="text" id="eNombre" class="form-control" maxlength="30" data-no-validation />
+                                <div id="eNombre-error" class="invalid-feedback d-block fw-semibold" style="font-size: 0.75rem;"></div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="eTelefono" class="form-label">Teléfono</label>
+                                <input type="text" id="eTelefono" class="form-control" maxlength="9" data-no-validation />
+                                <div id="eTelefono-error" class="invalid-feedback d-block fw-semibold" style="font-size: 0.75rem;"></div>
+                            </div>
+
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <label for="ePersonas" class="form-label">N° de Personas</label>
+                                    <input type="number" id="ePersonas" class="form-control" min="1" max="50" data-no-validation />
+                                    <div id="ePersonas-error" class="invalid-feedback d-block fw-semibold" style="font-size: 0.75rem;"></div>
+                                </div>
+                                <div class="col-6">
+                                    <label for="eHora" class="form-label">Hora</label>
+                                    <input type="time" id="eHora" class="jama-input-time" data-no-validation />
+                                    <div id="eHora-error" class="invalid-feedback d-block fw-semibold" style="font-size: 0.75rem;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 d-flex flex-column align-items-center">
+                            <label class="form-label align-self-start mb-2">Modificar Fecha</label>
+
+                            <input type="date" id="eFecha" class="input-fecha-reserva" style="display: none;" />
+
+                            <div class="calendar" id="cal_wrapper_e">
+                                <div class="calendar__header">
+                                    <button type="button" class="calendar__nav-btn" onclick="window.cambiarMesCalendario('e', -1)">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </button>
+                                    <div class="calendar__month-title" id="e_cal_title">Enero 2026</div>
+                                    <button type="button" class="calendar__nav-btn" onclick="window.cambiarMesCalendario('e', 1)">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </button>
+                                </div>
+                                <div class="calendar__body">
+                                    <div class="calendar__days">
+                                        <div>L</div><div>M</div><div>M</div><div>J</div><div>V</div><div>S</div><div>D</div>
+                                    </div>
+                                    <div class="calendar__dates" id="e_calendar__dates"></div>
+                                </div>
+                            </div>
+                            <div id="eFecha-error" class="invalid-feedback d-block text-center fw-semibold" style="font-size: 0.75rem;"></div>
+                        </div>
+
+                        <div class="col-12 mt-2">
+                            <label for="eObservacion" class="form-label">Observación</label>
+                            <textarea id="eObservacion" class="form-control" rows="2" maxlength="150"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-0 px-4 pb-4">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardarEdicion">Guardar Cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script th:src="@{/js/reservas/tabla.js}"></script>
+<script th:src="@{/js/reservas/acciones.js}"></script>
+</body>
+</html>

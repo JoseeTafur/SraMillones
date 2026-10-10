@@ -1,0 +1,478 @@
+/* ==========================================================================
+   💎 MÓDULO INTELIGENTE DE MESAS — INFRAESTRUCTURA VISUAL LA JAMA
+   ========================================================================== */
+
+.mesas-body {
+    background-color: var(--lajama-cream) !important;
+    min-height: 100vh;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+.main-content {
+    background-color: var(--lajama-cream) !important;
+}
+
+/* --- 1. RECAUDACIÓN Y LEYENDAS ORGANIZADAS --- */
+.recaudacion-banner {
+    background: linear-gradient(135deg, var(--lajama-green) 0%, #26503d 100%) !important;
+    border-left: 8px solid var(--lajama-peach);
+    color: var(--lajama-white);
+    box-shadow: var(--shadow-md);
+}
+
+.Leyenda-container {
+    background-color: rgba(255, 255, 255, 0.06);
+    padding: 10px 18px;
+    border-radius: 16px;
+    border: 1px solid rgba(254, 215, 170, 0.15);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.badge-legend {
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.75rem;
+    box-shadow: var(--shadow-sm);
+    letter-spacing: 0.5px;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.badge-legend:hover { transform: translateY(-2px); }
+
+.bg-disponible { background-color: #16a34a !important; color: var(--lajama-white); }
+.bg-cocina     { background-color: #dc2626 !important; color: var(--lajama-white); }
+.bg-recoger    { background-color: #d97706 !important; color: var(--lajama-white); }
+.bg-pagar      { background-color: var(--lajama-white) !important; color: var(--lajama-green) !important; border: 1.5px solid var(--lajama-peach) !important; }
+.bg-unificada  { background-color: #6d28d9 !important; color: var(--lajama-white); }
+
+/* --- 2. GRID KINETIC DE PLANO DE MESAS --- */
+.card-tabla {
+    border: 1px solid rgba(254, 215, 170, 0.4) !important;
+    background-color: var(--lajama-white) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+.grid-mesas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 1.5rem;
+}
+
+.mesa-box {
+    border-radius: 1.25rem;
+    padding: 26px 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+    background-color: var(--lajama-white);
+}
+
+.mesa-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.mesa-box:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg) !important;
+}
+.mesa-box:hover::before { opacity: 1; }
+
+.mesa-icon-wrapper {
+    font-size: 2.4rem;
+    margin-bottom: 8px;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 1;
+}
+.mesa-box:hover .mesa-icon-wrapper { transform: scale(1.15) rotate(-6deg); }
+.mesa-numero { font-weight: 800; font-size: 0.95rem; letter-spacing: 0.3px; z-index: 1; }
+
+/* --- 3. ESTADOS CROMÁTICOS PREMIUM (SALÓN) --- */
+.mesa-box.disponible { background-color: #f0fdf4; border-color: #bbf7d0; color: #14532d; }
+.mesa-box.disponible:hover { border-color: #4ade80; }
+
+.mesa-box.ocupada { background-color: #fef2f2; border-color: #fecaca; color: #7f1d1d; }
+.mesa-box.ocupada:hover { border-color: #f87171; }
+
+.mesa-box.reservada {
+    background-color: #fffbeb;
+    border-color: #fcd34d;
+    color: #78350f;
+    cursor: not-allowed;
+    animation: pulsoReservada 2s infinite ease-in-out;
+}
+.mesa-box.reservada:hover { border-color: #f59e0b; }
+.mesa-box.reservada .mesa-icon-wrapper { color: #b45309; }
+
+@keyframes pulsoReservada {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.3); }
+    50%       { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
+}
+
+.tarjeta-unificada.reservada { border-left: 6px solid #f59e0b !important; }
+
+.mesa-box.lista-para-recoger {
+    background-color: #fffbeb;
+    border-color: #fde68a;
+    color: #78350f;
+    animation: pulsoAlertaMesa 2s infinite ease-in-out;
+}
+.mesa-box.lista-para-recoger:hover { border-color: #fbbf24; }
+
+.mesa-box.lista-para-pagar { background-color: var(--lajama-white); border-color: var(--lajama-peach); color: var(--lajama-green); }
+.mesa-box.lista-para-pagar:hover { border-color: var(--lajama-skin); }
+
+.mesa-box.unificada { background-color: #f5f3ff; border-color: #ddd6fe; color: #4c1d95; }
+.mesa-box.unificada:hover { border-color: #a78bfa; }
+
+
+/* --- 4. CONFIGURACIÓN DE TARJETAS EXTENDIDAS (GRUPOS) --- */
+.tarjeta-unificada {
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease;
+    background-color: var(--lajama-white) !important;
+    border: 1px solid rgba(27, 58, 44, 0.08) !important;
+}
+
+.tarjeta-unificada:hover {
+    transform: translateX(6px);
+    box-shadow: var(--shadow-lg) !important;
+}
+
+.tarjeta-unificada.disponible { border-left: 6px solid #16a34a !important; }
+.tarjeta-unificada.ocupada { border-left: 6px solid #dc2626 !important; }
+.tarjeta-unificada.lista-para-recoger { border-left: 6px solid #d97706 !important; animation: pulsoAlertaMesa 2s infinite ease-in-out; }
+.tarjeta-unificada.lista-para-pagar { border-left: 6px solid var(--lajama-skin) !important; }
+
+.badge-accion-grupo {
+    background-color: var(--lajama-cream);
+    color: var(--lajama-green);
+    border: 1px dashed rgba(27, 58, 44, 0.2);
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+}
+.tarjeta-unificada:hover .badge-accion-grupo {
+    background-color: var(--lajama-green);
+    color: var(--lajama-white);
+    border-color: transparent;
+}
+
+
+/* --- 5. DETALLE DE COMANDAS INTERNAS Y ADAPTATIVOS --- */
+.grid-operaciones-filas .btn {
+    font-weight: 700 !important;
+    font-size: 0.85rem !important;
+    letter-spacing: 0.3px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.grid-operaciones-filas .btn:hover:not(:disabled) {
+    transform: translateY(-1.5px);
+    box-shadow: var(--shadow-sm);
+}
+
+.border-top.border-dashed {
+    border-top: 2px dashed rgba(27, 58, 44, 0.15) !important;
+}
+
+#lista-platos-previsualizar::-webkit-scrollbar { width: 6px; }
+#lista-platos-previsualizar::-webkit-scrollbar-track { background: var(--lajama-cream); border-radius: 10px; }
+#lista-platos-previsualizar::-webkit-scrollbar-thumb { background: var(--lajama-peach); border-radius: 10px; }
+#lista-platos-previsualizar::-webkit-scrollbar-thumb:hover { background: #fdb971; }
+
+.checkbox-seleccion-unificacion input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--lajama-peach);
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+@keyframes pulsoAlertaMesa {
+    0% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.4); }
+    70% { box-shadow: 0 0 0 12px rgba(217, 119, 6, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0); }
+}
+
+/* ==========================================================================
+   💎 SUITE DE BOTONES KINETIC MULTICOLOR — ACETERNITY SYSTEM
+   ========================================================================== */
+
+/* Extensión de compatibilidad para forzar el comportamiento circular/elástico en el modal */
+.grid-operaciones-filas .btn-jama-kinetic {
+    width: 100% !important;
+    justify-content: center !important;
+    border-radius: 0.65rem !important; /* Cuadrado Shadcn suavizado a juego con tus inputs */
+    text-transform: uppercase;
+    font-size: 0.8rem !important;
+    letter-spacing: 0.03em;
+}
+
+/* 🟢 Variante: Verde Orgánico */
+.btn-kinetic-green {
+    background: var(--lajama-green) !important;
+    color: var(--lajama-white) !important;
+}
+.btn-kinetic-green:hover:not(:disabled) {
+    border-color: var(--lajama-skin) !important;
+    box-shadow: 0 6px 20px rgba(27, 58, 44, 0.25), 0 0 8px rgba(254, 215, 170, 0.4);
+}
+
+/* 🟡 Variante: Ámbar Moderno */
+.btn-kinetic-amber {
+    background: linear-gradient(135deg, #d97706 0%, #b45309 100%) !important;
+    color: var(--lajama-white) !important;
+    border: 1px solid rgba(251, 191, 36, 0.2) !important;
+}
+.btn-kinetic-amber:hover:not(:disabled) {
+    border-color: #fbbf24 !important;
+    box-shadow: 0 6px 20px rgba(180, 83, 9, 0.3), 0 0 8px rgba(251, 191, 36, 0.4);
+}
+
+/* 🔵 Variante: Azul Eléctrico */
+.btn-kinetic-blue {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+    color: var(--lajama-white) !important;
+    border: 1px solid rgba(96, 165, 250, 0.2) !important;
+}
+.btn-kinetic-blue:hover:not(:disabled) {
+    border-color: #60a5fa !important;
+    box-shadow: 0 6px 20px rgba(29, 78, 216, 0.3), 0 0 8px rgba(96, 165, 250, 0.4);
+}
+
+/* 🟤 Variante: Púrpura / Herramientas */
+.btn-kinetic-purple {
+    background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%) !important;
+    color: var(--lajama-white) !important;
+    border: 1px solid rgba(167, 139, 250, 0.2) !important;
+}
+.btn-kinetic-purple:hover:not(:disabled) {
+    border-color: #a78bfa !important;
+    box-shadow: 0 6px 20px rgba(91, 33, 182, 0.3), 0 0 8px rgba(167, 139, 250, 0.4);
+}
+
+/* 🧾 Variante: Gris Oscuro Estructural */
+.btn-kinetic-dark {
+    background: #374151 !important;
+    color: var(--lajama-white) !important;
+    border: 1px solid rgba(156, 163, 175, 0.2) !important;
+}
+.btn-kinetic-dark:hover:not(:disabled) {
+    border-color: #9ca3af !important;
+    box-shadow: 0 6px 20px rgba(55, 65, 81, 0.3);
+}
+
+/* 🛑 Variante: Rojo Alerta */
+.btn-kinetic-red {
+    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%) !important;
+    color: var(--lajama-white) !important;
+    border: 1px solid rgba(239, 68, 68, 0.2) !important;
+}
+.btn-kinetic-red:hover:not(:disabled) {
+    border-color: #f87171 !important;
+    box-shadow: 0 6px 20px rgba(153, 27, 27, 0.3), 0 0 8px rgba(239, 68, 68, 0.4);
+}
+
+/* ── VARIANTES OUTLINE MODERNAS (CRÍTICAS) ───────────────────────────────── */
+.btn-kinetic-danger-outline {
+    background: transparent !important;
+    color: #dc2626 !important;
+    border: 1.5px solid rgba(220, 38, 38, 0.3) !important;
+}
+.btn-kinetic-danger-outline:hover:not(:disabled) {
+    background: #dc2626 !important;
+    color: var(--lajama-white) !important;
+    border-color: #dc2626 !important;
+    box-shadow: 0 6px 16px rgba(220, 38, 38, 0.25);
+}
+
+.btn-kinetic-green-outline {
+    background: transparent !important;
+    color: var(--lajama-green) !important;
+    border: 1.5px solid rgba(27, 58, 44, 0.3) !important;
+}
+.btn-kinetic-green-outline:hover:not(:disabled) {
+    background: var(--lajama-green) !important;
+    color: var(--lajama-white) !important;
+    border-color: var(--lajama-green) !important;
+    box-shadow: 0 6px 16px rgba(27, 58, 44, 0.25);
+}
+
+/* Manejo de estados deshabilitados (disabled) estilo Shadcn */
+.btn-jama-kinetic.disabled,
+.btn-jama-kinetic:disabled {
+    opacity: 0.4 !important;
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+    transform: none !important;
+    box-shadow: none !important;
+    border-color: rgba(0,0,0,0.1) !important;
+}
+
+/* ========================================================
+   ⚙️ BOTONES OPERATIVOS INTERACTIVOS (LA JAMA MANAGEMENT)
+   ======================================================== */
+
+.btn-jama-operativo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 16px;
+    border-radius: 20px; /* Bordes píldora premium */
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                background-color 0.2s ease,
+                border-color 0.2s ease;
+    outline: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.btn-jama-operativo svg {
+    transition: transform 0.3s ease;
+}
+
+/* 🟥 Variante 1: Liberar Bloque (Danger Elegante) */
+.btn-jama-danger {
+    background-color: rgba(220, 53, 69, 0.08);
+    color: #dc3545;
+    border-color: rgba(220, 53, 69, 0.2);
+}
+
+.btn-jama-danger:hover {
+    background-color: #dc3545;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.2),
+                0 6px 16px rgba(220, 53, 69, 0.3);
+}
+
+/* 🪙 Variante 2: Asignar Bloque (Secondary Corporativo / Marrón - Oro) */
+.btn-jama-secondary {
+    background-color: rgba(108, 117, 125, 0.08);
+    color: #495057;
+    border-color: rgba(108, 117, 125, 0.2);
+}
+
+.btn-jama-secondary:hover {
+    background-color: #1b3a2c; /* Cambia a tu verde corporativo principal al activarse */
+    color: #faf6ee;
+    border-color: rgba(52, 211, 153, 0.3);
+    transform: translateY(-2px);
+    box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.15),
+                0 6px 16px rgba(27, 58, 44, 0.25);
+}
+
+/* 💫 Efectos cinéticos adicionales */
+.btn-jama-operativo:hover svg {
+    transform: scale(1.15) rotate(-5deg); /* Ligera rotación juguetona del icono en hover */
+}
+
+.btn-jama-operativo:active {
+    transform: scale(0.95) translateY(0);
+}
+
+/* ========================================================
+   🛠️ BOTONES PREMIUM PARA BARRAS DE HERRAMIENTAS (LA JAMA)
+   ======================================================== */
+
+.btn-jama-operativo-barra {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 18px;
+    border-radius: 20px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                background-color 0.2s ease,
+                color 0.2s ease !important;
+}
+
+/* ⚪ Botón Cancelar de la Barra (Contorno Blanco Elegante) */
+.btn-barra-cancelar {
+    background-color: transparent;
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.btn-barra-cancelar:hover {
+    background-color: #ffffff;
+    color: var(--lajama-green);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 👑 Botón Confirmar de la Barra (Oro Brillante / Alerta Activa) */
+.btn-barra-confirmar {
+    background-color: #ffc107; /* El color amarillo/oro idéntico al modo unificación */
+    color: #17251d;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-barra-confirmar:hover:not(:disabled) {
+    background-color: #ffca2c;
+    transform: translateY(-2px);
+    box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.3),
+                0 6px 16px rgba(255, 193, 7, 0.4);
+}
+
+/* 🔒 Comportamiento Seguro cuando el Botón esté bloqueado (sin selección) */
+.btn-barra-confirmar:disabled {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    color: rgba(255, 255, 255, 0.35) !important;
+    border-color: transparent !important;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Micro-animación de click */
+.btn-jama-operativo-barra:active:not(:disabled) {
+    transform: scale(0.95);
+}
+
+/* 🟥 Botón Confirmar Acción de Quitar (Danger Brillante controlado para fondo verde) */
+.btn-barra-quitar {
+    background-color: #dc3545; /* Rojo danger original */
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-barra-quitar:hover:not(:disabled) {
+    background-color: #e04353;
+    transform: translateY(-2px);
+    box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.2),
+                0 6px 16px rgba(220, 53, 69, 0.4);
+}
+
+/* 🔒 Comportamiento Seguro cuando el Botón esté bloqueado (sin selección) */
+.btn-barra-quitar:disabled {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    color: rgba(255, 255, 255, 0.35) !important;
+    border-color: transparent !important;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}

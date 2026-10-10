@@ -1,0 +1,592 @@
+/* =====================================================================
+   LA JAMA - ESTILOS DE CAJA MÓVIL Y MULTITICKET (TEMA CORPORATIVO FIJO)
+   ===================================================================== */
+
+:root {
+    --lajama-green: #1B3A2C;
+    --lajama-peach: #fed7aa;
+    --lajama-skin: #FFB38A;
+    --lajama-cream: #FFF7ED;
+    --lajama-white: #FFFFFF;
+    --shadow-sm: 0 2px 4px rgba(27, 58, 44, 0.05);
+    --shadow-md: 0 4px 12px rgba(27, 58, 44, 0.1);
+    --shadow-lg: 0 12px 24px rgba(27, 58, 44, 0.15);
+
+    --jama-text-main: #1f2937;
+    --jama-text-muted: #6b7280;
+    --jama-danger: #dc2626;
+    --jama-success: #166534;
+}
+
+/* 🛡️ DESTRUCCIÓN DE BORDES Y PADDINGS NATIVOS DE BOOTSTRAP */
+#modalFacturacion,
+#modalFacturacion .modal-dialog,
+#modalFacturacion .modal-content {
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    max-width: 100vw !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+}
+
+.jama-modal-core {
+    background-color: var(--lajama-cream) !important;
+    color: var(--jama-text-main) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+}
+
+.jama-header {
+    background-color: var(--lajama-green) !important;
+    border-bottom: 4px solid var(--lajama-peach) !important;
+    padding: 0 1.5rem !important;
+    height: 60px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    box-sizing: border-box !important;
+    flex-shrink: 0 !important;
+}
+
+.jama-title {
+    font-weight: 800 !important;
+    letter-spacing: 0.5px;
+    margin: 0;
+    color: var(--lajama-white) !important;
+    font-size: 1.15rem !important;
+}
+
+.text-jama-gold {
+    color: var(--lajama-peach) !important;
+}
+
+.jama-btn-close {
+    background: transparent;
+    border: none;
+    color: var(--lajama-peach);
+    font-size: 1.8rem;
+    line-height: 1;
+    transition: color 0.2s, transform 0.2s;
+    cursor: pointer;
+}
+.jama-btn-close:hover {
+    color: var(--lajama-white);
+    transform: scale(1.1);
+}
+
+.jama-body-bg {
+    background-color: var(--lajama-cream) !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    height: calc(100vh - 60px) !important;
+    max-height: calc(100vh - 60px) !important;
+    overflow: hidden !important;
+}
+
+/* ESTRUCTURA PERFECTA BORDE A BORDE */
+.jama-layout-grid {
+    display: flex !important;
+    flex-direction: row !important;
+    height: 100% !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+}
+
+/* =====================================================================
+   PANEL LATERAL (IZQUIERDA) — CONTROL DE COMANDAS COMPACTADO
+   ===================================================================== */
+.jama-panel-lateral {
+    width: 380px !important;
+    min-width: 380px !important;
+    max-width: 380px !important;
+    background-color: var(--lajama-white) !important;
+    border-right: 2px solid rgba(254, 215, 170, 0.4) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    box-shadow: var(--shadow-sm) !important;
+    box-sizing: border-box !important;
+}
+
+.jama-section-top {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    padding: 1rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+}
+
+.jama-meta-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+.jama-label-sm {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--jama-text-muted);
+    letter-spacing: 1px;
+}
+
+.jama-badge-total {
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: var(--lajama-green);
+}
+
+.jama-card-container {
+    background-color: var(--lajama-white);
+    border: 1px solid var(--lajama-peach);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    flex-shrink: 0;
+}
+
+.jama-card-container.accent-border {
+    border-left: 4px solid var(--lajama-skin);
+}
+
+.jama-card-header-sm {
+    background-color: var(--lajama-cream);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--lajama-green);
+    border-bottom: 1px solid var(--lajama-peach);
+    text-transform: uppercase;
+}
+
+/* Lista de platos izquierdos con scroll medido */
+.jama-scroll-panel {
+    max-height: 200px !important;
+    overflow-y: auto !important;
+    padding: 0.4rem !important;
+}
+
+.jama-item-row-btn {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 0.6rem !important;
+    border-radius: 6px !important;
+    margin-bottom: 4px !important;
+    background-color: var(--lajama-white) !important;
+    border: 1px solid #f3f4f6 !important;
+    color: var(--jama-text-main) !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    transition: all 0.2s ease;
+}
+
+.jama-item-row-btn:hover {
+    background-color: var(--lajama-cream) !important;
+    border-color: var(--lajama-peach) !important;
+}
+
+.jama-item-row-btn.assigned {
+    border-color: var(--lajama-peach) !important;
+    background-color: var(--lajama-cream) !important;
+    color: var(--lajama-green) !important;
+}
+
+.jama-control-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--lajama-green);
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.jama-select, .jama-input-text {
+    width: 100%;
+    background-color: var(--lajama-white) !important;
+    border: 2px solid var(--lajama-cream) !important;
+    color: var(--jama-text-main) !important;
+    padding: 0.5rem 0.65rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.jama-select:focus, .jama-input-text:focus {
+    border-color: var(--lajama-peach) !important;
+}
+
+.jama-select:disabled {
+    background-color: #f3f4f6 !important;
+    color: #9ca3af !important;
+    cursor: not-allowed;
+}
+
+.jama-btn-group-row {
+    display: flex !important;
+    gap: 0.4rem !important;
+    margin-top: 0.75rem !important;
+}
+
+.jama-btn-secondary {
+    flex: 1 !important;
+    background-color: var(--lajama-white) !important;
+    border: 2px solid var(--lajama-peach) !important;
+    color: var(--lajama-green) !important;
+    padding: 0.5rem !important;
+    border-radius: 6px !important;
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease;
+}
+
+.jama-btn-secondary:hover:not(:disabled) {
+    background-color: var(--lajama-cream) !important;
+    transform: translateY(-1px);
+}
+
+.jama-btn-secondary:disabled {
+    border-color: #e5e7eb !important;
+    color: #9ca3af !important;
+    cursor: not-allowed;
+}
+
+/* Botón de Cierre de Caja Principal */
+.jama-btn-primary {
+    background-color: var(--lajama-green) !important;
+    color: var(--lajama-white) !important;
+    border: none !important;
+    border-radius: 12px !important;
+    font-weight: 800 !important;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.jama-btn-primary:hover:not(:disabled) {
+    background-color: #0d231a !important;
+}
+
+.jama-btn-primary:disabled {
+    background-color: #d1d5db !important;
+    color: #6b7280 !important;
+    cursor: not-allowed;
+}
+
+/* Footer del Panel Izquierdo */
+.jama-footer-action-box {
+    padding: 1rem 1.25rem !important;
+    background-color: var(--lajama-cream) !important;
+    border-top: 2px dashed var(--lajama-peach) !important;
+    flex-shrink: 0 !important;
+}
+
+/* =====================================================================
+   PANEL DERECHO: AJUSTE DE TICKET AL BORDE INFERIOR (CERO CORTE)
+   ===================================================================== */
+.jama-panel-contenido {
+    flex: 1 !important;
+    padding: 1.25rem !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important; /* 🛡️ PROHIBIDO SCROLL VERTICAL GENERAL */
+    background-color: var(--lajama-cream) !important;
+    height: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.jama-horizontal-carousel {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 1.25rem !important;
+    align-items: flex-start !important;
+    width: max-content !important;
+    height: 100% !important;
+}
+
+/* EL TICKET SE CASA CON EL BORDE DE LA PANTALLA EXCLUSIVAMENTE */
+.jama-ticket-card {
+    background-color: var(--lajama-white) !important;
+    border: 2px solid rgba(254, 215, 170, 0.8) !important;
+    border-radius: 16px !important;
+    width: 310px !important;
+    min-width: 310px !important;
+    max-width: 310px !important;
+
+    /* AJUSTE QUIRÚRGICO DE ALTURA */
+    height: calc(100vh - 100px) !important;
+    max-height: calc(100vh - 100px) !important;
+
+    padding: 1.25rem 1rem 0.85rem 1rem !important;
+    box-shadow: var(--shadow-md) !important;
+    position: relative !important;
+    box-sizing: border-box !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* 🚀 ACTIVACIÓN DE SCROLL VERTICAL INTERNO PARA LOS PLATOS ASIGNADOS */
+.jama-ticket-items-list {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    margin-bottom: 0.4rem !important;
+    padding-right: 4px !important;
+    border-bottom: 1px dashed var(--lajama-peach) !important;
+}
+
+/* Sanitización radical de clases inyectadas por bootstrap */
+.jama-ticket-card .card,
+.jama-ticket-card .bg-dark,
+.jama-ticket-card .bg-light,
+.jama-ticket-card .text-dark,
+.jama-ticket-card .text-muted,
+.jama-ticket-card .text-info {
+    background-color: transparent !important;
+    color: var(--jama-text-main) !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+/* Ajuste de inputs y controles del ticket */
+.jama-ticket-card input,
+.jama-ticket-card .form-control,
+.jama-ticket-card .jama-input-text {
+    background-color: var(--lajama-white) !important;
+    color: var(--jama-text-main) !important;
+    border: 2px solid var(--lajama-cream) !important;
+    font-weight: 700 !important;
+    padding: 0.35rem 0.5rem !important;
+    font-size: 0.85rem !important;
+    height: auto !important;
+    border-radius: 6px !important;
+}
+
+.jama-ticket-card input:focus,
+.jama-ticket-card .form-control:focus {
+    border-color: var(--lajama-peach) !important;
+    box-shadow: 0 0 0 3px rgba(254, 215, 170, 0.3) !important;
+    outline: none !important;
+}
+
+.jama-ticket-card select,
+.jama-ticket-card .form-select {
+    background-color: var(--lajama-white) !important;
+    color: var(--jama-text-main) !important;
+    border: 2px solid var(--lajama-cream) !important;
+    padding: 0.35rem 0.5rem !important;
+    font-size: 0.85rem !important;
+    font-weight: 700 !important;
+    height: auto !important;
+    border-radius: 6px !important;
+}
+
+.jama-ticket-header-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--lajama-green) !important;
+    color: var(--lajama-peach) !important;
+    font-weight: 900;
+    font-size: 0.7rem;
+    padding: 4px 14px;
+    border-radius: 20px;
+    box-shadow: var(--shadow-sm);
+    text-transform: uppercase;
+}
+
+/* Caja de cálculos financieros compactada */
+.jama-finance-box {
+    background-color: #fdfbf7 !important;
+    border: 1px solid var(--lajama-cream) !important;
+    border-radius: 10px;
+    padding: 0.6rem !important;
+    margin-top: 0.2rem !important;
+    margin-bottom: 0.4rem !important;
+}
+
+.jama-finance-line {
+    display: flex !important;
+    justify-content: space-between !important;
+    font-size: 0.78rem !important;
+    font-weight: 600;
+    margin-bottom: 0.25rem !important;
+}
+
+.jama-finance-line.total {
+    margin-top: 0.4rem !important;
+    padding-top: 0.4rem !important;
+    border-top: 2px dashed var(--lajama-peach) !important;
+    font-size: 1.05rem !important;
+    font-weight: 900;
+    color: var(--lajama-green) !important;
+}
+
+.jama-toggle-row {
+    display: flex !important;
+    background-color: var(--lajama-cream) !important;
+    border-radius: 8px;
+    padding: 2px !important;
+    margin-bottom: 0.4rem !important;
+    border: 1px solid rgba(254, 215, 170, 0.4);
+}
+
+.jama-toggle-btn {
+    flex: 1 !important;
+    background: transparent;
+    border: none;
+    color: var(--jama-text-muted);
+    font-size: 0.72rem !important;
+    font-weight: 800;
+    padding: 0.35rem !important;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.jama-toggle-btn.active {
+    background-color: var(--lajama-white) !important;
+    color: var(--lajama-green) !important;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--lajama-peach) !important;
+}
+
+/* Alerta POS inamovible del fondo del ticket */
+.jama-pos-alert {
+    background-color: var(--lajama-cream) !important;
+    border: 1px solid var(--lajama-peach) !important;
+    border-radius: 10px;
+    padding: 0.5rem !important;
+    text-align: center;
+    margin-top: auto !important; /* ANCLAJE ABSOLUTO AL BORDE */
+    flex-shrink: 0 !important;
+}
+
+.jama-pos-alert strong,
+.jama-ticket-card .text-jama-gold {
+    color: var(--lajama-green) !important;
+    font-weight: 900 !important;
+    font-size: 1.1rem !important;
+}
+
+/* =====================================================================
+   🎨 COMPONENTES EN CALIENTE INYECTADOS POR JS (BLINDAJE TOTAL)
+   ===================================================================== */
+
+/* Checkbox de los Platos a cobrar (Panel Izquierdo) */
+.chk-cobro-parcial {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px !important;
+    height: 18px !important;
+    border: 2px solid var(--lajama-green) !important;
+    border-radius: 4px;
+    background-color: var(--lajama-white) !important;
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    margin-right: 8px;
+}
+
+.chk-cobro-parcial:checked {
+    background-color: var(--lajama-green) !important;
+    border-color: var(--lajama-green) !important;
+}
+
+.chk-cobro-parcial:checked::after {
+    content: '✓';
+    position: absolute;
+    color: var(--lajama-peach);
+    font-size: 12px;
+    font-weight: 900;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Sanitización de los textos en la lista interna de platos del Ticket */
+.jama-ticket-items-list div,
+.jama-ticket-items-list span {
+    color: var(--jama-text-main) !important;
+    font-weight: 700 !important;
+    font-size: 0.8rem !important;
+}
+
+/* Estilos de las leyendas pequeñas de los inputs de Yape / RUC / Propinas */
+.jama-ticket-card .small.fw-bold.text-info,
+.jama-ticket-card .small.fw-bold.text-muted,
+.jama-ticket-card label {
+    color: var(--lajama-green) !important;
+    font-weight: 700 !important;
+    font-size: 0.72rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+/* Inputs de control manual (Montos y Propinas) */
+.jama-ticket-card input[type="number"],
+.jama-ticket-card input.input-consumo-manual {
+    border: 2px solid var(--lajama-peach) !important;
+    text-align: right !important;
+    color: var(--lajama-green) !important;
+}
+
+/* =====================================================================
+   ESTILOS DE LÉXICO PARA SWEETALERT EN MODO CORPORATIVO CLARO
+   ===================================================================== */
+.jama-swal-input {
+    flex: 1;
+    background: var(--lajama-white) !important;
+    border: 2px solid var(--lajama-cream) !important;
+    color: var(--jama-text-main) !important;
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
+    font-weight: 700 !important;
+    text-align: right !important;
+    outline: none !important;
+}
+.jama-swal-input:focus {
+    border-color: var(--lajama-peach) !important;
+}
+
+/* =====================================================================
+   SCROLLBARS CORPORATIVOS LIMPIOS
+   ===================================================================== */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: var(--lajama-cream);
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--lajama-peach);
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #fdb971;
+}
+
+.jama-btn-del-owner {
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: 800;
+    padding: 0 4px;
+    line-height: 1;
+    border-radius: 4px;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.jama-btn-del-owner:hover {
+    background: #dc3545;
+    color: #ffffff !important;
+}

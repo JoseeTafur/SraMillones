@@ -1,0 +1,276 @@
+/* ==========================================================================
+   🎨 LA JAMA - MONITOR LOGÍSTICO Y DESPACHO PREMIUM NATIVO (SIN BOOTSTRAP)
+   ========================================================================== */
+
+:root {
+    --jama-bg-panel: #ffffff;
+    --jama-border: rgba(27, 58, 44, 0.08);
+    --jama-text-main: #1f2937;
+    --jama-text-muted: #6b7280;
+    --jama-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --font-monospace: 'JetBrains Mono', 'Courier New', monospace;
+}
+
+/* ── 🏗️ MALLA DE DISEÑO GRID PRINCIPAL ── */
+.jama-modulo-logistica {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.jama-layout-despacho {
+    display: grid;
+    grid-template-columns: 22rem 1fr 22rem; /* Configuración proporcional fija de paneles laterales */
+    gap: 1.25rem;
+    height: calc(100vh - 120px);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ── 📦 ARQUITECTURA DE PANELES LATERALES ── */
+.jama-panel-lateral {
+    background: var(--jama-bg-panel);
+    border-radius: 16px;
+    border: 1px solid var(--jama-border);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.015);
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.panel-cabecera {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.panel-cabecera h2 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--jama-text-main);
+}
+
+.icono-preparados { color: var(--lajama-green); font-size: 1.2rem; }
+.icono-flota { color: #4e73df; font-size: 1.2rem; }
+
+.lista-items {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 0.25rem;
+}
+
+/* ── 🎫 TARJETAS DE PEDIDOS KINETIC ── */
+.tarjeta-pedido {
+    background: #fbfcfb;
+    border: 1px solid var(--jama-border);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: var(--jama-transition);
+}
+
+.tarjeta-pedido::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background-color: #d1d5db;
+    transition: var(--jama-transition);
+}
+
+.tarjeta-pedido:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(27, 58, 44, 0.05);
+    border-color: rgba(27, 58, 44, 0.15);
+    background: #ffffff;
+}
+
+.tarjeta-pedido.selected {
+    background: rgba(27, 58, 44, 0.02);
+    border-color: var(--lajama-green);
+}
+
+.tarjeta-pedido.selected::before {
+    background-color: var(--lajama-green);
+}
+
+.tarjeta-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.4rem;
+}
+
+.id-pedido {
+    font-family: var(--font-monospace);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--jama-text-muted);
+}
+
+.monto-pedido {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--lajama-green);
+}
+
+.cliente-nombre {
+    margin: 0 0 0.25rem 0;
+    font-family: 'Vollkorn', serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--jama-text-main);
+}
+
+.direccion-texto {
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--jama-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── 🚀 BOTÓN DE ACCIÓN DESPACHO ── */
+.btn-despacho-kinetic {
+    width: 100%;
+    padding: 1rem;
+    margin-top: 1rem;
+    background-color: var(--lajama-green);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    box-shadow: 0 4px 12px rgba(27, 58, 44, 0.15);
+    transition: var(--jama-transition);
+}
+
+.btn-despacho-kinetic:hover {
+    background-color: #142b20;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(27, 58, 44, 0.25);
+}
+
+/* ── 👤 SECCIÓN DE REPARTIDORES ── */
+.tarjeta-repartidor {
+    background: #ffffff;
+    border: 1px solid var(--jama-border);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    transition: var(--jama-transition);
+    cursor: pointer;
+}
+
+.repartidor-info-bloque {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.repartidor-perfil {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.avatar-circulo {
+    width: 34px;
+    height: 34px;
+    background-color: var(--lajama-cream);
+    color: var(--lajama-green);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    border: 1px solid var(--jama-border);
+}
+
+.repartidor-detalles h3 {
+    margin: 0;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--jama-text-main);
+}
+
+.estado-texto {
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+.estado-libre { color: #10b981; }
+.estado-texto.text-warning { color: #f59e0b; }
+
+.selector-color-jama {
+    width: 26px;
+    height: 26px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+}
+
+/* ── 💊 PÍLDORAS ASIGNADAS (MINI-CARDS) ── */
+.contenedor-asignados {
+    margin-top: 0.5rem;
+}
+
+.mini-pedido-asignado {
+    background: #f9fafb;
+    border-left: 4px solid #933D2D;
+    border-radius: 6px;
+    padding: 0.6rem 0.75rem;
+    margin-bottom: 0.4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* ── 🗺️ CONTENEDOR CENTRAL DEL MAPA LEAFLET ── */
+.jama-contenedor-mapa {
+    border: 2px solid var(--lajama-green);
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.02);
+}
+
+#mapa-principal {
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+/* Fallback de listas vacías */
+.mensaje-lista-vacia {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--jama-text-muted);
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
+/* Minimalist Scrollbar */
+.scroll-v::-webkit-scrollbar { width: 5px; }
+.scroll-v::-webkit-scrollbar-track { background: transparent; }
+.scroll-v::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.08); border-radius: 10px; }
+.scroll-v::-webkit-scrollbar-thumb:hover { background: rgba(27,58,44,0.15); }

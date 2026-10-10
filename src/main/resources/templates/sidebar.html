@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="sidebar(activeUri)">
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <nav id="sidebar" class="sidebar p-3">
+
+        <div class="bg-cursor-glow header-bg-glow" id="sidebar-glow"></div>
+        <div class="pattern-bg ripple-container header-ripple-grid" id="sidebar-ripple"></div>
+
+        <div class="d-flex align-items-center justify-content-between mb-4 px-2 pt-4 position-relative z-2">
+            <a th:href="@{/dashboard}" class="text-decoration-none d-inline-block brand-logo-wrapper">
+                <img th:src="@{/img/logo.png}" alt="Logo La Jama" id="sidebar-logo"
+                     style="width: 150px; max-width: 100%; height: auto; object-fit: contain; transition: all 0.3s ease;">
+            </a>
+
+            <button id="toggle-sidebar-desktop" class="btn text-white d-none d-md-inline-block p-1 border-0 bg-transparent" type="button" title="Contraer menú">
+                <i class="bi bi-list fs-4"></i>
+            </button>
+
+            <button id="close-sidebar" class="btn text-white d-md-none p-0 position-absolute" style="top: 15px; right: 15px;">
+                <i class="bi bi-x-lg" style="font-size: 1.2rem;"></i>
+            </button>
+        </div>
+
+        <hr class="text-white-50 position-relative z-2" />
+
+        <div class="jama-uiverse-container">
+            <div class="sidebar-scrollable-menu position-relative">
+
+                <div class="pattern-bg ripple-container header-ripple-grid opacity-25"
+                     style="position: absolute; top:0; left:0; width:100%; height:100%; z-index: 1; pointer-events: none;"></div>
+
+                <article class="jama-uiverse-menu position-relative z-2">
+
+                    <label th:each="opcion : ${session.opcionesIndependientes}"
+                           th:for="${'radio-' + #strings.replace(opcion.nombre, ' ', '-')}"
+                           class="jama-uiverse-item"
+                           th:with="uriLimpia=${activeUri != null ? #strings.replace(activeUri, '/admin', '') : ''}"
+                           th:classappend="${opcion.ruta == activeUri || opcion.ruta == uriLimpia || (activeUri == '/' && opcion.ruta == '/dashboard')} ? 'active-uiverse' : ''"
+                           th:data-module="${#strings.toLowerCase(opcion.nombre)}">
+
+                        <input class="jama-radio-hidden"
+                               type="radio"
+                               name="sidebar_path"
+                               th:id="${'radio-' + #strings.replace(opcion.nombre, ' ', '-')}"
+                               th:checked="${opcion.ruta == activeUri || opcion.ruta == uriLimpia || (activeUri == '/' && opcion.ruta == '/dashboard')}"
+                               th:onclick="|window.location.href='@{${opcion.ruta}}'|" />
+
+                        <i class="bi jama-uiverse-icon"
+                           th:classappend="${opcion.nombre == 'Dashboard' ? 'bi-speedometer2' :
+opcion.nombre == 'Usuarios' ? 'bi-person-gear' :
+opcion.nombre == 'Perfiles' ? 'bi-shield-lock' :
+opcion.nombre == 'Empleados' ? 'bi-people-fill' :
+opcion.nombre == 'Insumos' ? 'bi-box-seam' :
+(opcion.nombre.toLowerCase().contains('repartidor') || opcion.nombre.toLowerCase().contains('distribuidor') || opcion.ruta.contains('entregas')) ? 'bi-truck' :
+(opcion.nombre.toLowerCase().contains('perfil') || opcion.ruta.contains('Perfil')) ? 'bi-person-badge-fill' : 'bi-grid-1x2-fill'}"></i>
+
+                        <span class="jama-uiverse-text" th:text="${opcion.nombre}">Dashboard</span>
+                    </label>
+
+                    <div th:each="grupo : ${session.menuAgrupado.entrySet()}" class="jama-uiverse-group-wrapper"
+                         th:with="idGrupo=${#strings.replace(grupo.key, ' ', '-')}, folder=${#strings.toLowerCase(grupo.key)}">
+
+                        <th:block th:with="isGroupActive=${activeUri != null && (
+    (folder == 'cocina' && activeUri.contains('/cocina')) ||
+    (folder == 'almacén' && (activeUri.contains('/almacen') || activeUri.contains('/productos'))) ||
+    (folder == 'salón' && (activeUri.contains('/mesas') || activeUri.contains('/mesero'))) ||
+    (folder == 'distribuidor' && (activeUri.contains('/entregas') || activeUri.contains('/repartidor'))) ||
+    (folder == 'cajero' && (activeUri.contains('/caja') || activeUri.contains('/cajero') || activeUri.contains('/delivery') || activeUri.contains('/despacho') || activeUri.contains('/pagos-digitales') || activeUri.contains('/reservas'))) ||
+    (folder == 'seguridad' && (activeUri.contains('/usuarios') || activeUri.contains('/perfiles') || activeUri.contains('/empleados'))) ||
+    (folder == 'logística' && activeUri.contains('/insumos')) ||
+    (folder == 'contabilidad' && activeUri.contains('/comprobantes'))
+)}">
+
+                            <label th:for="${'radio-' + idGrupo}"
+                                   class="jama-uiverse-item text-between btn-toggle-grupo-jama"
+                                   th:classappend="${isGroupActive} ? 'active-uiverse' : ''"
+                                   th:aria-expanded="${isGroupActive ? 'true' : 'false'}"
+                                   th:data-target-collapse="${'#collapse-' + idGrupo}"
+                                   th:data-module="${folder}">
+
+                                <input class="jama-radio-hidden"
+                                       type="radio"
+                                       name="sidebar_path"
+                                       th:id="${'radio-' + idGrupo}"
+                                       th:checked="${isGroupActive}" />
+
+                                <div class="d-flex align-items-center gap-3">
+                                    <i class="bi jama-uiverse-icon"
+                                       th:classappend="${folder == 'cocina' ? 'bi-fire' :
+           folder == 'salón' ? 'bi-shop' :
+           folder == 'cajero' ? 'bi-cash-coin' :
+           folder == 'almacén' ? 'bi-archive-fill' :
+           folder == 'seguridad' ? 'bi-shield-check' :
+           folder == 'logística' ? 'bi-box-seam' :
+           folder == 'distribuidor' ? 'bi-truck' :
+           folder == 'contabilidad' ? 'bi-journal-check' : 'bi-folder-fill'}"></i>
+                                    <span class="jama-uiverse-text" th:text="${grupo.key}">Grupo</span>
+                                </div>
+                                <i class="bi bi-chevron-down jama-uiverse-arrow"></i>
+                            </label>
+
+                            <div th:id="${'collapse-' + idGrupo}"
+                                 class="collapse"
+                                 th:classappend="${isGroupActive} ? 'show' : ''">
+                                <ul class="submenu-list-uiverse">
+                                    <li th:each="opcion : ${grupo.value}">
+                                        <a th:href="@{${opcion.ruta}}"
+                                           class="submenu-item-uiverse"
+                                           th:with="hasActiveUri=${activeUri != null}, hasOpRuta=${opcion.ruta != null}"
+                                           th:classappend="${
+           (hasOpRuta && opcion.ruta == activeUri) ||
+           (hasActiveUri && hasOpRuta && activeUri.contains('/mesas') && opcion.ruta.contains('/mesero')) ||
+           (hasActiveUri && hasOpRuta && activeUri.contains('/reservas') && opcion.ruta.contains('/reservas'))
+       } ? 'active-submenu' : ''">
+                                            <i class="bi bi-circle-fill me-2" style="font-size: 0.4rem;"></i>
+                                            <span th:text="${opcion.nombre}">Subopción</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </th:block>
+                    </div>
+
+                </article>
+            </div>
+
+            <label for="radio-logout" class="jama-uiverse-item btn-logout-uiverse mt-auto fallback-logout-fixed">
+                <input class="jama-radio-hidden"
+                       type="radio"
+                       name="sidebar_path"
+                       id="radio-logout"
+                       onclick="sessionStorage.removeItem('jama_sesion_activa'); window.location.href='/logout';" />
+                <i class="bi bi-box-arrow-right jama-uiverse-icon"></i>
+                <span class="jama-uiverse-text">Cerrar Sesión</span>
+            </label>
+        </div>
+    </nav>
+</div>
+
+<header th:fragment="logistica_header(titulo)" class="main-header-banner">
+    <div id="stars"></div>
+    <div id="stars2"></div>
+    <div id="stars3"></div>
+
+    <div class="header-title-container d-flex align-items-center justify-content-between w-100">
+        <div class="d-flex align-items-center gap-3">
+            <button id="open-sidebar" class="btn btn-outline-light border-2 d-md-none rounded-3 px-2 py-1" type="button">
+                <i class="bi bi-list fs-4"></i>
+            </button>
+            <h2 class="header-title fs-5 mb-0" th:text="${titulo}">La Jama</h2>
+        </div>
+
+        <div class="d-flex align-items-center gap-3">
+
+            <th:block th:if="${titulo == 'Gestión de Usuarios'}">
+                <button id="btnNuevoRegistro" class="btn btn-nuevo-jama">
+                    <i class="bi bi-plus"></i> <span>Nuevo Registro</span>
+                </button>
+            </th:block>
+<!--
+            <div class="jama-header-darkmode-trigger" title="Cambiar Apariencia">
+                <label class="switch">
+                    <input id="input" type="checkbox" />
+                    <div class="slider round">
+                        <div class="sun-moon">
+                            <svg id="moon-dot-1" class="moon-dot" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"></circle></svg>
+                            <svg id="moon-dot-2" class="moon-dot" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"></circle></svg>
+                            <svg id="moon-dot-3" class="moon-dot" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"></circle></svg>
+                            <svg id="light-ray-1" class="light-ray" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"></circle></svg>
+                            <svg id="light-ray-2" class="light-ray" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"></circle></svg>
+                            <svg id="light-ray-3" class="light-ray" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"></circle></svg>
+                            <svg id="cloud-1" class="cloud-dark" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"></circle></svg>
+                            <svg id="cloud-2" class="cloud-dark" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"></circle></svg>
+                            <svg id="cloud-3" class="cloud-dark" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"></circle></svg>
+                            <svg id="cloud-4" class="cloud-light" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"></circle></svg>
+                            <svg id="cloud-5" class="cloud-light" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"></circle></svg>
+                            <svg id="cloud-6" class="cloud-light" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"></circle></svg>
+                        </div>
+                        <div class="stars">
+                            <svg id="star-1" class="star" viewBox="0 0 20 20"><path d="M 0 10 C 10 10,10 10 ,0 10 C 10 10 , 10 10 , 10 20 C 10 10 , 10 10 , 20 10 C 10 10 , 10 10 , 10 0 C 10 10,10 10 ,0 10 Z"></path></svg>
+                            <svg id="star-2" class="star" viewBox="0 0 20 20"><path d="M 0 10 C 10 10,10 10 ,0 10 C 10 10 , 10 10 , 10 20 C 10 10 , 10 10 , 20 10 C 10 10 , 10 10 , 10 0 C 10 10,10 10 ,0 10 Z"></path></svg>
+                            <svg id="star-3" class="star" viewBox="0 0 20 20"><path d="M 0 10 C 10 10,10 10 ,0 10 C 10 10 , 10 10 , 10 20 C 10 10 , 10 10 , 20 10 C 10 10 , 10 10 , 10 0 C 10 10,10 10 ,0 10 Z"></path></svg>
+                            <svg id="star-4" class="star" viewBox="0 0 20 20"><path d="M 0 10 C 10 10,10 10 ,0 10 C 10 10 , 10 10 , 10 20 C 10 10 , 10 10 , 20 10 C 10 10 , 10 10 , 10 0 C 10 10,10 10 ,0 10 Z"></path></svg>
+                        </div>
+                    </div>
+                </label>
+            </div>-->
+
+        </div>
+    </div>
+</header>
+
+</body>
+</html>

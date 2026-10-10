@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div id="contenido_submodulo">
+
+    <link th:href="@{/css/recetas-matriz.css}" rel="stylesheet" />
+
+    <div class="row g-4">
+        <div class="col-xl-12 col-lg-12">
+
+            <div class="d-flex justify-content-between align-items-center recipe-section-header mb-4 px-2">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-journal-richtext text-dark fs-4 me-2"></i>
+                    <h5 class="fw-bold mb-0 text-dark">Recetarios Activos</h5>
+                </div>
+                <span class="badge bg-white text-dark border border-secondary rounded-pill px-3 py-1 font-monospace small"
+                      th:text="${#lists.size(productos)} + ' Platos registrados'">0 Platos</span>
+            </div>
+
+            <div class="d-flex flex-wrap gap-4 overflow-auto pe-1 justify-content-start align-items-start style-scrollbar-jama"
+                 style="max-height: 520px;" id="listaPlatosRecetario">
+
+                <div class="recipe-card-item" th:each="p : ${productos}">
+
+                    <div class="recipe-uiverse-card">
+                        <div class="card__shine"></div>
+                        <div class="card__glow"></div>
+                        <div class="card__content">
+                            <div class="card__badge">FORM</div>
+
+                            <div style="--bg-color: #a78bfa" class="card__image">
+                                <img th:if="${p.imagen != null and p.imagen != ''}"
+                                     th:src="${p.imagen}"
+                                     style="width: 100%; height: 100%; object-fit: cover; display: block;"
+                                     alt="Miniatura del plato">
+
+                                <div th:if="${p.imagen == null or p.imagen == ''}"
+                                     style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(145deg, #D4A373, #b8895a);">
+                                    <i class="bi bi-egg-fried text-white" style="font-size: 1.8rem;"></i>
+                                </div>
+                            </div>
+
+                            <div class="card__text">
+                                <p class="card__title text-truncate" th:text="${p.nombre}">Premium Design</p>
+                                <p class="card__description">Fórmula activa</p>
+                            </div>
+
+                            <div class="card__footer">
+                                <div class="card__price">La Jama</div>
+                                <button type="button" class="card__button btn-ver-receta border-0"
+                                        th:data-id="${p.id}"
+                                        th:data-nombre="${p.nombre}">
+                                    <svg height="16" width="16" viewBox="0 0 24 24">
+                                        <path stroke-width="2.5" stroke="currentColor" d="M4 12H20M12 4V20" fill="currentColor"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div> </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
