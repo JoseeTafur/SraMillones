@@ -39,6 +39,7 @@ public class CajaController {
     private final MovimientoCajaRepository movimientoCajaRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final CierreCajaSequenceService cierreCajaSequenceService;
+    private final CajaOperativaService cajaOperativaService;
 
     @GetMapping
     public String verCaja(Model model) {
@@ -201,7 +202,7 @@ public class CajaController {
 
     @PostMapping("/rechazar/{id}")
     public String rechazarPedido(@PathVariable Long id) {
-        pedidoService.actualizarEstadoPedido(id, com.web.restaurante.model.enums.EstadoPedido.CANCELADO);
+        pedidoService.cambiarEstadoA(com.web.restaurante.model.enums.EstadoPedido.CANCELADO, id);
         return "redirect:/admin/caja?rechazado";
     }
 

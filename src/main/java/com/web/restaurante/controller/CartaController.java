@@ -1,11 +1,6 @@
 package com.web.restaurante.controller;
 
 import com.web.restaurante.model.*;
-import com.web.restaurante.model.enums.EstadoPedido;
-import com.web.restaurante.repository.CategoriaRepository;
-import com.web.restaurante.repository.InsumoProductoRepository;
-import com.web.restaurante.repository.PagoDigitalRepository;
-import com.web.restaurante.repository.ProductoRepository;
 import com.web.restaurante.service.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +12,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,15 +19,13 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CartaController {
 
-
-    private final PedidoService pedidoService;
     private final CloudinaryService cloudinaryService;
     private final GroqService groqService;
     private final CartaService cartaService;
+    private final CajaOperativaService cajaOperativaService; // <-- Reemplaza a PedidoService
 
     @GetMapping("/carta")
     public String verCarta(Model model) {
-
         Map<Long, Boolean> productosAgotados = cartaService.productosAgotados();
         List<Producto> listaProductos = cartaService.productos();
 
@@ -48,7 +40,6 @@ public class CartaController {
     public ResponseEntity<?> recibirPedidoCarta(@RequestPart("pedido") Pedido pedido) {
         try {
             Long idPedido = cartaService.recibirPedidoCarta(pedido);
-
             return ResponseEntity.ok(Map.of("success", true, "id", idPedido));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("success", false, "message", e.getMessage()));
@@ -66,7 +57,6 @@ public class CartaController {
             }
 
             String urlVoucherCloudinary = cloudinaryService.subirImagen(file, "vouchers-lajama");
-
             Map<String, Object> datosIA = groqService.analizarImagenVoucher(urlVoucherCloudinary);
 
             String destinoIA = (String) datosIA.get("destino");
@@ -119,7 +109,9 @@ public class CartaController {
             if (nroOperacion == null || nroOperacion.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("success", false, "message", "La IA no pudo leer con nitidez el número de operación. Intente con otra captura clara."));
             }
-            if (pedidoService.existeNumeroOperationHoy(nroOperacion.trim())) {
+
+            // Usamos CajaOperativaService para validar el número de operación del voucher
+            if (cajaOperativaService.existeNumeroOperationHoy(nroOperacion.trim())) {
                 return ResponseEntity.badRequest().body(Map.of("success", false, "message", "🚨 Intento de Estafa: Este número de operación (" + nroOperacion.trim() + ") ya fue registrado y aprobado el día de hoy en La Jama."));
             }
 

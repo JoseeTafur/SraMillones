@@ -24,6 +24,7 @@ public class PagoDigitalService {
     private final PagoDigitalMapper pagoDigitalMapper;
     private final PedidoService pedidoService;
     private final TurnoCajaService turnoCajaService;
+    private final CajaOperativaService cajaOperativaService;
 
     @Transactional(readOnly = true)
     public List<PagoDigitalDTO> listarTodos() {
@@ -83,7 +84,7 @@ public class PagoDigitalService {
 
         Pedido pedido = pago.getPedido();
 
-        pedidoService.aprobarPedidoACocina(pedido.getId());
+        cajaOperativaService.aprobarPedidoACocina(pedido.getId());
 
         return pagoDigitalMapper.toDTO(pagoDigitalRepository.save(pago));
     }

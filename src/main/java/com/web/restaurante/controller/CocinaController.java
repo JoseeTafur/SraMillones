@@ -2,6 +2,7 @@ package com.web.restaurante.controller;
 
 import com.web.restaurante.model.*;
 import com.web.restaurante.repository.NotificacionRepository;
+import com.web.restaurante.service.CocinaService;
 import com.web.restaurante.service.PedidoService;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import jakarta.servlet.http.HttpSession;
@@ -17,7 +18,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CocinaController {
 
-    private final PedidoService pedidoService;
+    private final CocinaService cocinaService;       // <-- Lógica operativa de cocina
+    private final PedidoService pedidoService;       // <-- Para buscar pedido y guardar cambios de ticket
     private final SimpMessagingTemplate messagingTemplate;
     private final NotificacionRepository notificacionRepository;
 
@@ -55,7 +57,7 @@ public class CocinaController {
         }
 
         if ("caliente".equals(tipoLimpio)) {
-            List<Pedido> pedidosCalientes = pedidoService.listarPedidosCalientes();
+            List<Pedido> pedidosCalientes = cocinaService.listarPedidosCalientes();
 
             model.addAttribute("activeUri", "/admin/cocina/caliente");
             model.addAttribute("titleHeader", "Monitor de Cocina Caliente");
@@ -65,7 +67,7 @@ public class CocinaController {
             model.addAttribute("tipoEstacion", "caliente");
             return "admin/cocina_caliente";
         } else if ("fria".equals(tipoLimpio)) {
-            List<Pedido> pedidosFrios = pedidoService.listarPedidosFrios();
+            List<Pedido> pedidosFrios = cocinaService.listarPedidosFrios();
 
             model.addAttribute("activeUri", "/admin/cocina/fria");
             model.addAttribute("titleHeader", "Monitor de Cocina Fría / Frescos");
@@ -134,7 +136,7 @@ public class CocinaController {
 
     @PostMapping("/completar")
     public String completarPedido(@RequestParam Long pedidoId, @RequestParam String tipoEstacion) {
-        pedidoService.completarEstacion(pedidoId, tipoEstacion);
+        cocinaService.completarEstacion(pedidoId, tipoEstacion);
 
         Pedido p = pedidoService.obtenerPorId(pedidoId);
         String identificadorMesa = (p != null && p.getNumeroMesa() != null) ? "Mesa N° " + p.getNumeroMesa() : String.valueOf(pedidoId);
@@ -157,7 +159,7 @@ public class CocinaController {
     @ResponseBody
     public String completarItemIndividual(@RequestParam Long pedidoId, @RequestParam Long detalleId, @RequestParam String tipoEstacion) {
         System.out.println("DEBUG: Despachando fila exacta ID: " + detalleId + " de la comanda: " + pedidoId);
-        pedidoService.despacharPlatoIndividual(pedidoId, detalleId);
+        cocinaService.despacharPlatoIndividual(pedidoId, detalleId);
 
         Pedido p = pedidoService.obtenerPorId(pedidoId);
 

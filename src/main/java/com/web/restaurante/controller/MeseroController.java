@@ -11,6 +11,8 @@ import com.web.restaurante.repository.MesaRepository;
 import com.web.restaurante.repository.PedidoRepository;
 import com.web.restaurante.repository.ProductoRepository;
 import com.web.restaurante.repository.InsumoProductoRepository;
+import com.web.restaurante.service.CajaOperativaService;
+import com.web.restaurante.service.CocinaService;
 import com.web.restaurante.service.PedidoService;
 import com.web.restaurante.service.TurnoCajaService;
 import jakarta.servlet.http.HttpSession;
@@ -31,6 +33,8 @@ import java.util.Map;
 public class  MeseroController {
 
     private final PedidoService pedidoService;
+    private final CocinaService cocinaService;
+    private final CajaOperativaService cajaOperativaService;
 
     @GetMapping("/nuevo")
     public String nuevoPedido(Model model, HttpSession session,
@@ -87,7 +91,7 @@ public class  MeseroController {
     @ResponseBody
     public ResponseEntity<String> eliminarItemDesdeSalon(@RequestParam Long pedidoId, @RequestParam Long detalleId, @RequestParam("esMerma") boolean esMerma) {
         try {
-            pedidoService.eliminarItemComanda(pedidoId, detalleId, esMerma);
+            cocinaService.eliminarItemComanda(pedidoId, detalleId, esMerma);
             return ResponseEntity.ok("OK");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
@@ -121,7 +125,7 @@ public class  MeseroController {
     @ResponseBody
     public ResponseEntity<String> prepararCuenta(@PathVariable Long id) {
         try {
-            pedidoService.prepararCuenta(id);
+            cajaOperativaService.prepararCuenta(id);
             return ResponseEntity.ok("OK");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
