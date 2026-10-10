@@ -9,9 +9,9 @@
  }
 
 :root {
-    --lajama-green: #1B3A2C;
+    --lajama-green: #5C0612; /* 🍷 Color guinda unificado */
     --lajama-peach: #fed7aa;
-    --lajama-brown: #933D2D;
+    --lajama-brown: #3D1016; /* 🍷 Tono vino oscuro complementario */
     --sidebar-width: 280px;
     --header-height: 85px;
 }
@@ -51,7 +51,7 @@ body {
     position: sticky;
     top: 0;
     left: 0;
-    background: linear-gradient(180deg, #26503d 0%, var(--lajama-green) 100%);
+    background: linear-gradient(180deg, #7A0A19 0%, #300306 100%) !important;
     color: white;
     border-right: 1px solid rgba(255, 255, 255, 0.05);
     box-shadow: 4px 0 15px rgba(0, 0, 0, 0.08);
@@ -520,6 +520,7 @@ body {
     485px 581px #fff, 1353px 1058px #fff, 1257px 131px #fff, 434px 98px #fff,
     1587px 1953px #fff, 1749px 68px #fff, 1984px 839px #fff, 1518px 183px #fff,
     1071px 855px #fff, 1662px 1994px #fff, 1111px 106px #fff, 1954px 838px #fff;
+  animation: animStar 50s linear infinite;
 }
 
 #stars2 {
@@ -725,7 +726,7 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 0 32px;
-    background: radial-gradient(circle at top center, #26503d 0%, #173125 100%);
+    background: radial-gradient(circle at top center, #5C0612 0%, #300306 100%) !important;
     box-shadow:
         0 0.4em 1em rgba(0, 0, 0, 0.15),
         0 1px 3px rgba(0, 0, 0, 0.05);
@@ -934,14 +935,15 @@ body {
   transition: transform 0.05s ease;
 }
 
-.jama-uiverse-item.active-uiverse {
-  background: linear-gradient(90deg, #2E5A44 0%, var(--lajama-green) 100%) !important;
+/* 🍷 ESTADO ACTIVO FULL VINO / ROJO */
+.jama-uiverse-item.active-uiverse,
+.jama-uiverse-item[aria-expanded="true"] {
+  background: linear-gradient(90deg, #8B1A2B 0%, #5C0612 100%) !important;
   color: #ffffff !important;
   font-weight: 700;
-  border: 1px solid rgba(254, 215, 170, 0.3);
-  box-shadow: inset 0 4px 6px rgba(0, 0, 0, 0.25), 0 2px 5px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(254, 215, 170, 0.3) !important;
+  box-shadow: inset 0 4px 6px rgba(0, 0, 0, 0.25), 0 2px 5px rgba(0, 0, 0, 0.15) !important;
 }
-
 .jama-uiverse-item.active-uiverse .jama-uiverse-icon {
   transform: scale(1.15) !important;
   color: var(--lajama-peach) !important;
@@ -1033,7 +1035,7 @@ body {
 .submenu-item-uiverse.active-submenu {
   color: var(--lajama-peach) !important;
   font-weight: 700;
-  background: linear-gradient(90deg, rgba(46, 90, 68, 0.4) 0%, rgba(27, 58, 44, 0.6) 100%) !important;
+  background: linear-gradient(90deg, rgba(139, 26, 43, 0.5) 0%, rgba(92, 6, 18, 0.7) 100%) !important;
   border-left: 4px solid var(--lajama-peach) !important;
   border-radius: 0 9999px 9999px 0 !important;
   box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.45) !important;
@@ -1110,7 +1112,7 @@ body {
             rgba(254, 215, 170, 0.08) 12px,
             rgba(254, 215, 170, 0.08) 24px
         ),
-        linear-gradient(135deg, var(--lajama-brown) 0%, #2A4D3B 50%, var(--lajama-green) 100%);
+        linear-gradient(135deg, var(--lajama-brown) 0%, #5c0612 50%, var(--lajama-green) 100%);
     z-index: -2;
     transition: filter 0.3s ease;
 }
@@ -1165,10 +1167,10 @@ body {
     .btn-nuevo-jama::after { animation: none; }
 }
 
-/* 🌟 NUEVO: RUTA REPARADA PARA EL BRILLO DEL LOGO */
+/* 🌟 RUTA REPARADA PARA EL BRILLO DEL LOGO */
 #sidebar-logo {
     filter: drop-shadow(0 0 8px rgba(254, 215, 170, 0.35));
-    transition: filter 0.3s ease, opacity 0.3s ease, width 0.3s ease; /* ➔ Fusiona brillo y colapso */
+    transition: filter 0.3s ease, opacity 0.3s ease, width 0.3s ease; 
 }
 
 #sidebar-logo:hover {

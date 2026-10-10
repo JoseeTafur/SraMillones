@@ -7,26 +7,27 @@
    ======================================================== */
 
 :root {
-  /* 🎨 1. Paleta de Identidad (Valores absolutos de marca) */
-  --brand-green: #1B3A2C;
+  /* 🎨 1. Nueva Paleta de Identidad (Guinda / Vino) */
+  --brand-green: #5C0612;   /* 🍷 Color guinda base */
+  --lajama-green: #5C0612;  /* 🍷 Variable de compatibilidad unificada */
   --brand-peach: #fed7aa;
-  --brand-brown: #933D2D;
+  --brand-brown: #3D1016;   /* 🍷 Tono vino oscuro complementario */
   --brand-skin: #FFB38A;
   --brand-cream: #FFF7ED;
   --brand-white: #FFFFFF;
   --brand-dark: #2D2D2D;
 
-  /* ☀️ 2. Variables Semánticas - MODO CLARO (Por Defecto) */
-  --bg-app: var(--brand-cream);               /* Fondo general de la aplicación */
-  --bg-card: var(--brand-white);               /* Fondo de tarjetas, tablas, contenedores */
-  --bg-input: #f9fafb;                         /* Fondo de inputs y cajas de texto */
-  --text-main: var(--brand-dark);              /* Texto principal de alta legibilidad */
-  --text-muted: #6b7280;                       /* Texto secundario o leyendas */
-  --text-inverse: var(--brand-white);          /* Texto sobre fondos oscuros (como botones) */
+  /* ☀️ 2. Variables Semánticas actualizadas */
+  --bg-app: var(--brand-cream);                 
+  --bg-card: var(--brand-white);                 
+  --bg-input: #f9fafb;                         
+  --text-main: var(--brand-dark);              
+  --text-muted: #6b7280;                       
+  --text-inverse: var(--brand-white);          
 
-  --border-card: rgba(254, 215, 170, 0.4);     /* Bordes sutiles de las tarjetas */
-  --border-input: rgba(27, 58, 44, 0.12);      /* Bordes de formularios */
-  --shadow-premium: 0 10px 30px -10px rgba(27, 58, 44, 0.05); /* Sombra ligera de la marca */
+  --border-card: rgba(254, 215, 170, 0.4);     
+  --border-input: rgba(92, 6, 18, 0.12);      /* 🍷 Borde adaptado al guinda */
+  --shadow-premium: 0 10px 30px -10px rgba(92, 6, 18, 0.08); /* 🍷 Sombra sutil basada en guinda */
 
   /* 🟢 Estados Dinámicos en Modo Claro */
   --status-disp-bg: #f0fdf4;     --status-disp-border: #bbf7d0;     --status-disp-text: #14532d;
@@ -37,16 +38,16 @@
 
 /* 🌙 3. Variables Semánticas - MODO OSCURO (Activado vía clase .dark-mode) */
 body.dark-mode {
-  --bg-app: #0B0F0C;                           /* Tu fondo oscuro modular base */
-  --bg-card: #121814;                          /* Fondo de tarjeta premium oscuro */
-  --bg-input: #1a221c;                         /* Fondo para tus inputs */
+  --bg-app: #1c0508;                           /* 🍷 Fondo oscuro modular basado en vino */
+  --bg-card: #280a0f;                          /* 🍷 Fondo de tarjeta premium oscuro en tono vino */
+  --bg-input: #380e15;                         /* 🍷 Fondo para tus inputs en modo oscuro */
   --text-main: #f3f4f6;                        /* Gris claro de alta legibilidad */
   --text-muted: #9ca3af;                       /* Gris suave intermedio */
-  --text-inverse: #0B0F0C;                     /* Texto oscuro sobre fondos claros alternativos */
+  --text-inverse: #1c0508;                     /* Texto oscuro sobre fondos claros alternativos */
 
   --border-card: rgba(254, 215, 170, 0.12);    /* Borde durazno sutil para modo oscuro */
   --border-input: rgba(254, 215, 170, 0.15);   /* Borde para formularios en oscuro */
-  --shadow-premium: 0 10px 30px -10px rgba(0, 0, 0, 0.35); /* Sombra profunda sin el verde claro */
+  --shadow-premium: 0 10px 30px -10px rgba(0, 0, 0, 0.45); /* Sombra profunda limpia */
 
   /* 🔴 Estados Dinámicos en Modo Oscuro (Diseño Shadcn para no fatigar la vista) */
   --status-disp-bg: rgba(22, 163, 74, 0.15);    --status-disp-border: rgba(22, 163, 74, 0.4);   --status-disp-text: #4ade80;
@@ -54,7 +55,6 @@ body.dark-mode {
   --status-resv-bg: rgba(217, 119, 6, 0.15);    --status-resv-border: rgba(217, 119, 6, 0.4);   --status-resv-text: #fbbf24;
   --status-unif-bg: rgba(109, 40, 217, 0.15);   --status-unif-border: rgba(109, 40, 217, 0.4);  --status-unif-text: #a78bfa;
 }
-
 /* --- 1. TARJETA Y CONTENEDOR PRINCIPAL --- */
 .card-color1 {
   background: var(--bg-card) !important;       /* 🌟 Automático: Blanco o #121814 */
