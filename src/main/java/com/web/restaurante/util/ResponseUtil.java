@@ -13,7 +13,7 @@ public final class ResponseUtil {
         return ResponseEntity.ok(new ApiResponseDTO<>(true, msg, null));
     }
 
-    public static <T> ResponseEntity<ApiResponseDTO<T>> okData(T data) {
+    public static <T> ResponseEntity<ApiResponseDTO<T>> ok(T data) {
         return ResponseEntity.ok(new ApiResponseDTO<>(true, "Acción exitosa", data));
     }
 
