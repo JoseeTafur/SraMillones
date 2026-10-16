@@ -1,9 +1,6 @@
-package com.web.restaurante.mapper;
+/*package com.web.restaurante.mapper;
 
-import com.web.restaurante.dto.LoteInsumoDTO;
 import com.web.restaurante.dto.MovimientoPorcionesDTO;
-import com.web.restaurante.dto.ProduccionPorcionesDTO;
-import com.web.restaurante.model.LoteInsumo;
 import com.web.restaurante.model.MovimientoPorciones;
 import com.web.restaurante.model.ProduccionPorciones;
 import org.mapstruct.Mapper;
@@ -27,4 +24,4 @@ public interface ProteinaMapper {
     @Mapping(source = "insumo.nombre", target = "nombreInsumo")
     @Mapping(source = "mermaKg", target = "mermaKg")
     MovimientoPorcionesDTO toDTO(MovimientoPorciones movimiento);
-}
+}*/

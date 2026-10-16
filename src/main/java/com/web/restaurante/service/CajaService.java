@@ -2,10 +2,8 @@ package com.web.restaurante.service;
 
 import com.web.restaurante.model.*;
 import com.web.restaurante.model.enums.EstadoPago;
-import com.web.restaurante.model.enums.TipoMovimientoCaja;
 import com.web.restaurante.repository.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -24,7 +22,6 @@ public class CajaService {
 
     private final PedidoRepository pedidoRepository;
     private final TurnoCajaRepository turnoCajaRepository;
-    private final InsumoProductoRepository insumoProductoRepository;
     private final TurnoCajaService turnoCajaService;
     private final NotaVentaSequenceService notaVentaSequenceService;
     private final PedidoService pedidoService;
@@ -190,16 +187,6 @@ public class CajaService {
 
                 detalle.setEntregado(true);
                 detalle.setCocinado(true);
-
-                insumoProductoRepository.findByProductoId(productoReal.getId()).forEach(ip -> {
-                    if (ip.getInsumo() != null) {
-                        Insumo insumo = ip.getInsumo();
-                        double cantidadUsada = (ip.getCantidadUsada() != null) ? ip.getCantidadUsada() : 0.0;
-                        double totalAComprometer = cantidadUsada * detalle.getCantidad();
-                        double actualComprometido = (insumo.getStockComprometido() != null) ? insumo.getStockComprometido() : 0.0;
-                        insumo.setStockComprometido(actualComprometido + totalAComprometer);
-                    }
-                });
             }
         }
 

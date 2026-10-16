@@ -1,7 +1,6 @@
 package com.web.restaurante.service;
 
 import com.web.restaurante.model.DetallePedido;
-import com.web.restaurante.model.Insumo;
 import com.web.restaurante.model.Pedido;
 import com.web.restaurante.model.enums.EstadoPedido;
 import com.web.restaurante.repository.InsumoProductoRepository;
@@ -20,7 +19,6 @@ public class CocinaService {
 
     private final PedidoRepository pedidoRepository;
     private final InsumoProductoRepository insumoProductoRepository;
-    private final ProteinaService proteinaService;
     private final InsumoService insumoService;
 
     @Transactional(readOnly = true)
@@ -79,24 +77,6 @@ public class CocinaService {
 
         if (!detalleTarget.isCocinado()) {
             detalleTarget.setCocinado(true);
-
-            insumoProductoRepository.findByProductoId(detalleTarget.getProducto().getId()).forEach(ip -> {
-                if (ip.getInsumo() != null && ip.getInsumo().getCategoria() != null) {
-                    Insumo insumo = ip.getInsumo();
-                    double cantidadUsada = (ip.getCantidadUsada() != null) ? ip.getCantidadUsada() : 0.0;
-                    double totalTeorico = cantidadUsada * detalleTarget.getCantidad();
-
-                    double comprometidoActual = (insumo.getStockComprometido() != null) ? insumo.getStockComprometido() : 0.0;
-                    insumo.setStockComprometido(Math.max(0.0, comprometidoActual - totalTeorico));
-
-                    if (insumo.getCategoria().toUpperCase().contains("PROTEIN")) {
-                        proteinaService.registrarKardexPorVenta(insumo.getId(), detalleTarget.getCantidad(), p.getId());
-                    } else {
-                        String detalleVenta = "Despacho a cocina (Gasto Real): " + detalleTarget.getCantidad() + "x " + detalleTarget.getProducto().getNombre();
-                        insumoService.registrarMovimientoPorId(insumo.getId(), totalTeorico, "EGRESO", detalleVenta);
-                    }
-                }
-            });
         }
 
         boolean tieneFrioPendiente = p.getListaDetalles().stream()
@@ -131,21 +111,6 @@ public class CocinaService {
 
                     if ((esFriaCorrespondiente || esCalienteCorrespondiente) && !d.isCocinado()) {
                         d.setCocinado(true);
-
-                        insumoProductoRepository.findByProductoId(d.getProducto().getId()).forEach(ip -> {
-                            if (ip.getInsumo() != null && ip.getInsumo().getCategoria() != null) {
-
-                                if (ip.getInsumo().getCategoria().toUpperCase().contains("PROTEIN")) {
-                                    proteinaService.registrarKardexPorVenta(ip.getInsumo().getId(), d.getCantidad(), p.getId());
-                                } else {
-                                    double cantidadUsada = (ip.getCantidadUsada() != null) ? ip.getCantidadUsada() : 0.0;
-                                    double totalTeorico = cantidadUsada * d.getCantidad();
-                                    String detalleVenta = "Despacho a cocina: " + d.getCantidad() + "x " + d.getProducto().getNombre();
-
-                                    insumoService.registrarMovimientoPorId(ip.getInsumo().getId(), totalTeorico, "EGRESO", detalleVenta);
-                                }
-                            }
-                        });
                     }
                 }
             }
@@ -186,20 +151,6 @@ public class CocinaService {
         }
 
         if (!detalleTarget.isCocinado()) {
-            insumoProductoRepository.findByProductoId(detalleTarget.getProducto().getId()).forEach(ip -> {
-                if (ip.getInsumo() != null) {
-                    Insumo insumo = ip.getInsumo();
-                    double cantidadUsada = (ip.getCantidadUsada() != null) ? ip.getCantidadUsada() : 0.0;
-                    double totalInsumo = cantidadUsada * detalleTarget.getCantidad();
-
-                    double comprometidoActual = (insumo.getStockComprometido() != null) ? insumo.getStockComprometido() : 0.0;
-                    insumo.setStockComprometido(Math.max(0.0, comprometidoActual - totalInsumo));
-
-                    if (esMermaReal && insumo.getCategoria() != null && insumo.getCategoria().toUpperCase().contains("PROTEIN")) {
-                        proteinaService.registrarKardexPorVenta(insumo.getId(), detalleTarget.getCantidad(), pedido.getId());
-                    }
-                }
-            });
             detalleTarget.setCocinado(true);
         }
 

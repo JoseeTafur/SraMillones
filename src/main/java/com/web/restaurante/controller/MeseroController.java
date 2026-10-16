@@ -1,20 +1,10 @@
 package com.web.restaurante.controller;
 
-import com.web.restaurante.model.DetallePedido;
-import com.web.restaurante.model.Mesa;
 import com.web.restaurante.model.Pedido;
 import com.web.restaurante.model.Producto;
-import com.web.restaurante.model.InsumoProducto;
-import com.web.restaurante.model.enums.EstadoPago;
-import com.web.restaurante.model.enums.EstadoPedido;
-import com.web.restaurante.repository.MesaRepository;
-import com.web.restaurante.repository.PedidoRepository;
-import com.web.restaurante.repository.ProductoRepository;
-import com.web.restaurante.repository.InsumoProductoRepository;
 import com.web.restaurante.service.CajaOperativaService;
 import com.web.restaurante.service.CocinaService;
 import com.web.restaurante.service.PedidoService;
-import com.web.restaurante.service.TurnoCajaService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,15 +12,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Controller
 @RequestMapping("/admin/mesero")
 @RequiredArgsConstructor
-public class  MeseroController {
+public class MeseroController {
 
     private final PedidoService pedidoService;
     private final CocinaService cocinaService;

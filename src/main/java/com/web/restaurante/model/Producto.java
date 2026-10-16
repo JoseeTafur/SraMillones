@@ -25,8 +25,6 @@ public class Producto {
 
     private Double precio;
 
-    private Integer stock;
-
     private Integer estado;
 
     @ManyToOne(fetch = FetchType.LAZY)

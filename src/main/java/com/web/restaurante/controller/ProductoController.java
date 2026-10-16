@@ -3,7 +3,6 @@ package com.web.restaurante.controller;
 import com.web.restaurante.model.Producto;
 import com.web.restaurante.repository.CategoriaRepository;
 import com.web.restaurante.repository.ProductoRepository;
-import com.web.restaurante.service.InsumoService;
 import com.web.restaurante.service.CloudinaryService;
 import com.web.restaurante.util.ValidationUtil;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +24,6 @@ public class ProductoController {
 
     private final ProductoRepository productoRepository;
     private final CategoriaRepository categoriaRepository;
-    private final InsumoService insumoService;
     private final CloudinaryService cloudinaryService;
 
     @GetMapping
@@ -125,7 +123,10 @@ public class ProductoController {
 
     @GetMapping("/eliminar/{id}")
     public String eliminar(@PathVariable Long id) {
-        insumoService.eliminarProductoYDesvincularInsumos(id);
+        productoRepository.findById(id).ifPresent(p -> {
+            p.setEstado(0); // Desactiva el plato del catálogo/menú
+            productoRepository.save(p);
+        });
         return "redirect:/admin/productos?deleted";
     }
 

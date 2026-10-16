@@ -21,7 +21,6 @@ public class PedidoService {
     private final TurnoCajaService turnoCajaService;
     private final MesaRepository mesaRepository;
     private final ProductoRepository productoRepository;
-    private final InsumoProductoRepository insumoProductoRepository;
 
     @Transactional
     public Pedido guardar(Pedido pedido) {
@@ -86,9 +85,6 @@ public class PedidoService {
         if (pedido.getListaDetalles() != null) {
             for (DetallePedido detalle : pedido.getListaDetalles()) {
                 detalle.setPedido(pedido);
-                if (detalle.getId() == null && !detalle.isCanceladoPorCliente()) {
-                    comprometerStockPorReceta(detalle);
-                }
             }
         }
         pedidoRepository.save(pedido);
@@ -192,9 +188,6 @@ public class PedidoService {
                 detalle.setCocinado(false);
                 detalle.setEntregado(false);
                 detalle.setCanceladoPorCliente(false);
-                if (detalle.getId() == null) {
-                    comprometerStockPorReceta(detalle);
-                }
             }
         }
 
@@ -288,22 +281,9 @@ public class PedidoService {
         List<Producto> listaProductos = productoRepository.findAll();
         Map<Long, Boolean> productosAgotados = new HashMap<>();
 
+        // Sin gestión de insumos, marcamos todos los productos como disponibles (false = no agotado)
         for (Producto p : listaProductos) {
-            boolean agotado = false;
-            List<InsumoProducto> receta = insumoProductoRepository.findByProductoId(p.getId());
-
-            for (InsumoProducto ip : receta) {
-                if (ip.getInsumo() != null && "PROTEINA".equalsIgnoreCase(ip.getInsumo().getCategoria())) {
-                    double stockDisponibleReal = ip.getInsumo().getStockDisponible() != null ? ip.getInsumo().getStockDisponible() : 0.0;
-                    double cantidadRequerida = ip.getCantidadUsada() != null ? ip.getCantidadUsada() : 0.0;
-
-                    if (stockDisponibleReal < cantidadRequerida) {
-                        agotado = true;
-                        break;
-                    }
-                }
-            }
-            productosAgotados.put(p.getId(), agotado);
+            productosAgotados.put(p.getId(), false);
         }
         return productosAgotados;
     }
@@ -329,19 +309,5 @@ public class PedidoService {
                 })
                 .sorted(Comparator.comparing(Pedido::getFechaCreacion).reversed())
                 .toList();
-    }
-
-    private void comprometerStockPorReceta(DetallePedido detalle) {
-        if (detalle.getProducto() != null) {
-            insumoProductoRepository.findByProductoId(detalle.getProducto().getId()).forEach(ip -> {
-                if (ip.getInsumo() != null) {
-                    Insumo insumo = ip.getInsumo();
-                    double cantidadUsada = (ip.getCantidadUsada() != null) ? ip.getCantidadUsada() : 0.0;
-                    double totalAComprometer = cantidadUsada * detalle.getCantidad();
-                    double actualComprometido = (insumo.getStockComprometido() != null) ? insumo.getStockComprometido() : 0.0;
-                    insumo.setStockComprometido(actualComprometido + totalAComprometer);
-                }
-            });
-        }
     }
 }
