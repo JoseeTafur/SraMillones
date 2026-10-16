@@ -23,7 +23,4 @@ public class InsumoProducto {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_producto")
     private Producto producto;
-
-    @Column(nullable = false)
-    private Double cantidadUsada;
 }

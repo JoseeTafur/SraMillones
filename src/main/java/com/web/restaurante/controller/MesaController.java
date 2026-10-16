@@ -6,14 +6,13 @@ import com.web.restaurante.model.Mesa;
 import com.web.restaurante.model.Pedido;
 import com.web.restaurante.repository.MesaRepository;
 import com.web.restaurante.repository.PedidoRepository;
+import com.web.restaurante.service.CocinaService;
 import com.web.restaurante.service.MesaService;
-import com.web.restaurante.service.PedidoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.HashMap;
@@ -26,7 +25,7 @@ import java.util.Map;
 public class MesaController {
 
     private final MesaService mesaService;
-    private final PedidoService pedidoService;
+    private final CocinaService cocinaService; // <-- Reemplaza a PedidoService
     private final MesaRepository mesaRepository;
     private final PedidoRepository pedidoRepository;
 
@@ -85,7 +84,8 @@ public class MesaController {
             @RequestParam Long detalleId,
             @RequestParam(value = "esMerma", defaultValue = "false") boolean esMerma) {
         try {
-            pedidoService.eliminarItemComanda(pedidoId, detalleId, esMerma);
+            // Se invoca desde CocinaService
+            cocinaService.eliminarItemComanda(pedidoId, detalleId, esMerma);
 
             Pedido pedidoActualizado = pedidoRepository.findById(pedidoId)
                     .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));

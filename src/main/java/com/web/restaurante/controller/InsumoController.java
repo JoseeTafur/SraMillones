@@ -2,7 +2,6 @@ package com.web.restaurante.controller;
 
 import com.web.restaurante.dto.InsumoDTO;
 import com.web.restaurante.dto.InsumoProductoDTO;
-import com.web.restaurante.dto.MovimientoInsumoDTO;
 import com.web.restaurante.repository.ProductoRepository;
 import com.web.restaurante.service.InsumoService;
 import com.web.restaurante.util.ValidationUtil;
@@ -12,8 +11,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import jakarta.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,10 +43,6 @@ public class InsumoController {
             redirectAttrs.addFlashAttribute("errorInsumo", "El nombre del insumo es obligatorio y solo puede contener letras.");
             return "redirect:/insumos?tab=catalogo&error";
         }
-        if (dto.getStockMinimo() != null && dto.getStockMinimo() < 0) {
-            redirectAttrs.addFlashAttribute("errorInsumo", "El stock mínimo no puede ser un número negativo.");
-            return "redirect:/insumos?tab=catalogo&error";
-        }
         insumoService.guardarInsumo(dto);
         return "redirect:/insumos?tab=catalogo";
     }
@@ -60,10 +53,6 @@ public class InsumoController {
                                 RedirectAttributes redirectAttrs) {
         if (dto.getNombre() == null || dto.getNombre().isBlank() || !ValidationUtil.soloLetras(dto.getNombre())) {
             redirectAttrs.addFlashAttribute("errorInsumo", "El nombre del insumo es obligatorio y solo puede contener letras.");
-            return "redirect:/insumos?tab=" + originTab + "&error";
-        }
-        if (dto.getStockMinimo() != null && dto.getStockMinimo() < 0) {
-            redirectAttrs.addFlashAttribute("errorInsumo", "El stock mínimo no puede ser un número negativo.");
             return "redirect:/insumos?tab=" + originTab + "&error";
         }
         insumoService.guardarInsumo(dto);
@@ -92,30 +81,6 @@ public class InsumoController {
         }
     }
 
-    @PostMapping("/purgar/{id}")
-    @ResponseBody
-    public ResponseEntity<?> purgarInsumoDefinitivoAsincrono(@PathVariable Long id, HttpSession session) {
-        Map<String, Object> response = new HashMap<>();
-
-        String rol = session.getAttribute("rol") != null ? session.getAttribute("rol").toString() : "INVITADO";
-        if (!"SUPER_ADMIN".equals(rol)) {
-            response.put("success", false);
-            response.put("message", "Acceso denegado: Solo el Super Administrador puede purgar físicamente los registros.");
-            return ResponseEntity.status(403).body(response);
-        }
-
-        try {
-            insumoService.purgarInsumoDefinitivo(id);
-            response.put("success", true);
-            response.put("message", "El insumo ha sido purgado permanentemente del sistema de forma segura.");
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            response.put("success", false);
-            response.put("message", e.getMessage());
-            return ResponseEntity.badRequest().body(response);
-        }
-    }
-
     @GetMapping("/producto/{idProducto}")
     @ResponseBody
     public List<InsumoProductoDTO> insumosPorProducto(@PathVariable Long idProducto) {
@@ -124,9 +89,8 @@ public class InsumoController {
 
     @PostMapping("/producto/{idProducto}/agregar")
     public String agregarInsumoAProducto(@PathVariable Long idProducto,
-                                         @RequestParam Long idInsumo,
-                                         @RequestParam Double cantidad) {
-        insumoService.agregarInsumoAProducto(idProducto, idInsumo, cantidad);
+                                         @RequestParam Long idInsumo) {
+        insumoService.agregarInsumoAProducto(idProducto, idInsumo);
         return "redirect:/insumos?tab=recetas";
     }
 
@@ -136,43 +100,16 @@ public class InsumoController {
         return "redirect:/insumos?tab=recetas";
     }
 
-    @GetMapping("/kardex/{id}")
-    @ResponseBody
-    public List<MovimientoInsumoDTO> obtenerKardex(@PathVariable Long id) {
-        return insumoService.obtenerKardexPorInsumo(id);
-    }
-
     @PostMapping("/producto/receta/guardar-matriz")
     public String guardarMatrizReceta(@RequestParam Long idProductoSelect,
-                                      @RequestParam(required = false) List<Long> insumosSeleccionados,
-                                      jakarta.servlet.http.HttpServletRequest request) {
+                                      @RequestParam(required = false) List<Long> insumosSeleccionados) {
         insumoService.limpiarRecetaDeProducto(idProductoSelect);
 
         if (insumosSeleccionados != null && !insumosSeleccionados.isEmpty()) {
             for (Long idInsumo : insumosSeleccionados) {
-                String porcionesStr = request.getParameter("porciones-" + idInsumo);
-                Double cantidadPorciones = (porcionesStr != null && !porcionesStr.isEmpty())
-                        ? Double.valueOf(porcionesStr)
-                        : 1.0;
-                insumoService.agregarInsumoAProducto(idProductoSelect, idInsumo, cantidadPorciones);
+                insumoService.agregarInsumoAProducto(idProductoSelect, idInsumo);
             }
         }
         return "redirect:/insumos?tab=recetas";
-    }
-
-    @PostMapping("/lote/registrar")
-    @ResponseBody
-    public ResponseEntity<?> registrarLoteGeneral(@RequestBody java.util.Map<String, Object> payload) {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            insumoService.registrarLote(payload);
-            response.put("success", true);
-            response.put("message", "Lote general registrado correctamente");
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            response.put("success", false);
-            response.put("message", e.getMessage());
-            return ResponseEntity.badRequest().body(response);
-        }
     }
 }

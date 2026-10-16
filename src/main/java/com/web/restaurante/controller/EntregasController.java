@@ -3,6 +3,7 @@ package com.web.restaurante.controller;
 import com.web.restaurante.model.Empleado;
 import com.web.restaurante.model.Usuario;
 import com.web.restaurante.model.Pedido;
+import com.web.restaurante.service.DeliveryService;
 import com.web.restaurante.service.EmpleadoService;
 import com.web.restaurante.service.PedidoService;
 import jakarta.servlet.http.HttpSession;
@@ -20,6 +21,7 @@ public class EntregasController {
 
     private final PedidoService pedidoService;
     private final EmpleadoService empleadoService;
+    private final DeliveryService deliveryService;
 
     @GetMapping("/mis-pedidos")
     public String listarMisPedidos(HttpSession session, Model model) {
@@ -29,7 +31,7 @@ public class EntregasController {
         String rol = session.getAttribute("rol") != null ? session.getAttribute("rol").toString() : "";
 
         if ("SUPER_ADMIN".equals(rol) || "ADMIN".equals(rol)) {
-            List<Pedido> todosLosDeliveries = pedidoService.listarPreparadosParaDespacho();
+            List<Pedido> todosLosDeliveries = deliveryService.listarPreparadosParaDespacho();
             model.addAttribute("pedidos", todosLosDeliveries);
             model.addAttribute("nombreRepartidor", "Supervisor: " + usuario.getUsuario());
             return "admin/mis-pedidos";
@@ -38,7 +40,7 @@ public class EntregasController {
         Empleado repartidor = empleadoService.obtenerPorUsuario(usuario)
                 .orElseThrow(() -> new RuntimeException("Empleado no vinculado"));
 
-        List<Pedido> misPedidos = pedidoService.listarPedidosPorRepartidor(repartidor.getId());
+        List<Pedido> misPedidos = deliveryService.listarPedidosPorRepartidor(repartidor.getId());
 
         model.addAttribute("pedidos", misPedidos);
         model.addAttribute("nombreRepartidor", repartidor.getNombre());
@@ -49,14 +51,14 @@ public class EntregasController {
     @PostMapping("/iniciar/{id}")
     @ResponseBody
     public String iniciarRuta(@PathVariable Long id) {
-        pedidoService.iniciarRuta(id);
+        deliveryService.iniciarRuta(id);
         return "OK";
     }
 
     @PostMapping("/completar/{id}")
     @ResponseBody
     public String completarEntrega(@PathVariable Long id) {
-        pedidoService.marcarComoEntregado(id);
+        deliveryService.marcarComoEntregado(id);
         return "OK";
     }
 }

@@ -45,16 +45,8 @@ public class MetricasService {
         }
         kpis.put("topPlatos", platosMap);
 
-        List<Map<String, Object>> proteinasRaw = metricasRepository.kpiConsumoProteinas(inicioHoy);
-        Map<String, Double> proteinasMap = new HashMap<>();
-        for (Map<String, Object> row : proteinasRaw) {
-            Object keyNombre = row.get("nombre") != null ? row.get("nombre") : row.get("NOMBRE");
-            Object valTotal  = row.get("total") != null ? row.get("total") : row.get("TOTAL");
-            if (keyNombre != null && valTotal != null) {
-                proteinasMap.put(keyNombre.toString().toUpperCase(), Double.valueOf(valTotal.toString()));
-            }
-        }
-        kpis.put("ventasProteinas", proteinasMap);
+        // Sin métricas de Kardex/Movimientos, enviamos el mapa vacío para la vista del dashboard
+        kpis.put("ventasProteinas", new HashMap<String, Double>());
 
         List<Map<String, Object>> mesasRaw = metricasRepository.kpiEstadoMesasActual();
         Map<String, Long> mesasMap = new HashMap<>();

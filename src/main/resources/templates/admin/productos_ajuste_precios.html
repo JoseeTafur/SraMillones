@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-gestion :: layout(title='Gestión de Precios', content=~{::#contenido}, modals=~{::#modales}, js='/js/productos_ajuste_precios.js')}">
+<body>
+
+<div id="contenido">
+
+    <link rel="stylesheet" th:href="@{/css/productos_ajuste_precios.css}">
+
+    <div th:if="${errorProducto != null}"
+         class="alert alert-danger alert-dismissible fade show rounded-4 shadow-sm mb-4 border-0"
+         role="alert" style="background-color: #fce8e6; color: #a51d24;">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-exclamation-circle-fill me-2 fs-5"></i>
+            <span class="fw-semibold small" th:text="${errorProducto}"></span>
+        </div>
+        <button type="button" class="btn-close small" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="card rounded-lg card-color1">
+        <div class="card-body p-4">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="card-title h5 fw-bold">
+                    <i class="bi bi-egg-fried me-2"></i> Lista de Precios del Menú
+                </h1>
+                <button type="button" class="btn-jama-kinetic" onclick="abrirModalMasivo()">
+                    <i class="bi bi-sliders"></i>
+                    <span>Ajuste Masivo</span>
+                </button>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0" style="border: 2px solid var(--lajama-peach); border-radius: 12px 0 0 12px;"><i class="bi bi-search"></i></span>
+                        <input type="text" id="busqueda" class="form-control border-start-0" style="border-radius: 0 12px 12px 0 !important;" placeholder="Buscar plato o insumo...">
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive-jama">
+                <table id="tablaProductos" class="table table-jama responsive" style="width: 100%">
+                    <thead>
+                    <tr>
+                        <th>Imagen</th>
+                        <th>Producto</th>
+                        <th>Insumos</th>
+                        <th>Precio</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="p : ${productos}" th:id="'prod-row-' + ${p.id}" class="producto-fila"
+                        th:data-id="${p.id}"
+                        th:data-nombre="${p.nombre}"
+                        th:data-precio="${p.precio}"
+                        th:data-imagen="${p.imgUrl}">
+                        <td>
+                            <img th:src="${p.imgUrl != null and p.imgUrl != '' ? p.imgUrl : '/img/not-found.png'}"
+                                 class="img-thumbnail rounded-3 shadow-sm"
+                                 style="width: 50px; height: 50px; object-fit: cover; border: 1px solid var(--border-color);"
+                                 alt="Imagen del plato">
+                        </td>
+                        <td>
+                            <span class="d-block fw-bold text-dark target-busqueda-nombre" th:text="${p.nombre}"></span>
+                        </td>
+                        <td class="target-busqueda-insumos">
+                            <span th:each="i : ${p.insumos}"
+                                  class="badge rounded-pill bg-light text-dark border me-1 mb-1"
+                                  th:text="${i.nombre}"></span>
+                            <small th:if="${#lists.isEmpty(p.insumos)}" class="text-muted">Sin insumos</small>
+                        </td>
+                        <td class="fw-bold text-jama-gold precio-celda">S/ [[${#numbers.formatDecimal(p.precio, 1, 2)}]]</td>
+                        <td class="text-center">
+                            <div class="action-buttons-wrapper justify-content-center">
+                                <button type="button" class="action-jama-btn btn-action-edit" th:onclick="'editarProducto(' + ${p.id} + ')'" title="Editar Precio">
+                                    <svg viewBox="0 0 39 7" class="pencil-cap" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <line y1="3.5" x2="39" y2="3.5" stroke-width="4"/>
+                                    </svg>
+                                    <svg viewBox="0 0 33 39" class="pencil-body" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M6 2L2 15V37H31V15L27 2H6Z" stroke-width="3"/>
+                                        <path d="M12 15V30" stroke-width="4" stroke="white"/>
+                                        <path d="M21 15V30" stroke-width="4" stroke="white"/>
+                                    </svg>
+                                    <svg viewBox="0 0 89 80" class="sparks" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M40 0L50 30L80 40L50 50L40 80L30 50L0 40L30 30Z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr id="filaSinResultados" style="display: none;">
+                        <td colspan="5" class="text-center py-5 bg-light-jama">
+                            <div class="text-muted">
+                                <i class="bi bi-exclamation-triangle-fill text-warning fs-3 d-block mb-2"></i>
+                                <span class="fw-bold d-block text-dark">No se encontraron platos</span>
+                                <small>Intenta con otro término o revisa la ortografía.</small>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="jama-table-controls mt-4">
+                <div class="jama-length-changer">
+                    <span>Mostrar</span>
+                    <select id="maxRows" class="select-jama-pages">
+                        <option value="5">5 registros</option>
+                        <option value="10" selected>10 registros</option>
+                        <option value="20">20 registros</option>
+                        <option value="50">50 registros</option>
+                    </select>
+                </div>
+                <ul class="jama-pagination-wrapper" id="paginadorContenedor">
+                </ul>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div id="modales">
+
+    <!-- ========== MODAL: EDITAR PRECIO INDIVIDUAL ========== -->
+    <div class="modal fade" id="modalEditarPrecio" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil-square me-2"></i> Editar Precio
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <input type="hidden" id="editProdId">
+
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <img id="editProdImg" src="/img/not-found.png" alt="Plato"
+                             class="img-thumbnail rounded-3 shadow-sm"
+                             style="width: 70px; height: 70px; object-fit: cover;">
+                        <div>
+                            <span id="editProdNombre" class="d-block fw-bold text-dark"></span>
+                            <small class="text-muted">Precio actual: S/ <span id="editPrecioActual">0.00</span></small>
+                        </div>
+                    </div>
+
+                    <label class="form-label fw-bold small text-dark" for="editNuevoPrecio">Nuevo precio (S/)</label>
+                    <input type="number" id="editNuevoPrecio" class="form-control" step="0.01" placeholder="0.00">
+                    <div id="editNuevoPrecio-error" class="text-danger small mt-1 fw-semibold" style="font-size: 0.75rem;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardarPrecioIndividual">Guardar Precio</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== MODAL: AJUSTE MASIVO ========== -->
+    <div class="modal fade" id="modalAjusteMasivo" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-sliders me-2"></i> Ajuste Masivo de Precios
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body p-4">
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-dark" for="masivoTipo">Tipo de ajuste</label>
+                            <select id="masivoTipo" class="form-select">
+                                <option value="FIJAR">Cambiar a un precio fijo</option>
+                                <option value="SUMAR">Añadir o restar un monto al precio</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-dark" for="masivoValor">
+                                <span id="masivoValorLabel">Nuevo precio (S/)</span>
+                            </label>
+                            <input type="number" id="masivoValor" class="form-control" step="0.01" placeholder="0.00">
+                            <div id="masivoValor-error" class="text-danger small mt-1 fw-semibold" style="font-size: 0.75rem;"></div>
+                        </div>
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <span class="input-group-text bg-light border-end-0" style="border: 2px solid var(--lajama-peach); border-radius: 12px 0 0 12px;"><i class="bi bi-search"></i></span>
+                        <input type="text" id="busquedaMasiva" class="form-control border-start-0"
+                               style="border-radius: 0 12px 12px 0 !important;"
+                               placeholder="Buscar por insumo o plato...">
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="masivoSelTodos">
+                            <label class="form-check-label fw-bold small" for="masivoSelTodos">Seleccionar todos los visibles</label>
+                        </div>
+                        <small class="text-muted"><span id="masivoContador">0</span> seleccionados</small>
+                    </div>
+
+                    <div class="list-group" id="listaMasiva" style="max-height: 40vh; overflow-y: auto;">
+                        <label th:each="p : ${productos}"
+                               class="list-group-item list-group-item-action d-flex align-items-center gap-3 item-masivo"
+                               th:data-id="${p.id}"
+                               th:data-precio="${p.precio}">
+                            <input class="form-check-input flex-shrink-0 chk-masivo" type="checkbox">
+                            <div class="flex-grow-1">
+                                <span class="d-block fw-bold text-dark target-busqueda-nombre" th:text="${p.nombre}"></span>
+                                <small class="text-muted target-busqueda-insumos">
+                                    <span th:each="i, st : ${p.insumos}" th:text="${i.nombre} + (${st.last} ? '' : ', ')"></span>
+                                </small>
+                            </div>
+                            <div class="text-end text-nowrap">
+                                <span class="fw-bold text-jama-gold precio-actual">S/ [[${#numbers.formatDecimal(p.precio, 1, 2)}]]</span>
+                                <small class="precio-nuevo d-block"></small>
+                            </div>
+                        </label>
+
+                        <div id="masivoSinResultados" class="text-center text-muted py-4 d-none">
+                            <i class="bi bi-exclamation-triangle-fill text-warning fs-4 d-block mb-1"></i>
+                            <small>No se encontraron platos ni insumos con ese término.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnAplicarMasivo">Aplicar a seleccionados</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

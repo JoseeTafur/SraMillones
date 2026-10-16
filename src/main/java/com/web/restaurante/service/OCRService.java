@@ -11,7 +11,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class OCRService {
 
-    private final PedidoService pedidoService;
+    private final CajaOperativaService cajaOperativaService;
     private final GroqService groqService;
 
     public void procesarYValidarVoucherIA(Pedido pedido, String urlImagenVoucher) throws Exception {
@@ -59,7 +59,7 @@ public class OCRService {
             throw new IllegalArgumentException("🚨 Error de Lectura: La IA no pudo detectar de forma nítida el número de operación.");
         }
 
-        if (pedidoService.existeNumeroOperationHoy(nroOperacion.trim())) {
+        if (cajaOperativaService.existeNumeroOperationHoy(nroOperacion.trim())) {
             throw new IllegalArgumentException("🚨 Fraude Mapeado: Este número de operación (" + nroOperacion + ") ya fue registrado y aprobado el día de hoy.");
         }
 
