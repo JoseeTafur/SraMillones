@@ -11,6 +11,9 @@ import UsuariosPage from '../pages/usuarios/UsuariosPage';
 import RolesPage from '../pages/roles/RolesPage';
 import EmpleadosPage from '../pages/empleados/EmpleadosPage';
 import CajaPage from '../pages/caja/CajaPage';
+import MesasPage from '../pages/mesas/MesasPage';
+import CocinaPage from '../pages/cocina/CocinaPage';
+import ReservasPage from '../pages/reservas/ReservasPage';
 
 export const AppRouter = () => {
   return (
@@ -30,6 +33,9 @@ export const AppRouter = () => {
             <Route path="/admin/perfiles" element={<RolesPage />} />
             <Route path="/admin/empleados" element={<EmpleadosPage />} />
             <Route path="/admin/caja" element={<CajaPage />} />
+            <Route path="/admin/mesas" element={<MesasPage />} />
+            <Route path="/admin/cocina" element={<CocinaPage />} />
+            <Route path="/admin/reservas" element={<ReservasPage />} />
 
           </Route>
 

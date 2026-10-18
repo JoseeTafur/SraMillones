@@ -1,0 +1,357 @@
+/* ===================================================
+   MONITOR DE COCINA (KDS) - LA JAMA
+   =================================================== */
+
+.cocina-page-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+/* Banner de Cabecera Oficial */
+.cocina-header-banner {
+  background: linear-gradient(135deg, #4a0811 0%, #200307 100%);
+  border-radius: 16px;
+  padding: 1.1rem 1.6rem;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 14px rgba(74, 8, 17, 0.25);
+  border: 1px solid #881337;
+}
+
+.banner-main-title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: -0.3px;
+}
+
+.banner-sub-text {
+  margin: 0.2rem 0 0 0;
+  font-size: 0.8rem;
+  color: #fef3c7;
+  font-weight: 600;
+}
+
+.cocina-pending-badge {
+  background-color: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 30px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.flame-icon {
+  font-size: 0.9rem;
+}
+
+/* Pestañas de Filtrado KDS */
+.cocina-tabs-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.cocina-tab-btn {
+  padding: 0.65rem 1.2rem;
+  border-radius: 12px;
+  border: 1.5px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #334155;
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.tab-dot { font-size: 0.9rem; }
+.tab-dot.blue { color: #2563eb; }
+.tab-dot.yellow { color: #d97706; }
+.tab-dot.gray { color: #64748b; }
+
+.tab-count {
+  background-color: #f1f5f9;
+  color: #0f172a;
+  padding: 0.15rem 0.5rem;
+  border-radius: 10px;
+  font-size: 0.78rem;
+}
+
+.cocina-tab-btn.active {
+  background-color: #4a0811;
+  border-color: #4a0811;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(74, 8, 17, 0.2);
+}
+
+.cocina-tab-btn.active .tab-count {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+/* Grilla de Tarjetas KDS */
+.cocina-grid-layout {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+}
+
+/* Tarjeta Individual de Comanda */
+.comanda-card-box {
+  background-color: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 18px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  transition: all 0.25s ease;
+}
+
+/* Estilos de Cabecera por Estado */
+.comanda-card-box.en_preparacion .comanda-card-header {
+  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+  color: #ffffff;
+}
+
+.comanda-card-box.listo .comanda-card-header {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  color: #ffffff;
+}
+
+.comanda-card-box.en_espera .comanda-card-header {
+  background: linear-gradient(135deg, #475569 0%, #334155 100%);
+  color: #ffffff;
+}
+
+.comanda-card-header {
+  padding: 0.85rem 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-mesa-box {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.card-mesa-box h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+.card-meta-right {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.ticket-id {
+  font-size: 0.78rem;
+  font-weight: 800;
+  opacity: 0.9;
+}
+
+.timer-pill {
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.timer-pill.danger {
+  background-color: #ef4444;
+  color: #ffffff;
+  animation: pulseTimer 1.5s infinite;
+}
+
+.timer-pill.success {
+  background-color: #16a34a;
+  color: #ffffff;
+}
+
+/* Lista de Platos */
+.comanda-platillos-list {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.platillo-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.75rem;
+  border-radius: 12px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.platillo-item-row.platillo-listo {
+  background-color: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.p-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.p-cant {
+  background-color: #475569;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 0.15rem 0.45rem;
+  border-radius: 6px;
+}
+
+.p-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.p-nombre {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.p-notas {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #d97706;
+}
+
+/* Botón de Estado por Plato */
+.btn-estado-platillo {
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.75rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-estado-platillo.btn-preparar {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.btn-estado-platillo.btn-preparar:hover {
+  background-color: #2563eb;
+  color: #ffffff;
+}
+
+.btn-estado-platillo.btn-listo {
+  background-color: #16a34a;
+  color: #ffffff;
+}
+
+/* Pie de Tarjeta */
+.comanda-card-footer {
+  padding: 0.85rem 1.1rem;
+  background-color: #f8fafc;
+  border-top: 1px dashed #cbd5e1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.footer-info-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.footer-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-print-ticket {
+  width: 100%;
+  padding: 0.55rem;
+  border-radius: 10px;
+  border: 1.5px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #334155;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-print-ticket:hover {
+  border-color: #4a0811;
+  color: #4a0811;
+}
+
+.btn-despachar-final {
+  width: 100%;
+  padding: 0.55rem;
+  border-radius: 10px;
+  border: none;
+  background-color: #16a34a;
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-despachar-final:hover {
+  background-color: #15803d;
+}
+
+.cocina-empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3.5rem 1rem;
+  color: #64748b;
+  background-color: #ffffff;
+  border-radius: 20px;
+  border: 1.5px dashed #cbd5e1;
+}
+
+@keyframes pulseTimer {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+@media (max-width: 1280px) {
+  .cocina-grid-layout {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .cocina-grid-layout {
+    grid-template-columns: 1fr;
+  }
+}

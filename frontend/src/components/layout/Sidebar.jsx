@@ -35,7 +35,6 @@ export const Sidebar = ({ isCollapsed, toggleSidebar }) => {
       roles: ['ADMIN', 'MESERO', 'CAJERO'],
       submenu: [
         { title: 'Mapa de Mesas', path: '/admin/mesas' },
-        { title: 'Comandera Mesero', path: '/admin/mesero-pedido' },
         { title: 'Reservas', path: '/admin/reservas' }
       ]
     },
@@ -49,9 +48,7 @@ export const Sidebar = ({ isCollapsed, toggleSidebar }) => {
       key: 'cocina',
       roles: ['ADMIN', 'COCINA'],
       submenu: [
-        { title: 'Cocina Caliente', path: '/admin/cocina-caliente' },
-        { title: 'Cocina Fría', path: '/admin/cocina-fria' },
-        { title: 'Despacho', path: '/admin/despacho' }
+        { title: 'Cocina', path: '/admin/cocina' }
       ]
     },
     {
@@ -65,9 +62,7 @@ export const Sidebar = ({ isCollapsed, toggleSidebar }) => {
       key: 'caja',
       roles: ['ADMIN', 'CAJERO'],
       submenu: [
-        { title: 'Caja Abierta', path: '/admin/caja' },
-        { title: 'Apertura / Cierre', path: '/admin/caja-apertura' },
-        { title: 'Delivery & Pedidos', path: '/admin/cajero-delivery' }
+        { title: 'Caja Abierta', path: '/admin/caja' }
       ]
     },
     {

@@ -1,0 +1,368 @@
+/* ===================================================
+   GESTIÓN DE RESERVAS - ESTILOS OFICIALES LA JAMA
+   =================================================== */
+
+.reservas-page-container {
+  width: 100%;
+}
+
+/* Card Principal Contenedora */
+.reservas-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  padding: 1.8rem 2rem;
+}
+
+/* Header del Card */
+.reservas-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.icon-reserva-circle {
+  width: 42px;
+  height: 42px;
+  background-color: #fdf2f2;
+  color: #4a0811;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reservas-card-header .title-box h2 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #4a0811;
+  margin: 0;
+  border-bottom: 3px solid #f97316;
+  padding-bottom: 0.2rem;
+}
+
+/* Fila de Filtros y Búsqueda */
+.reservas-filters-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+/* Barra de Búsqueda Estándar Corregida */
+.search-input-box {
+  position: relative !important;
+  flex: 1;
+  max-width: 380px;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon-wrapper {
+  position: absolute !important;
+  left: 14px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.search-input-box input {
+  width: 100%;
+  padding: 0.75rem 2.4rem 0.75rem 2.8rem !important;
+  border: 1.5px solid #cbd5e1;
+  background-color: #f8fafc;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.search-input-box input:focus {
+  border-color: #4a0811;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(74, 8, 17, 0.1);
+}
+
+.btn-clear-search {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+/* Pastillas / Pills de Filtro */
+.category-pills-filter {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btn-filter-pill {
+  background-color: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  padding: 0.55rem 1rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-filter-pill:hover {
+  background-color: #e2e8f0;
+}
+
+.btn-filter-pill.active {
+  background-color: #4a0811;
+  color: #ffffff;
+  border-color: #4a0811;
+  box-shadow: 0 2px 8px rgba(74, 8, 17, 0.2);
+}
+
+/* Tabla de Reservas */
+.reservas-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.reservas-table thead tr {
+  background-color: #4a0811;
+  color: #ffffff;
+}
+
+.reservas-table th {
+  padding: 0.95rem 1.1rem;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.reservas-table tbody tr {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background-color 0.2s ease;
+}
+
+.reservas-table tbody tr:hover {
+  background-color: #fcf8f8;
+}
+
+.reservas-table tbody tr.tr-disabled {
+  opacity: 0.5;
+  background-color: #fafafa;
+}
+
+.reservas-table td {
+  padding: 0.95rem 1.1rem;
+  vertical-align: middle;
+}
+
+.res-code {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #4a0811;
+}
+
+.res-cliente-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.res-nombre {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.res-obs {
+  font-size: 0.78rem;
+  color: #d97706;
+  font-weight: 700;
+}
+
+.res-telefono {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.badge-mesa-pill {
+  background-color: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #1e293b;
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.res-personas {
+  font-size: 0.88rem;
+  color: #0f172a;
+}
+
+.res-fechahora {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #334155;
+}
+
+.badge-estado-pill {
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  display: inline-block;
+}
+
+.badge-estado-pill.confirmada {
+  background-color: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.badge-estado-pill.pendiente {
+  background-color: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.badge-estado-pill.cancelada {
+  background-color: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+/* ===================================================
+   MODAL DE RESERVA ANCHO Y CALENDARIO INTERACTIVO
+   =================================================== */
+
+.modal-dialog-custom.modal-reserva-wide {
+  max-width: 680px;
+}
+
+.modal-reserva-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.4rem;
+}
+
+.reserva-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+}
+
+.reserva-obs-fullwidth {
+  grid-column: 1 / -1;
+}
+
+/* Componente Calendario Interactivo */
+.custom-calendar-box {
+  background-color: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.calendar-header-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.calendar-month-title {
+  font-size: 0.92rem;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.btn-cal-nav {
+  background-color: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 900;
+  cursor: pointer;
+  color: #334155;
+  transition: all 0.2s ease;
+}
+
+.btn-cal-nav:hover {
+  background-color: #4a0811;
+  border-color: #4a0811;
+  color: #ffffff;
+}
+
+.calendar-weekdays-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #64748b;
+}
+
+.calendar-days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+}
+
+.cal-day-cell {
+  aspect-ratio: 1;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cal-day-cell:hover:not(.empty) {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.cal-day-cell.selected {
+  background-color: #4a0811 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(74, 8, 17, 0.25);
+}
+
+.cal-day-cell.empty {
+  cursor: default;
+}
+
+@media (max-width: 640px) {
+  .modal-reserva-body {
+    grid-template-columns: 1fr;
+  }
+}
