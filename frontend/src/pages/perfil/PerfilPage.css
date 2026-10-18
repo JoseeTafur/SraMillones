@@ -1,0 +1,167 @@
+/* ===================================================
+   MÓDULO MI PERFIL - ESTILOS FIDELIDAD DISEÑO
+   =================================================== */
+
+.perfil-page-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem 0;
+}
+
+/* Tarjeta Principal Flotante */
+.perfil-card {
+  width: 100%;
+  max-width: 620px;
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1.5px solid #fce7f3;
+  box-shadow: 0 10px 30px rgba(74, 8, 17, 0.05);
+  padding: 2.2rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+/* Avatar Central */
+.perfil-header-avatar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.avatar-circle {
+  width: 86px;
+  height: 86px;
+  background-color: #fde8e8;
+  color: #4a0811;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(74, 8, 17, 0.1);
+}
+
+.perfil-username-title {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: #4a0811;
+  margin: 0;
+  letter-spacing: -0.2px;
+}
+
+/* Badge del Rol */
+.perfil-role-badge {
+  background-color: #fff1f2;
+  color: #881337;
+  border: 1.5px solid #fecdd3;
+  padding: 0.25rem 1rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.perfil-divider-line {
+  width: 100%;
+  height: 1px;
+  background-color: #f1f5f9;
+}
+
+/* Sección Datos Personales */
+.perfil-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.perfil-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #4a0811;
+  font-weight: 900;
+  font-size: 0.95rem;
+  letter-spacing: 0.3px;
+}
+
+.perfil-section-title svg {
+  color: #d97706; /* Detalle Dorado */
+}
+
+/* Grilla a 2 Columnas */
+.perfil-grid-info {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.2rem 1.4rem;
+  width: 100%;
+}
+
+.perfil-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.perfil-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #4a0811;
+  letter-spacing: 0.3px;
+}
+
+/* Inputs de Solo Lectura */
+.perfil-read-input {
+  background-color: #fffbeb; /* Fondo crema suave */
+  border: 1.5px solid #fef3c7;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+/* Estado de Cuenta Activo con Verde */
+.perfil-read-input.status-active {
+  color: #15803d;
+}
+
+.perfil-read-input.status-active svg {
+  color: #16a34a;
+  flex-shrink: 0;
+}
+
+/* Pie de Tarjeta */
+.perfil-card-footer {
+  margin-top: 0.5rem;
+  border-top: 1px dashed #e2e8f0;
+  width: 100%;
+  padding-top: 1.2rem;
+  text-align: center;
+}
+
+.perfil-card-footer p {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+/* Responsivo en móviles */
+@media (max-width: 640px) {
+  .perfil-card {
+    padding: 1.5rem;
+  }
+
+  .perfil-grid-info {
+    grid-template-columns: 1fr;
+  }
+}

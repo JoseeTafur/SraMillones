@@ -1,0 +1,232 @@
+/* Reset local y contenedor principal */
+.login-wrapper {
+  min-height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #0d0203;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 28px 28px;
+  box-sizing: border-box;
+  padding: 1.5rem;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Tarjeta central */
+.login-card {
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  background-color: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+}
+
+/* Sección izquierda - Formulario */
+.login-form-container {
+  flex: 1;
+  padding: 3rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.login-title {
+  color: #4a0811;
+  font-size: 1.65rem;
+  font-weight: 800;
+  margin: 0 0 0.3rem 0;
+}
+
+.login-subtitle {
+  color: #6b7280;
+  font-size: 0.85rem;
+  margin: 0 0 1.8rem 0;
+  line-height: 1.4;
+}
+
+.login-error-msg {
+  background-color: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  margin-bottom: 1.2rem;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.1rem;
+}
+
+.input-label {
+  color: #374151;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.custom-input {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.custom-input:focus {
+  border-color: #4a0811;
+  box-shadow: 0 0 0 3px rgba(74, 8, 17, 0.1);
+}
+
+.password-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.btn-toggle-eye {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-size: 1.05rem;
+  cursor: pointer;
+  padding: 0.2rem;
+  display: flex;
+  align-items: center;
+}
+
+.btn-toggle-eye:hover {
+  color: #4a0811;
+}
+
+.forgot-wrapper {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.forgot-link {
+  color: #6b7280;
+  font-size: 0.78rem;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.forgot-link:hover {
+  color: #4a0811;
+}
+
+.btn-submit-login {
+  width: 100%;
+  background: #4a0811;
+  color: #ffffff;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 4px 12px rgba(74, 8, 17, 0.25);
+}
+
+.btn-submit-login:hover {
+  background: #36050c;
+}
+
+.btn-submit-login:active {
+  transform: scale(0.99);
+}
+
+/* Sección derecha - Branding */
+.login-branding-container {
+  flex: 1;
+  background: linear-gradient(135deg, #5c0a15 0%, #2b0307 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.branding-box {
+  text-align: center;
+  color: #ffffff;
+}
+
+.chef-hat-icon {
+  margin-bottom: 0.8rem;
+  opacity: 0.95;
+}
+
+.brand-title {
+  font-size: 1.6rem;
+  font-weight: 900;
+  letter-spacing: 2.5px;
+  margin: 0 0 0.2rem 0;
+}
+
+.brand-subtitle {
+  font-size: 0.72rem;
+  letter-spacing: 3px;
+  opacity: 0.75;
+  font-weight: 500;
+}
+
+/* Responsividad */
+@media (max-width: 720px) {
+  .login-card {
+    flex-direction: column-reverse;
+  }
+  .login-branding-container {
+    padding: 1.8rem 1rem;
+  }
+}
+
+.btn-submit-login {
+  gap: 0.5rem;
+}
+
+.arrow-icon {
+  margin-left: 0.3rem;
+  transition: transform 0.2s ease;
+}
+
+.btn-submit-login:hover .arrow-icon {
+  transform: translateX(3px);
+}
+
+/* src/pages/admin/LoginPage.css */
+.login-wrapper {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #0d0203;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 28px 28px;
+  box-sizing: border-box;
+  padding: 1.5rem;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}

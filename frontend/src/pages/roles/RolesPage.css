@@ -1,0 +1,145 @@
+/* ===================================================
+   GESTIÓN DE ROLES / PERFILES - ESTILOS OFICIALES
+   =================================================== */
+
+.roles-page-container {
+  width: 100%;
+}
+
+.rol-id-bold {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #475569;
+}
+
+.rol-nombre-text {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.rol-descripcion-text {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+/* Botón de la Llave para Permisos */
+.btn-action-icon.key {
+  background-color: #f1f5f9;
+  color: #334155;
+  border-color: #cbd5e1;
+}
+
+.btn-action-icon.key:hover {
+  background-color: #334155;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* ===================================================
+   MODAL DE ASIGNAR PERMISOS (FIDELIDAD DISEÑO)
+   =================================================== */
+
+.permisos-modal-body {
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+/* Caja Informativa Dorada */
+.permisos-warning-box {
+  background-color: #fffbeb;
+  border: 1.5px solid #fef3c7;
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.permisos-alert-icon {
+  color: #d97706;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.permisos-warning-content p {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+  line-height: 1.4;
+}
+
+.rol-destacado-title {
+  margin: 0.35rem 0 0 0;
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: #4a0811; /* Color Guinda */
+}
+
+/* Lista de Checkboxes de Módulos */
+.modulos-checklist-container {
+  display: flex;
+  flex-direction: column;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: hidden;
+  max-height: 280px;
+  overflow-y: auto;
+  background-color: #ffffff;
+}
+
+.modulo-check-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1.1rem;
+  border-bottom: 1px solid #f1f5f9;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modulo-check-row:last-child {
+  border-bottom: none;
+}
+
+.modulo-check-row:hover {
+  background-color: #f8fafc;
+}
+
+.modulo-check-row.selected {
+  background-color: #ffffff;
+}
+
+.modulo-nombre {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+/* Pills de Permisos en el Modal de Detalle */
+.flex-col {
+  flex-direction: column;
+  align-items: flex-start !important;
+  gap: 0.5rem;
+}
+
+.permisos-pills-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.badge-permiso-pill {
+  background-color: #dcfce7;
+  border: 1px solid #bbf7d0;
+  color: #15803d;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 800;
+}

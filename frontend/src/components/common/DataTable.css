@@ -1,0 +1,188 @@
+.datatable-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  padding: 1.5rem;
+}
+
+.datatable-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.datatable-title-box {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.datatable-icon-circle {
+  width: 40px;
+  height: 40px;
+  background-color: #fdf2f2;
+  color: #4a0811;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.datatable-title-box h2 {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #4a0811;
+  margin: 0;
+  border-bottom: 3px solid #f97316;
+  padding-bottom: 0.2rem;
+}
+
+.btn-datatable-primary {
+  background: linear-gradient(135deg, #4a0811 0%, #200307 100%);
+  color: #ffffff;
+  border: none;
+  padding: 0.7rem 1.3rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 12px rgba(74, 8, 17, 0.22);
+  transition: all 0.2s ease;
+}
+
+.btn-datatable-primary:hover {
+  background: #36050c;
+  transform: translateY(-1px);
+}
+
+.datatable-filters-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+  flex-wrap: wrap;
+}
+
+.datatable-search-box {
+  position: relative;
+  flex: 1;
+  max-width: 360px;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon-wrapper {
+  position: absolute;
+  left: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.datatable-search-box input {
+  width: 100%;
+  padding: 0.65rem 2.4rem 0.65rem 2.6rem;
+  border: 1.5px solid #cbd5e1;
+  background-color: #f8fafc;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #0f172a;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.datatable-search-box input:focus {
+  border-color: #4a0811;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(74, 8, 17, 0.1);
+}
+
+.btn-clear-search {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border-radius: 50%;
+  transition: color 0.2s ease;
+}
+
+.btn-clear-search:hover {
+  color: #4a0811;
+}
+
+.datatable-pills-filter {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.btn-filter-pill {
+  background-color: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  padding: 0.5rem 0.9rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-filter-pill.active {
+  background-color: #4a0811;
+  color: #ffffff;
+  border-color: #4a0811;
+}
+
+.datatable-responsive-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.datatable-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.datatable-table thead tr {
+  background-color: #4a0811;
+  color: #ffffff;
+}
+
+.datatable-table th {
+  padding: 0.85rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.datatable-table td {
+  padding: 0.85rem 1rem;
+  vertical-align: middle;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.datatable-empty-state {
+  text-align: center;
+  padding: 2.5rem 1rem !important;
+  color: #64748b;
+  font-size: 0.95rem;
+  font-weight: 600;
+}

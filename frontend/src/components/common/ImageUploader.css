@@ -1,0 +1,210 @@
+/* Contenedor Principal */
+.image-uploader-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: 100%;
+}
+
+.uploader-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ===================================================
+   CONTAINER UIVERSE 3D FOLDER (Ajuste Perfecto)
+   =================================================== */
+.folder-uiverse-container {
+  --transition: 350ms;
+  --folder-W: 90px;
+  --folder-H: 58px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+  padding: 1.4rem 1rem 1rem 1rem;
+  background: linear-gradient(135deg, #4a0811, #200307);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(74, 8, 17, 0.22);
+  position: relative;
+  overflow: visible;
+}
+
+/* Carpeta Flotante en Flujo Normal */
+.folder-uiverse-container .folder {
+  position: relative;
+  width: var(--folder-W);
+  height: var(--folder-H);
+  animation: floatFolder 2.8s infinite ease-in-out;
+  transition: transform var(--transition) ease;
+  cursor: pointer;
+}
+
+.folder-uiverse-container:hover .folder {
+  transform: scale(1.06);
+}
+
+.folder-uiverse-container .folder .front-side,
+.folder-uiverse-container .folder .back-side {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: transform var(--transition);
+  transform-origin: bottom center;
+}
+
+.folder-uiverse-container .folder .back-side::before,
+.folder-uiverse-container .folder .back-side::after {
+  content: "";
+  display: block;
+  background-color: white;
+  opacity: 0.5;
+  width: var(--folder-W);
+  height: var(--folder-H);
+  position: absolute;
+  transform-origin: bottom center;
+  border-radius: 10px;
+  transition: transform 350ms;
+  z-index: 0;
+}
+
+.folder-uiverse-container:hover .back-side::before {
+  transform: rotateX(-5deg) skewX(5deg);
+}
+.folder-uiverse-container:hover .back-side::after {
+  transform: rotateX(-15deg) skewX(12deg);
+}
+
+.folder-uiverse-container .folder .front-side {
+  z-index: 1;
+}
+
+.folder-uiverse-container:hover .front-side {
+  transform: rotateX(-35deg) skewX(12deg);
+}
+
+.folder-uiverse-container .folder .tip {
+  background: linear-gradient(135deg, #ff9a56, #ff6f56);
+  width: 58px;
+  height: 16px;
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  position: absolute;
+  top: -7px;
+  left: 0;
+  z-index: 2;
+}
+
+.folder-uiverse-container .folder .cover {
+  background: linear-gradient(135deg, #ffe563, #ffc663);
+  width: var(--folder-W);
+  height: var(--folder-H);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+  border-radius: 10px;
+}
+
+/* Botón interactivo de archivo */
+.folder-uiverse-container .custom-file-upload {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #ffffff;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  transition: background var(--transition) ease, transform 0.2s ease;
+  display: inline-block;
+  width: 100%;
+  padding: 8px 16px;
+  position: relative;
+  letter-spacing: 0.3px;
+}
+
+.folder-uiverse-container .custom-file-upload:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.folder-uiverse-container .custom-file-upload input[type="file"] {
+  display: none;
+}
+
+/* Animación flotante más contenida */
+@keyframes floatFolder {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+/* Fallback de Enlace URL */
+.uploader-url-fallback .url-input {
+  font-size: 0.82rem !important;
+  padding: 0.55rem 0.85rem !important;
+}
+
+/* Vista Previa de Imagen Cargada */
+.uploader-preview-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.9rem;
+  background-color: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  gap: 1rem;
+}
+
+.preview-image-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.preview-thumb {
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.preview-tag {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #16a34a;
+  background-color: #dcfce7;
+  padding: 0.25rem 0.7rem;
+  border-radius: 20px;
+}
+
+.btn-remove-uploader {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  padding: 0.5rem 0.9rem;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s ease;
+}
+
+.btn-remove-uploader:hover {
+  background-color: #dc2626;
+  color: #ffffff;
+  transform: translateY(-1px);
+}

@@ -1,0 +1,105 @@
+/* ===================================================
+   GESTIÓN DE EMPLEADOS Y PLANILLAS - ESTILOS OFICIALES
+   =================================================== */
+
+.empleados-page-container {
+  width: 100%;
+}
+
+.emp-id-bold {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #475569;
+}
+
+.emp-nombre {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.emp-dni {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.emp-cargo {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+/* Pill / Badge para el Turno Activo */
+.badge-turno-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.28rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.badge-turno-pill.día,
+.badge-turno-pill.dia {
+  background-color: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.badge-turno-pill.noche {
+  background-color: #e0e7ff;
+  color: #3730a3;
+  border: 1px solid #c7d2fe;
+}
+
+.dot-turno {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #d97706;
+}
+
+.badge-turno-pill.noche .dot-turno {
+  background-color: #4f46e5;
+}
+
+/* Selector de Turno en la Cabecera de la Tabla */
+.selector-turno-header {
+  margin-right: 0.5rem;
+}
+
+.select-turno-pill {
+  background-color: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  color: #334155;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.45rem 0.85rem;
+  border-radius: 10px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.select-turno-pill:hover {
+  border-color: #d97706;
+}
+
+/* Grid del Formulario a 2 Columnas */
+.empleados-form-body {
+  padding: 1.2rem;
+}
+
+.empleados-grid-2col {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.2rem;
+}
+
+@media (max-width: 640px) {
+  .empleados-grid-2col {
+    grid-template-columns: 1fr;
+  }
+}
