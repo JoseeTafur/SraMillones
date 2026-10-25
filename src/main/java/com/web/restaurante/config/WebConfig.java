@@ -7,17 +7,23 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.beans.factory.annotation.Value;
 
 @RequiredArgsConstructor
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
+    @Value("${app.cors.allowed-origins:http://localhost:5173,http://localhost:3000}")
+    private String[] allowedOrigins;
+
+    @Value("${app.imagenes.path:file:/C:/restaurante/imagenes/}")
+    private String imagenesPath;
     private final SessionInterceptor sessionInterceptor;
 
     @Override
     public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/css/**").addResourceLocations("classpath:/static/css/").setCachePeriod(0);
         registry.addResourceHandler("/js/**").addResourceLocations("classpath:/static/js/").setCachePeriod(0);
-        registry.addResourceHandler("/imagenes/**").addResourceLocations("file:/C:/restaurante/imagenes/");
+        registry.addResourceHandler("/imagenes/**").addResourceLocations(imagenesPath);
         registry.addResourceHandler("/favicon.png").addResourceLocations("classpath:/static/").setCachePeriod(0);
         registry.addResourceHandler("/img/**").addResourceLocations("classpath:/static/img/").setCachePeriod(0);
 
@@ -64,7 +70,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(@NonNull CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:8080", "http://localhost:3000", "http://localhost:5173")
+                .allowedOrigins(allowedOrigins)
                 .allowedMethods("GET", "PATCH", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
