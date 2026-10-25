@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/api/mesas';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+const API_URL = `${BASE_URL}/api/mesas`;
 
 const mesaService = {
   obtenerPlanoSalon: async () => {
@@ -71,7 +72,7 @@ const mesaService = {
 
   eliminarItemComanda: async (detalleId) => {
   const response = await axios.delete(
-    `http://localhost:8080/api/comandas/detalle/${detalleId}`,
+    `${BASE_URL}/api/comandas/detalle/${detalleId}`,
     { withCredentials: true }
   );
   return response.data;

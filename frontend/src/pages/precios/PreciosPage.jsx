@@ -8,6 +8,9 @@ import productoPrecioService from '../../services/productoPrecioService';
 import './PreciosPage.css';
 
 export const PreciosPage = () => {
+
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
   const [searchTerm, setSearchTerm] = useState('');
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -70,10 +73,10 @@ export const PreciosPage = () => {
           if (rawImagen.startsWith('http') || rawImagen.startsWith('blob:')) {
             urlFinal = rawImagen;
           } else if (rawImagen.startsWith('/')) {
-            urlFinal = `http://localhost:8080${rawImagen}`;
-          } else {
-            urlFinal = `http://localhost:8080/imagenes/${rawImagen}`;
-          }
+    urlFinal = `${BASE_URL}${rawImagen}`;
+  } else {
+    urlFinal = `${BASE_URL}/imagenes/${rawImagen}`;
+  }
         }
 
         return {

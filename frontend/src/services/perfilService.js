@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // La ruta correcta en Spring Boot es /perfiles/api
-const API_URL = 'http://localhost:8080/perfiles/api';
+const API_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/perfiles/api`;
 
 export const perfilService = {
   // Listar todos los perfiles activos
