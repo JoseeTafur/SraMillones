@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../../context/AuthContext';
-import Toast from '../../../components/common/Toast';
+import { useAuth } from '../../context/AuthContext';    // Regresado a dos niveles (../../)
+import Toast from '../../components/common/Toast';        // Regresado a dos niveles (../../)
 import './LoginPage.css';
-import logoImage from '../../../assets/logo2.png';
+import logoImage from '../../assets/logo2.png';   
 
 
 export const LoginPage = () => {
