@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import Toast from '../../components/common/Toast';
+import { useAuth } from '@/context/AuthContext';   // Usando @/ apunta directo a src/context
+import Toast from '@/components/common/Toast';       // Usando @/ apunta directo a src/components
 import './LoginPage.css';
-import logoImage from '../../assets/logo2.png';
+import logoImage from '@/assets/logo2.png';          // Usando @/ apunta directo a src/assets
+
 
 export const LoginPage = () => {
   const [usuario, setUsuario] = useState('');
