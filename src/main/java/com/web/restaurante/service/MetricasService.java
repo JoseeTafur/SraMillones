@@ -1,8 +1,10 @@
 package com.web.restaurante.service;
 
-import com.web.restaurante.model.TurnoCaja;
+import com.web.restaurante.model.caja.TurnoCaja;
 import com.web.restaurante.repository.MetricasRepository;
 import com.web.restaurante.repository.PedidoRepository;
+import com.web.restaurante.service.caja.TurnoCajaService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

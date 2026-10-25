@@ -1,12 +1,15 @@
-package com.web.restaurante.service;
+package com.web.restaurante.service.caja;
 
 import com.web.restaurante.model.MovimientoCaja;
 import com.web.restaurante.model.Pedido;
-import com.web.restaurante.model.TurnoCaja;
+import com.web.restaurante.model.caja.TurnoCaja;
 import com.web.restaurante.model.enums.TipoMovimientoCaja;
 import com.web.restaurante.repository.MovimientoCajaRepository;
 import com.web.restaurante.repository.PedidoRepository;
 import com.web.restaurante.repository.TurnoCajaRepository;
+import com.web.restaurante.service.CierreCajaSequenceService;
+import com.web.restaurante.service.MovimientoSequenceService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -59,12 +62,8 @@ public class TurnoCajaService {
         turno.setFechaApertura(ahora);
         turno.setActivo(true);
 
-        int horaApertura = ahora.getHour();
-        if (horaApertura >= 8 && horaApertura < 18) {
-            turno.setTipoTurno("DIA");
-        } else {
-            turno.setTipoTurno("NOCHE");
-        }
+        // SRA MILLONES opera con Turno Único continuo
+        turno.setTipoTurno("ÚNICO");
 
         turnoCajaRepository.save(turno);
 
@@ -162,7 +161,6 @@ public class TurnoCajaService {
 
         return turnoCajaRepository.save(turno);
     }
-
 
     private void registrarMovimiento(TurnoCaja turno, TipoMovimientoCaja tipo,
                                      String concepto, Double monto, String comprobante) {

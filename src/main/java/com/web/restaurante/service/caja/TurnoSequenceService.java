@@ -1,6 +1,6 @@
-package com.web.restaurante.service;
+package com.web.restaurante.service.caja;
 
-import com.web.restaurante.model.CajaSerie;
+import com.web.restaurante.model.caja.CajaSerie;
 import com.web.restaurante.repository.CajaSerieRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

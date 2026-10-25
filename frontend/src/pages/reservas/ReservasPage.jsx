@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import Toast from '../../components/common/Toast';
 import { SearchIcon, PlusIcon } from '../../components/common/Icons';
+import { getReservas, createReserva, updateReserva, deleteReserva } from '../../services/reservaService';
 import './ReservasPage.css';
 
 export const ReservasPage = () => {
@@ -11,8 +12,12 @@ export const ReservasPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingReserva, setEditingReserva] = useState(null);
   const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, id: null });
+  const [loading, setLoading] = useState(false);
 
-  // Estado para el formulario de Reserva (Incluye Selector de Calendario)
+  // Lista de Reservas obtenida de la Base de Datos mediante Spring Boot
+  const [reservas, setReservas] = useState([]);
+
+  // Estado para el formulario de Reserva
   const [formData, setFormData] = useState({
     clienteNombre: '',
     telefono: '',
@@ -24,60 +29,45 @@ export const ReservasPage = () => {
     estado: 'CONFIRMADA'
   });
 
-  // Fecha seleccionada en el calendario visual interactivo
+  // Fecha seleccionada para el selector de calendario interactivo
   const [calendarDate, setCalendarDate] = useState(new Date(2026, 9, 18)); // Octubre 2026
 
-  // Lista simulada de Reservas
-  const [reservas, setReservas] = useState([
-    {
-      id: 1,
-      codigo: 'RES-101',
-      clienteNombre: 'Carlos Mendoza',
-      telefono: '987654321',
-      numPersonas: 4,
-      mesaAsignada: 'Mesa 3',
-      fecha: '2026-10-18',
-      hora: '14:30',
-      observacion: 'Cumpleaños, requieren silla para bebé.',
-      estado: 'CONFIRMADA'
-    },
-    {
-      id: 2,
-      codigo: 'RES-102',
-      clienteNombre: 'Ana María Torres',
-      telefono: '912345678',
-      numPersonas: 2,
-      mesaAsignada: 'Mesa 7',
-      fecha: '2026-10-18',
-      hora: '20:00',
-      observacion: 'Mesa cerca a la ventana.',
-      estado: 'PENDIENTE'
-    },
-    {
-      id: 3,
-      codigo: 'RES-103',
-      clienteNombre: 'Ricardo Gómez',
-      telefono: '955443322',
-      numPersonas: 6,
-      mesaAsignada: 'Mesa 5',
-      fecha: '2026-10-19',
-      hora: '13:00',
-      observacion: 'Alergia a mariscos.',
-      estado: 'CONFIRMADA'
-    },
-    {
-      id: 4,
-      codigo: 'RES-104',
-      clienteNombre: 'Lucía Benavides',
-      telefono: '988776655',
-      numPersonas: 3,
-      mesaAsignada: 'Mesa 2',
-      fecha: '2026-10-17',
-      hora: '21:00',
-      observacion: '',
-      estado: 'CANCELADA'
+  // Cargar reservas desde la API al cargar el componente
+  useEffect(() => {
+    cargarReservasBackend();
+  }, []);
+
+  const cargarReservasBackend = async () => {
+    try {
+      setLoading(true);
+      const data = await getReservas();
+      
+      // Mapeo seguro de atributos en caso de variaciones DTO del backend
+      const reservasMapeadas = data.map(item => ({
+        id: item.id,
+        codigo: item.codigo || `RES-${item.id}`,
+        clienteNombre: item.nombreCliente || item.clienteNombre || '',
+        telefono: item.telefono || '',
+        numPersonas: item.numeroPersonas || item.numPersonas || 1,
+        mesaAsignada: item.mesa ? `Mesa ${item.mesa.numero || item.mesa}` : (item.mesaAsignada || 'Mesa 1'),
+        fecha: item.fechaHoraReserva ? item.fechaHoraReserva.split('T')[0] : (item.fecha || '2026-10-18'),
+        hora: item.fechaHoraReserva && item.fechaHoraReserva.includes('T') ? item.fechaHoraReserva.split('T')[1].substring(0, 5) : (item.hora || '14:00'),
+        observacion: item.observacion || '',
+        estado: item.estado || 'CONFIRMADA'
+      }));
+
+      setReservas(reservasMapeadas);
+    } catch (error) {
+      console.error("Error al obtener reservas del backend:", error);
+      setToast({
+        type: 'error',
+        title: 'Error de Conexión',
+        message: 'No se pudo conectar con el servidor para obtener las reservas.'
+      });
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
 
   // Abrir Modal para Nueva Reserva
   const handleOpenModalNuevo = () => {
@@ -92,6 +82,7 @@ export const ReservasPage = () => {
       observacion: '',
       estado: 'CONFIRMADA'
     });
+    setCalendarDate(new Date(2026, 9, 18));
     setShowModal(true);
   };
 
@@ -109,28 +100,40 @@ export const ReservasPage = () => {
       estado: res.estado
     });
 
-    const [year, month, day] = res.fecha.split('-').map(Number);
-    setCalendarDate(new Date(year, month - 1, day));
+    if (res.fecha && res.fecha.includes('-')) {
+      const [year, month, day] = res.fecha.split('-').map(Number);
+      setCalendarDate(new Date(year, month - 1, day));
+    }
     setShowModal(true);
   };
 
-  // Solicitar Cancelar/Eliminar Reserva
+  // Solicitar Anulacion / Eliminacion
   const handleSolicitarEliminar = (id) => {
     setConfirmDialog({ isOpen: true, id });
   };
 
-  const handleConfirmarEliminar = () => {
-    setReservas(prev => prev.filter(r => r.id !== confirmDialog.id));
-    setConfirmDialog({ isOpen: false, id: null });
-    setToast({
-      type: 'info',
-      title: 'Reserva Anulada',
-      message: 'La reserva ha sido removida del sistema.'
-    });
+  const handleConfirmarEliminar = async () => {
+    try {
+      await deleteReserva(confirmDialog.id);
+      setReservas(prev => prev.filter(r => r.id !== confirmDialog.id));
+      setToast({
+        type: 'info',
+        title: 'Reserva Anulada',
+        message: 'La reserva ha sido eliminada del servidor.'
+      });
+    } catch (error) {
+      setToast({
+        type: 'error',
+        title: 'Error al Eliminar',
+        message: 'Ocurrió un inconveniente al intentar anular la reserva en la base de datos.'
+      });
+    } finally {
+      setConfirmDialog({ isOpen: false, id: null });
+    }
   };
 
-  // Guardar Cambios (Crear o Editar)
-  const handleSaveReserva = (e) => {
+  // Guardar Cambios (Crear o Editar enviando a Spring Boot)
+  const handleSaveReserva = async (e) => {
     e.preventDefault();
 
     if (!formData.clienteNombre.trim() || !formData.telefono.trim()) {
@@ -142,28 +145,43 @@ export const ReservasPage = () => {
       return;
     }
 
-    if (editingReserva) {
-      setReservas(prev => prev.map(r => r.id === editingReserva.id ? { ...r, ...formData } : r));
+    // Armado del objeto DTO con formato LocalDateTime para Spring Boot
+    const payloadBackend = {
+      nombreCliente: formData.clienteNombre,
+      telefono: formData.telefono,
+      numeroPersonas: formData.numPersonas,
+      fechaHora: `${formData.fecha}T${formData.hora}:00`,
+      observacion: formData.observacion
+    };
+
+    try {
+      if (editingReserva) {
+        await updateReserva(editingReserva.id, payloadBackend);
+        setToast({
+          type: 'info',
+          title: 'Reserva Actualizada',
+          message: `Se actualizaron los datos de ${formData.clienteNombre}.`
+        });
+      } else {
+        await createReserva(payloadBackend);
+        setToast({
+          type: 'info',
+          title: '¡Reserva Registrada!',
+          message: `Reserva guardada con éxito para ${formData.clienteNombre}.`
+        });
+      }
+
+      // Recargar lista desde la base de datos
+      await cargarReservasBackend();
+      setShowModal(false);
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || 'Error de procesamiento en el servidor.';
       setToast({
-        type: 'info',
-        title: 'Reserva Actualizada',
-        message: `Se actualizaron los datos de ${formData.clienteNombre}.`
-      });
-    } else {
-      const nuevaReserva = {
-        id: Date.now(),
-        codigo: `RES-${Math.floor(100 + Math.random() * 900)}`,
-        ...formData
-      };
-      setReservas(prev => [nuevaReserva, ...prev]);
-      setToast({
-        type: 'info',
-        title: '¡Reserva Registrada!',
-        message: `Reserva guardada para ${formData.clienteNombre} el ${formData.fecha}.`
+        type: 'error',
+        title: 'Error al Guardar',
+        message: errorMsg
       });
     }
-
-    setShowModal(false);
   };
 
   // Lógica del Selector Visual de Calendario
@@ -173,7 +191,7 @@ export const ReservasPage = () => {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const firstDayIndex = new Date(year, month, 1).getDay(); // 0 = Domingo
     
-    // Ajustar para que semana empiece en Lunes
+    // Ajuste inicio de semana en Lunes
     const startOffset = firstDayIndex === 0 ? 6 : firstDayIndex - 1; 
 
     const daysArray = [];
@@ -296,7 +314,13 @@ export const ReservasPage = () => {
               </tr>
             </thead>
             <tbody>
-              {reservasFiltradas.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan="8" style={{ textAlign: 'center', padding: '2.5rem', color: '#64748b' }}>
+                    Cargando reservas desde el servidor...
+                  </td>
+                </tr>
+              ) : reservasFiltradas.length === 0 ? (
                 <tr>
                   <td colSpan="8" style={{ textAlign: 'center', padding: '2.5rem', color: '#64748b' }}>
                     No se encontraron reservas registradas.

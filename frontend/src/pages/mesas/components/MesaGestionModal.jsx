@@ -1,239 +1,338 @@
 import React, { useState } from 'react';
 import Modal from '../../../components/common/Modal';
-import { PlusIcon } from '../../../components/common/Icons';
+import ConfirmDialog from '../../../components/common/ConfirmDialog';
+import {
+  PlusIcon,
+  CheckIcon,
+  TransferIcon,
+  SplitIcon,
+  CardIcon
+} from '../../../components/common/Icons';
 import SeleccionarMesaModal from './SeleccionarMesaModal';
+import mesaService from '../../../services/mesaService';
 import './MesaGestionModal.css';
 
-export const MesaGestionModal = ({ isOpen, onClose, selectedMesa, onAbrirPago, onAbrirComandera, setToast, mesas = [], setMesas }) => {
+export const MesaGestionModal = ({
+  isOpen,
+  onClose,
+  selectedMesa,
+  onAbrirPago,
+  onAbrirComandera,
+  setToast,
+  mesas = [],
+  setMesas,
+  onActualizarSalon
+}) => {
   const [selectedItems, setSelectedItems] = useState([]);
-  
-  // Estado para el Modal Selector de Mesa
+  const [loadingAccion, setLoadingAccion] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+
+  // Estado para el ConfirmDialog de eliminación
+  const [confirmDelete, setConfirmDelete] = useState({
+    isOpen: false,
+    item: null
+  });
+
   const [selectorConfig, setSelectorConfig] = useState({
     isOpen: false,
     titulo: '',
     descripcion: '',
     soloLibres: true,
-    tipoAccion: '' // 'CAMBIAR', 'DIVIDIR', 'AGRUPAR', 'RESERVAS'
+    tipoAccion: ''
   });
 
   if (!selectedMesa) return null;
 
-  const subtotalGeneral = selectedMesa.comanda.reduce((acc, i) => acc + (i.cant * i.precio), 0);
-  const subtotalElegido = selectedMesa.comanda
+  const comanda = Array.isArray(selectedMesa.comanda) ? selectedMesa.comanda : [];
+  const subtotalGeneral = comanda.reduce((acc, i) => acc + (i.cant * i.precio), 0);
+  const subtotalElegido = comanda
     .filter(item => selectedItems.includes(item.id))
     .reduce((acc, item) => acc + (item.cant * item.precio), 0);
 
-  const handleToggleItemSelect = (itemId) => {
+  const handleToggleItemSelect = (itemId, isPagado) => {
+    if (isPagado) return;
+
     setSelectedItems(prev =>
       prev.includes(itemId) ? prev.filter(id => id !== itemId) : [...prev, itemId]
     );
   };
 
   const handleToggleSelectAllItems = () => {
-    if (selectedItems.length === selectedMesa.comanda.length) {
+    const itemsPendientes = comanda.filter(i => !i.pagado).map(i => i.id);
+    
+    if (selectedItems.length === itemsPendientes.length && itemsPendientes.length > 0) {
       setSelectedItems([]);
     } else {
-      setSelectedItems(selectedMesa.comanda.map(i => i.id));
+      setSelectedItems(itemsPendientes);
     }
   };
 
-  const handleAbrirSelector = (tipoAccion) => {
-  switch (tipoAccion) {
-    case 'CAMBIAR':
-      setSelectorConfig({
-        isOpen: true,
-        titulo: 'Cambiar de Mesa',
-        descripcion: 'Seleccione la mesa destino. Si está ocupada, ambas comandas se unificarán.',
-        soloLibres: false, // 👈 Ahora muestra también mesas ocupadas
-        tipoAccion: 'CAMBIAR'
-      });
-      break;
+  // Abrir modal de confirmación
+  const handleSolicitarEliminarItem = (item) => {
+    setConfirmDelete({
+      isOpen: true,
+      item
+    });
+  };
 
-    case 'DIVIDIR':
-      if (selectedItems.length === 0) {
-        setToast({ 
-          type: 'error', 
-          title: 'Selección requerida', 
-          message: 'Seleccione al menos un ítem con el checkbox para dividir.' 
+  // Ejecutar eliminación confirmada con animación y reactividad directa
+  const handleConfirmarEliminacion = async () => {
+    const itemAEliminar = confirmDelete.item;
+    setConfirmDelete({ isOpen: false, item: null });
+
+    if (!itemAEliminar) return;
+
+    try {
+      setLoadingAccion(true);
+      await mesaService.eliminarItemComanda(itemAEliminar.id);
+
+      // 🟢 1. Activar animación de salida en la UI
+      setDeletingId(itemAEliminar.id);
+
+      // 🟢 2. Esperar 300ms a que termine la animación visual antes de remover del estado
+      setTimeout(async () => {
+        if (Array.isArray(selectedMesa.comanda)) {
+          selectedMesa.comanda = selectedMesa.comanda.filter(i => i.id !== itemAEliminar.id);
+        }
+
+        setSelectedItems(prev => prev.filter(id => id !== itemAEliminar.id));
+        setDeletingId(null);
+
+        setToast({
+          type: 'info',
+          title: 'Ítem Eliminado',
+          message: `Se eliminó "${itemAEliminar.nombre}" de la comanda.`
         });
-        return;
-      }
-      setSelectorConfig({
-        isOpen: true,
-        titulo: 'Dividir Comanda',
-        descripcion: 'Seleccione la mesa destino a la que enviará los ítems. Si está ocupada, se sumarán a su comanda.',
-        soloLibres: false, // 👈 Ahora muestra también mesas ocupadas
-        tipoAccion: 'DIVIDIR'
+
+        // 🟢 3. Sincronizar el plano general del salón
+        if (onActualizarSalon) {
+          await onActualizarSalon();
+        }
+      }, 300);
+
+    } catch (error) {
+      console.error("Error al eliminar ítem:", error);
+      setToast({
+        type: 'error',
+        title: 'Error de Eliminación',
+        message: error.response?.data?.message || 'No se pudo eliminar el producto de la comanda.'
       });
-      break;
+      setDeletingId(null);
+    } finally {
+      setLoadingAccion(false);
+    }
+  };
 
-    case 'AGRUPAR':
-      setSelectorConfig({
-        isOpen: true,
-        titulo: 'Agrupar Mesas',
-        descripcion: 'Seleccione la mesa activa con la cual unificará la atención.',
-        soloLibres: false,
-        tipoAccion: 'AGRUPAR'
-      });
-      break;
+  const handleAbrirPagoConSeleccion = () => {
+    selectedMesa.selectedItemsPay = selectedItems;
+    onAbrirPago();
+  };
 
-    case 'RESERVAS':
-      setSelectorConfig({
-        isOpen: true,
-        titulo: 'Mudar a Reservas',
-        descripcion: 'Seleccione la mesa reservada para vincular este consumo.',
-        soloLibres: true,
-        tipoAccion: 'RESERVAS'
-      });
-      break;
+  const handleAbrirSelector = (tipoAccion) => {
+    switch (tipoAccion) {
+      case 'CAMBIAR':
+        if (comanda.length === 0) {
+          setToast({ type: 'error', title: 'Mesa Vacía', message: 'No hay comanda activa para trasladar.' });
+          return;
+        }
+        setSelectorConfig({
+          isOpen: true,
+          titulo: 'Cambiar de Mesa',
+          descripcion: 'Seleccione la mesa destino hacia la que trasladará la comanda completa.',
+          soloLibres: false,
+          tipoAccion: 'CAMBIAR'
+        });
+        break;
 
-    default:
-      break;
-  }
-};
+      case 'DIVIDIR':
+        if (selectedItems.length === 0) {
+          setToast({ type: 'error', title: 'Selección requerida', message: 'Seleccione al menos un plato.' });
+          return;
+        }
+        setSelectorConfig({
+          isOpen: true,
+          titulo: 'Dividir Comanda',
+          descripcion: 'Seleccione la mesa destino para los platos marcados.',
+          soloLibres: false,
+          tipoAccion: 'DIVIDIR'
+        });
+        break;
 
-  const handleConfirmarTrasladoMesa = (mesaDestino) => {
-  setSelectorConfig(prev => ({ ...prev, isOpen: false }));
+      default:
+        break;
+    }
+  };
 
-  if (selectorConfig.tipoAccion === 'CAMBIAR') {
-    setMesas(prev => prev.map(m => {
-      // Liberar la mesa de origen
-      if (m.id === selectedMesa.id) {
-        return { ...m, estado: 'LIBRE', comanda: [] };
+  const handleConfirmarTrasladoMesa = async (mesaDestino) => {
+    setSelectorConfig(prev => ({ ...prev, isOpen: false }));
+    setLoadingAccion(true);
+
+    try {
+      if (selectorConfig.tipoAccion === 'CAMBIAR') {
+        await mesaService.cambiarDeMesa(selectedMesa.id, mesaDestino.id);
+        setToast({ type: 'info', title: 'Mesa Trasladada', message: `Comanda movida a Mesa #${mesaDestino.numero}.` });
+        if (onActualizarSalon) await onActualizarSalon();
+        onClose();
+
+      } else if (selectorConfig.tipoAccion === 'DIVIDIR') {
+        await mesaService.dividirComanda(
+          parseInt(selectedMesa.numero, 10), 
+          parseInt(mesaDestino.numero, 10), 
+          selectedItems
+        );
+        setToast({ type: 'info', title: 'Comanda Dividida', message: `Platos trasladados a Mesa #${mesaDestino.numero}.` });
+        setSelectedItems([]);
+        if (onActualizarSalon) await onActualizarSalon();
+        onClose();
       }
-      // Trasladar o Fusionar en la mesa de destino
-      if (m.id === mesaDestino.id) {
-        const esDestinoOcupada = m.estado !== 'LIBRE';
-        return {
-          ...m,
-          estado: esDestinoOcupada ? m.estado : selectedMesa.estado,
-          comanda: [...m.comanda, ...selectedMesa.comanda] // Fusiona si ya tenía ítems
-        };
-      }
-      return m;
-    }));
-
-    setToast({
-      type: 'info',
-      title: 'Mesa Trasladada',
-      message: `Comanda trasladada de Mesa #${selectedMesa.numero} a Mesa #${mesaDestino.numero}.`
-    });
-    onClose();
-
-  } else if (selectorConfig.tipoAccion === 'DIVIDIR') {
-    const itemsAMover = selectedMesa.comanda.filter(i => selectedItems.includes(i.id));
-    const itemsQuedan = selectedMesa.comanda.filter(i => !selectedItems.includes(i.id));
-
-    setMesas(prev => prev.map(m => {
-      // Actualizar origen (quitar seleccionados o liberar si quedó vacía)
-      if (m.id === selectedMesa.id) {
-        return {
-          ...m,
-          estado: itemsQuedan.length === 0 ? 'LIBRE' : m.estado,
-          comanda: itemsQuedan
-        };
-      }
-      // Agregar los ítems divididos a la mesa destino (sea libre u ocupada)
-      if (m.id === mesaDestino.id) {
-        const nuevoEstado = m.estado === 'LIBRE' ? 'EN_COCINA' : m.estado;
-        return {
-          ...m,
-          estado: nuevoEstado,
-          comanda: [...m.comanda, ...itemsAMover]
-        };
-      }
-      return m;
-    }));
-
-    setToast({
-      type: 'info',
-      title: 'Comanda Dividida',
-      message: `Ítems seleccionados transferidos a Mesa #${mesaDestino.numero}.`
-    });
-    setSelectedItems([]);
-    onClose();
-  }
-};
+    } catch (error) {
+      console.error("Error operativo:", error);
+      setToast({ type: 'error', title: 'Error', message: 'No se pudo completar la operación.' });
+    } finally {
+      setLoadingAccion(false);
+    }
+  };
 
   return (
     <>
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title={`Gestión Operativa — Mesa # ${selectedMesa.numero}`}
-        maxWidth="820px"
-        icon={
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-          </svg>
-        }
+        title={`Gestión Operativa — Mesa #${selectedMesa.numero}`}
+        maxWidth="840px"
       >
-        <div className="gestion-split-layout">
-          {/* ACCIONES DISPONIBLES */}
-          <div className="gestion-col-acciones">
-            <span className="gestion-section-label">ACCIONES DISPONIBLES</span>
+        <div className="gestion-senior-layout">
+          {/* PANEL IZQUIERDO: BOTONERA DE ACCIONES */}
+          <aside className="gestion-sidebar-actions">
+            <h3 className="section-title-senior">ACCIONES DISPONIBLES</h3>
 
-            <button 
-  className="btn-gestion-action green" 
-  onClick={onAbrirComandera} // 👈 2. Llamar a la función de apertura
->
-  <PlusIcon width={16} height={16} /> AÑADIR PRODUCTO
-</button>
+            <div className="actions-stack-senior">
+              <button 
+                className="btn-senior-action btn-add" 
+                onClick={onAbrirComandera}
+                disabled={loadingAccion}
+              >
+                <PlusIcon width={18} height={18} />
+                <span>AÑADIR PRODUCTO</span>
+              </button>
 
-            <button className="btn-gestion-action beige" onClick={() => handleAbrirSelector('CAMBIAR')}>
-              ⇆ CAMBIAR DE MESA
-            </button>
+              <button 
+                className="btn-senior-action btn-transfer" 
+                onClick={() => handleAbrirSelector('CAMBIAR')}
+                disabled={loadingAccion || comanda.length === 0}
+              >
+                <TransferIcon width={18} height={18} />
+                <span>CAMBIAR DE MESA</span>
+              </button>
 
-            <button className="btn-gestion-action blue" onClick={() => handleAbrirSelector('DIVIDIR')}>
-              ⑂ DIVIDIR COMANDA
-            </button>
+              <button 
+                className="btn-senior-action btn-split" 
+                onClick={() => handleAbrirSelector('DIVIDIR')}
+                disabled={loadingAccion || comanda.length === 0}
+              >
+                <SplitIcon width={18} height={18} />
+                <span>DIVIDIR COMANDA</span>
+              </button>
 
-            <button className="btn-gestion-action purple" onClick={() => handleAbrirSelector('AGRUPAR')}>
-              🔗 AGRUPAR MESAS
-            </button>
+              <button 
+                className="btn-senior-action btn-select-all" 
+                onClick={handleToggleSelectAllItems}
+                disabled={loadingAccion || comanda.length === 0}
+              >
+                <CheckIcon width={18} height={18} />
+                <span>{selectedItems.length === comanda.length && comanda.length > 0 ? 'DESMARCAR TODO' : 'SELECCIONAR TODO'}</span>
+              </button>
 
-            <button className="btn-gestion-action dark" onClick={handleToggleSelectAllItems}>
-              ✔ {selectedItems.length === selectedMesa.comanda.length ? 'DESMARCAR TODO' : 'SELECCIONAR TODO'}
-            </button>
+              <button 
+                className="btn-senior-action btn-pay" 
+                onClick={handleAbrirPagoConSeleccion}
+                disabled={
+                  loadingAccion || 
+                  selectedItems.length === 0 || 
+                  comanda.some(i => selectedItems.includes(i.id) && i.pagado)
+                }
+              >
+                <CardIcon width={18} height={18} />
+                <span>CONFIRMAR PAGO</span>
+              </button>
+            </div>
+          </aside>
 
-            <button className="btn-gestion-action dark-secondary" onClick={() => handleAbrirSelector('RESERVAS')}>
-              📅 MUDAR A RESERVAS
-            </button>
+          {/* PANEL DERECHO: DETALLE DE LA COMANDA */}
+          <section className="gestion-content-comanda">
+            <h3 className="section-title-senior">📋 DETALLE DE COMANDA ACTIVA</h3>
 
-            <button className="btn-gestion-action confirm-pago" onClick={onAbrirPago}>
-              💳 CONFIRMAR PAGO
-            </button>
-          </div>
-
-          {/* DETALLE COMANDA */}
-          <div className="gestion-col-comanda">
-            <span className="gestion-section-label">📋 DETALLE DE COMANDA ACTIVA</span>
-
-            <div className="comanda-items-scroll-box">
-              {selectedMesa.comanda.length === 0 ? (
-                <div className="comanda-empty-state">
+            <div className="comanda-scroll-senior">
+              {comanda.length === 0 ? (
+                <div className="empty-comanda-senior">
                   <p>La mesa no tiene consumos registrados.</p>
                 </div>
               ) : (
-                selectedMesa.comanda.map(item => {
+                comanda.map(item => {
                   const isChecked = selectedItems.includes(item.id);
+                  const isDeleting = deletingId === item.id;
+
                   return (
-                    <div key={item.id} className={`comanda-item-card ${isChecked ? 'selected' : ''}`}>
-                      <div className="comanda-item-left">
-                        <span className="item-cant-badge">{item.cant}x</span>
-                        <span className="item-nombre">{item.nombre}</span>
+                    <div 
+                      key={item.id} 
+                      className={`comanda-card-senior ${isChecked ? 'selected' : ''} ${isDeleting ? 'item-fade-out' : ''}`}
+                    >
+                      <div className="item-info-senior">
+                        <span className="badge-qty-senior">{item.cant}x</span>
+                        <span className="item-name-senior">{item.nombre}</span>
                       </div>
 
-                      <div className="comanda-item-right">
-                        <span className="item-precio">S/ {(item.cant * item.precio).toFixed(2)}</span>
-                        <span className="item-estado-pill">{item.estado}</span>
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={() => handleToggleItemSelect(item.id)}
-                          className="checkbox-senior-item"
-                        />
+                      <div className="item-meta-senior">
+                        <span className="item-price-senior">S/ {(item.cant * item.precio).toFixed(2)}</span>
+                        
+                        <span className={`badge-pago-senior ${item.pagado ? 'pagado' : 'pendiente'}`}>
+                          {item.pagado ? '💳 Pagado' : '🔴 Pendiente'}
+                        </span>
+
+                        {/* BOTÓN DE ELIMINAR ANIMADO */}
+                        {!item.pagado && (
+                          <button
+                            type="button"
+                            aria-label="Delete item"
+                            className="delete-button"
+                            onClick={() => handleSolicitarEliminarItem(item)}
+                            disabled={loadingAccion}
+                            title="Eliminar plato de la comanda"
+                          >
+                            <svg className="trash-svg" viewBox="0 -10 64 74" xmlns="http://www.w3.org/2000/svg">
+                              <g id="trash-can">
+                                <rect x="16" y="24" width="32" height="30" rx="3" ry="3" fill="#e74c3c"></rect>
+                                <g transformOrigin="12 18" id="lid-group">
+                                  <rect x="12" y="12" width="40" height="6" rx="2" ry="2" fill="#c0392b"></rect>
+                                  <rect x="26" y="8" width="12" height="4" rx="2" ry="2" fill="#c0392b"></rect>
+                                </g>
+                              </g>
+                            </svg>
+                          </button>
+                        )}
+
+                        {/* CHECKBOX IOS ROJO */}
+                        <label className="ios-checkbox red">
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            disabled={item.pagado || loadingAccion}
+                            onChange={() => handleToggleItemSelect(item.id, item.pagado)}
+                          />
+                          <div className="checkbox-wrapper">
+                            <div className="checkbox-bg"></div>
+                            <svg fill="none" viewBox="0 0 24 24" className="checkbox-icon">
+                              <path
+                                strokeLinejoin="round"
+                                strokeLinecap="round"
+                                strokeWidth="3"
+                                stroke="currentColor"
+                                d="M4 12L10 18L20 6"
+                                className="check-path"
+                              ></path>
+                            </svg>
+                          </div>
+                        </label>
                       </div>
                     </div>
                   );
@@ -241,25 +340,26 @@ export const MesaGestionModal = ({ isOpen, onClose, selectedMesa, onAbrirPago, o
               )}
             </div>
 
-            <div className="comanda-totales-banner">
-              <div className="subtotal-row general">
+            {/* RESUMEN DE TOTALES */}
+            <footer className="totals-footer-senior">
+              <div className="total-row-senior general">
                 <span>SUBTOTAL GENERAL:</span>
-                <strong className="monto-general">S/ {subtotalGeneral.toFixed(2)}</strong>
+                <strong className="amount-general">S/ {subtotalGeneral.toFixed(2)}</strong>
               </div>
 
-              <div className="subtotal-row elegido">
-                <div className="elegido-label-box">
-                  <span className="check-icon-green">✔</span>
+              <div className="total-row-senior selected">
+                <div className="selected-label-senior">
+                  <CheckIcon width={20} height={20} color="#15803d" />
                   <span>SUBTOTAL ELEGIDO:</span>
                 </div>
-                <strong className="monto-elegido">S/ {subtotalElegido.toFixed(2)}</strong>
+                <strong className="amount-selected">S/ {subtotalElegido.toFixed(2)}</strong>
               </div>
-            </div>
-          </div>
+            </footer>
+          </section>
         </div>
       </Modal>
 
-      {/* MODAL COMPONENTE SELECTOR DE MESAS (BOCETO PAINT) */}
+      {/* MODAL DE SELECCIÓN DE MESAS PARA TRASLADO / DIVISIÓN */}
       <SeleccionarMesaModal
         isOpen={selectorConfig.isOpen}
         onClose={() => setSelectorConfig(prev => ({ ...prev, isOpen: false }))}
@@ -269,6 +369,18 @@ export const MesaGestionModal = ({ isOpen, onClose, selectedMesa, onAbrirPago, o
         mesaOrigen={selectedMesa}
         soloMesasLibres={selectorConfig.soloLibres}
         onConfirmar={handleConfirmarTrasladoMesa}
+      />
+
+      {/* CONFIRMDIALOG PARA ELIMINACIÓN DE PRODUCTO */}
+      <ConfirmDialog
+        isOpen={confirmDelete.isOpen}
+        title="¿Eliminar producto de la comanda?"
+        message={confirmDelete.item ? `Se retirará "${confirmDelete.item.nombre}" (${confirmDelete.item.cant}x) de la Mesa #${selectedMesa.numero}.` : ''}
+        type="warning"
+        confirmText="Sí, Eliminar"
+        cancelText="Cancelar"
+        onConfirm={handleConfirmarEliminacion}
+        onCancel={() => setConfirmDelete({ isOpen: false, item: null })}
       />
     </>
   );

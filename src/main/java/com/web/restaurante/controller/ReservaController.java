@@ -1,374 +1,70 @@
 package com.web.restaurante.controller;
+
+import com.web.restaurante.dto.ReservaRequestDTO;
 import com.web.restaurante.model.Reserva;
-import com.web.restaurante.service.MesaService;
 import com.web.restaurante.service.ReservaService;
-import com.web.restaurante.util.ValidationUtil;
-import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-@Controller
-@RequestMapping("/admin/reservas")
+@RestController
+@RequestMapping("/api/reservas")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:5173") // Puerto por defecto de Vite / React
 public class ReservaController {
 
     private final ReservaService reservaService;
-    private final MesaService mesaService;
 
     @GetMapping
-    public String mostrarReservas(Model model) {
-        model.addAttribute("activeUri", "/admin/reservas");
-        model.addAttribute("titleHeader", "Gestión de Reservas");
-
-        model.addAttribute("reservas", reservaService.listarTodas());
-        return "admin/reservas";
+    public ResponseEntity<List<Reserva>> listarTodas() {
+        return ResponseEntity.ok(reservaService.listarTodas());
     }
 
+    @PostMapping
+    public ResponseEntity<Reserva> crear(@Valid @RequestBody ReservaRequestDTO dto) {
+        Reserva reserva = new Reserva();
+        reserva.setNombreCliente(dto.getNombreCliente());
+        reserva.setTelefono(dto.getTelefono());
+        reserva.setNumeroPersonas(dto.getNumeroPersonas());
+        reserva.setFechaHoraReserva(dto.getFechaHora());
+        reserva.setObservacion(dto.getObservacion() != null && !dto.getObservacion().isBlank() ? dto.getObservacion() : null);
 
-
-    @GetMapping("/api/listar")
-
-    @ResponseBody
-
-    public ResponseEntity<?> listar() {
-
-        Map<String, Object> response = new HashMap<>();
-
-        response.put("success", true);
-
-        response.put("data", reservaService.listarTodas());
-
-        return ResponseEntity.ok(response);
-
+        Reserva creada = reservaService.crearReserva(reserva);
+        return ResponseEntity.status(HttpStatus.CREATED).body(creada);
     }
 
-
-
-    @PostMapping("/api/crear")
-
-    @ResponseBody
-
-    public ResponseEntity<?> crear(@RequestBody Map<String, Object> body) {
-
-        Map<String, Object> response = new HashMap<>();
-
-        try {
-
-            String nombreCliente = body.get("nombreCliente") != null ? body.get("nombreCliente").toString().trim() : "";
-
-            String telefono = body.get("telefono") != null ? body.get("telefono").toString().trim() : "";
-
-            int numeroPersonas = body.get("numeroPersonas") != null ? Integer.parseInt(body.get("numeroPersonas").toString()) : 0;
-
-            String fechaHoraStr = body.get("fechaHora") != null ? body.get("fechaHora").toString() : "";
-
-            String observacion = body.get("observacion") != null ? body.get("observacion").toString().trim() : "";
-
-
-
-            if (!ValidationUtil.soloLetras(nombreCliente)) {
-
-                response.put("success", false);
-
-                response.put("message", "El nombre solo puede contener letras.");
-
-                return ResponseEntity.badRequest().body(response);
-
-            }
-
-            if (!ValidationUtil.telefonoValido(telefono)) {
-
-                response.put("success", false);
-
-                response.put("message", "El teléfono debe tener exactamente 9 dígitos.");
-
-                return ResponseEntity.badRequest().body(response);
-
-            }
-
-            if (numeroPersonas < 1) {
-
-                response.put("success", false);
-
-                response.put("message", "El número de personas debe ser mayor a 0.");
-
-                return ResponseEntity.badRequest().body(response);
-
-            }
-
-
-
-            LocalDateTime fechaHora = LocalDateTime.parse(fechaHoraStr);
-
-            if (fechaHora.isBefore(LocalDateTime.now())) {
-
-                response.put("success", false);
-
-                response.put("message", "La fecha y hora no puede ser en el pasado.");
-
-                return ResponseEntity.badRequest().body(response);
-
-            }
-
-
-
-            Reserva reserva = new Reserva();
-
-            reserva.setNombreCliente(nombreCliente);
-
-            reserva.setTelefono(telefono);
-
-            reserva.setNumeroPersonas(numeroPersonas);
-
-            reserva.setFechaHoraReserva(fechaHora);
-
-            reserva.setObservacion(observacion.isEmpty() ? null : observacion);
-
-
-
-            Reserva creada = reservaService.crearReserva(reserva);
-
-            response.put("success", true);
-
-            response.put("message", "Reserva creada. Mesas asignadas: " + creada.getMesasAsignadas());
-
-            return ResponseEntity.ok(response);
-
-
-
-        } catch (IllegalStateException e) {
-
-            response.put("success", false);
-
-            response.put("message", e.getMessage());
-
-            return ResponseEntity.badRequest().body(response);
-
-        } catch (Exception e) {
-
-            response.put("success", false);
-
-            response.put("message", "Error: " + e.getMessage());
-
-            return ResponseEntity.internalServerError().body(response);
-
-        }
-
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> editar(@PathVariable Long id, @Valid @RequestBody ReservaRequestDTO dto) {
+        reservaService.editarReserva(
+                id, 
+                dto.getNombreCliente(), 
+                dto.getTelefono(), 
+                dto.getNumeroPersonas(), 
+                dto.getFechaHora(), 
+                dto.getObservacion()
+        );
+        return ResponseEntity.ok().build();
     }
 
-
-
-    @PostMapping("/api/confirmar-llegada/{id}")
-
-    @ResponseBody
-
-    public ResponseEntity<?> confirmarLlegada(@PathVariable Long id, HttpSession session) {
-
-        Map<String, Object> response = new HashMap<>();
-
-        try {
-
-            String rol = session.getAttribute("rol") != null ? session.getAttribute("rol").toString() : "";
-
-            if (!"CAJERO".equals(rol) && !"ADMIN".equals(rol) && !"SUPER_ADMIN".equals(rol)) {
-
-                response.put("success", false);
-
-                response.put("message", "Solo el cajero o admin puede confirmar la llegada.");
-
-                return ResponseEntity.status(403).body(response);
-
-            }
-
-            reservaService.confirmarLlegada(id);
-
-            response.put("success", true);
-
-            response.put("message", "Llegada confirmada. Mesas ahora en estado OCUPADA.");
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-
-            response.put("success", false);
-
-            response.put("message", e.getMessage());
-
-            return ResponseEntity.badRequest().body(response);
-
-        }
-
+    @PostMapping("/{id}/confirmar-llegada")
+    public ResponseEntity<Void> confirmarLlegada(@PathVariable Long id) {
+        reservaService.confirmarLlegada(id);
+        return ResponseEntity.ok().build();
     }
 
-
-
-    @PostMapping("/api/cancelar/{id}")
-
-    @ResponseBody
-
-    public ResponseEntity<?> cancelar(@PathVariable Long id) {
-
-        Map<String, Object> response = new HashMap<>();
-
-        try {
-
-            reservaService.cancelarReserva(id);
-
-            response.put("success", true);
-
-            response.put("message", "Reserva cancelada correctamente.");
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-
-            response.put("success", false);
-
-            response.put("message", e.getMessage());
-
-            return ResponseEntity.badRequest().body(response);
-
-        }
-
+    @PostMapping("/{id}/cancelar")
+    public ResponseEntity<Void> cancelar(@PathVariable Long id) {
+        reservaService.cancelarReserva(id);
+        return ResponseEntity.ok().build();
     }
 
-
-
-    @PutMapping("/api/editar/{id}")
-
-    @ResponseBody
-
-    public ResponseEntity<?> editar(@PathVariable Long id, @RequestBody Map<String, Object> body) {
-
-        Map<String, Object> response = new HashMap<>();
-
-        try {
-
-            String nombreCliente = body.get("nombreCliente") != null ? body.get("nombreCliente").toString().trim() : "";
-
-            String telefono = body.get("telefono") != null ? body.get("telefono").toString().trim() : "";
-
-            int numeroPersonas = body.get("numeroPersonas") != null ? Integer.parseInt(body.get("numeroPersonas").toString()) : 0;
-
-            String fechaHoraStr = body.get("fechaHora") != null ? body.get("fechaHora").toString() : "";
-
-            String observacion = body.get("observacion") != null ? body.get("observacion").toString().trim() : "";
-
-
-
-            if (!ValidationUtil.soloLetras(nombreCliente)) {
-
-                response.put("success", false);
-
-                response.put("message", "El nombre solo puede contener letras.");
-
-                return ResponseEntity.badRequest().body(response);
-
-            }
-
-            if (!ValidationUtil.telefonoValido(telefono)) {
-
-                response.put("success", false);
-
-                response.put("message", "El teléfono debe tener exactamente 9 dígitos.");
-
-                return ResponseEntity.badRequest().body(response);
-
-            }
-
-            if (numeroPersonas < 1) {
-
-                response.put("success", false);
-
-                response.put("message", "El número de personas debe ser mayor a 0.");
-
-                return ResponseEntity.badRequest().body(response);
-
-            }
-
-
-
-            LocalDateTime fechaHora = LocalDateTime.parse(fechaHoraStr);
-
-            if (fechaHora.isBefore(LocalDateTime.now())) {
-
-                response.put("success", false);
-
-                response.put("message", "La fecha y hora no puede ser en el pasado.");
-
-                return ResponseEntity.badRequest().body(response);
-
-            }
-
-
-
-            reservaService.editarReserva(id, nombreCliente, telefono, numeroPersonas, fechaHora, observacion);
-
-            response.put("success", true);
-
-            response.put("message", "Reserva actualizada correctamente.");
-
-            return ResponseEntity.ok(response);
-
-        } catch (IllegalStateException e) {
-
-            response.put("success", false);
-
-            response.put("message", e.getMessage());
-
-            return ResponseEntity.badRequest().body(response);
-
-        } catch (Exception e) {
-
-            response.put("success", false);
-
-            response.put("message", "Error: " + e.getMessage());
-
-            return ResponseEntity.internalServerError().body(response);
-
-        }
-
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+        reservaService.eliminarReserva(id);
+        return ResponseEntity.noContent().build();
     }
-
-
-
-    @DeleteMapping("/api/eliminar/{id}")
-
-    @ResponseBody
-
-    public ResponseEntity<?> eliminar(@PathVariable Long id) {
-
-        Map<String, Object> response = new HashMap<>();
-
-        try {
-
-            reservaService.eliminarReserva(id);
-
-            response.put("success", true);
-
-            response.put("message", "Reserva eliminada correctamente.");
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-
-            response.put("success", false);
-
-            response.put("message", e.getMessage());
-
-            return ResponseEntity.badRequest().body(response);
-
-        }
-
-    }
-
-
 }

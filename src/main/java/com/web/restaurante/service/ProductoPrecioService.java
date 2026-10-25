@@ -79,9 +79,13 @@ public class ProductoPrecioService {
 
     @Transactional
     public void actualizarPrecios(List<ActualizacionPrecioDTO> actualizaciones) {
+        if (actualizaciones == null) return;
+
         for (ActualizacionPrecioDTO actualizacion : actualizaciones) {
-            productoRepository.findById(actualizacion.idProducto())
-                    .ifPresent(p -> p.setPrecio(actualizacion.nuevoPrecio()));
+            if (actualizacion.idProducto() != null && actualizacion.nuevoPrecio() != null) {
+                productoRepository.findById(actualizacion.idProducto())
+                        .ifPresent(p -> p.setPrecio(actualizacion.nuevoPrecio()));
+            }
         }
     }
 }

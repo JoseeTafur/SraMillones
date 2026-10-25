@@ -1,0 +1,11 @@
+package com.web.restaurante.dto.mesas;
+
+import lombok.Data;
+import java.util.List;
+
+@Data
+public class ProcesarCobroDTO {
+    private Long comandaId;
+    private Long mesaId;
+    private List<Long> idsDetallesPagados;
+}

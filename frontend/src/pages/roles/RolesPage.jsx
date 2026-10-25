@@ -1,14 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DataTable from '../../components/common/DataTable';
 import Modal from '../../components/common/Modal';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import Toast from '../../components/common/Toast';
-import { EditIcon, HideIcon, EyeIcon, KeyIcon, PlusIcon } from '../../components/common/Icons';
+import { EditIcon, HideIcon, EyeIcon, KeyIcon } from '../../components/common/Icons';
+import perfilService from '../../services/perfilService';
 import './RolesPage.css';
 
 export const RolesPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [toast, setToast] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Estados provenientes de la BD Spring Boot
+  const [roles, setRoles] = useState([]);
+  const [modulosSistema, setModulosSistema] = useState([]);
 
   // Estados para Modales
   const [showRolModal, setShowRolModal] = useState(false);
@@ -16,7 +22,7 @@ export const RolesPage = () => {
 
   const [showPermisosModal, setShowPermisosModal] = useState(false);
   const [rolPermisos, setRolPermisos] = useState(null);
-  const [permisosSeleccionados, setPermisosSeleccionados] = useState([]);
+  const [opcionesSeleccionadasIds, setOpcionesSeleccionadasIds] = useState([]);
 
   const [showDetalleModal, setShowDetalleModal] = useState(false);
   const [rolVer, setRolVer] = useState(null);
@@ -36,151 +42,188 @@ export const RolesPage = () => {
     onConfirm: () => {}
   });
 
-  // Lista de Módulos Operativos del Sistema La Jama
-  const MODULOS_SISTEMA = [
-    { id: 'dashboard', nombre: 'Dashboard' },
-    { id: 'usuarios', nombre: 'Usuarios' },
-    { id: 'perfiles', nombre: 'Perfiles' },
-    { id: 'empleados', nombre: 'Empleados' },
-    { id: 'caja', nombre: 'Control de Caja' },
-    { id: 'cocina_caliente', nombre: 'Cocina Caliente' },
-    { id: 'despacho', nombre: 'Monitor Despacho' },
-    { id: 'cocina_fria', nombre: 'Cocina Fría' },
-    { id: 'productos', nombre: 'Productos y Carta' },
-    { id: 'precios', nombre: 'Gestión de Precios' }
-  ];
-
-  // Lista simulada de Roles
-  const [roles, setRoles] = useState([
-    {
-      id: 1,
-      nombre: 'Administrador',
-      descripcion: 'Control total sobre el sistema',
-      estado: 'Activo',
-      permisos: ['dashboard', 'usuarios', 'perfiles', 'empleados', 'caja', 'cocina_caliente', 'despacho', 'cocina_fria', 'productos', 'precios']
-    },
-    {
-      id: 2,
-      nombre: 'Visitante',
-      descripcion: 'Solo tiene permiso al Dashboard',
-      estado: 'Activo',
-      permisos: ['dashboard']
-    },
-    {
-      id: 3,
-      nombre: 'Empleado',
-      descripcion: 'Se le asignará el cargo dependiendo de su rol',
-      estado: 'Activo',
-      permisos: ['dashboard', 'despacho']
-    },
-    {
-      id: 4,
-      nombre: 'Cajero',
-      descripcion: 'Acceso a caja, despacho, delivery y productos',
-      estado: 'Activo',
-      permisos: ['dashboard', 'caja', 'despacho', 'productos']
-    }
-  ]);
-
   const COLUMNAS_ROLES = [
     { header: 'ID', width: '70px' },
-    { header: 'NOMBRE DEL ROL', width: '180px' },
+    { header: 'NOMBRE DEL ROL', width: '200px' },
     { header: 'DESCRIPCIÓN OPERATIVA' },
     { header: 'ESTADO', width: '120px' },
     { header: 'ACCIONES', width: '180px', align: 'center' }
   ];
 
+  // 1. Cargar datos iniciales de la API
+  const cargarDatos = async () => {
+    setLoading(true);
+    try {
+      const [resPerfiles, resOpciones] = await Promise.all([
+        perfilService.listar(),
+        perfilService.listarOpciones()
+      ]);
+
+      if (resPerfiles && resPerfiles.success) {
+        setRoles(resPerfiles.data || []);
+      }
+
+      if (resOpciones && resOpciones.success) {
+        setModulosSistema(resOpciones.data || []);
+      }
+    } catch (error) {
+      setToast({
+        type: 'error',
+        title: 'Error de Conexión',
+        message: 'No se pudieron recuperar los perfiles y permisos desde el servidor.'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    cargarDatos();
+  }, []);
+
   const rolesFiltrados = roles.filter(r => {
     const txt = searchTerm.toLowerCase();
-    return r.nombre.toLowerCase().includes(txt) || r.descripcion.toLowerCase().includes(txt);
+    return (r.nombre || '').toLowerCase().includes(txt) ||
+           (r.descripcion || '').toLowerCase().includes(txt);
   });
 
-  // Abrir Modal Crear Rol
+  // Modal Crear Rol
   const handleAbrirNuevo = () => {
     setRolEditar(null);
     setFormData({ nombre: '', descripcion: '' });
     setShowRolModal(true);
   };
 
-  // Abrir Modal Editar Rol
+  // Modal Editar Rol
   const handleAbrirEditar = (rol) => {
     setRolEditar(rol);
-    setFormData({ nombre: rol.nombre, descripcion: rol.descripcion });
+    setFormData({ nombre: rol.nombre, descripcion: rol.descripcion || '' });
     setShowRolModal(true);
   };
 
-  // Abrir Modal Asignar Permisos (Llave)
-  const handleAbrirPermisos = (rol) => {
-    setRolPermisos(rol);
-    setPermisosSeleccionados(rol.permisos || []);
-    setShowPermisosModal(true);
+  // Modal Asignar Permisos (Key/Llave)
+  const handleAbrirPermisos = async (rol) => {
+    try {
+      const res = await perfilService.obtenerPorId(rol.id);
+      if (res && res.success) {
+        const perfilDetalle = res.data;
+        setRolPermisos(perfilDetalle);
+        const idsActuales = (perfilDetalle.opciones || []).map(op => op.id);
+        setOpcionesSeleccionadasIds(idsActuales);
+        setShowPermisosModal(true);
+      }
+    } catch (err) {
+      setToast({ type: 'error', title: 'Error', message: 'No se pudieron cargar los permisos del rol.' });
+    }
   };
 
-  // Abrir Modal Ver Detalle
-  const handleAbrirDetalle = (rol) => {
-    setRolVer(rol);
+  // Modal Ver Detalle
+  const handleAbrirDetalle = async (rol) => {
+    try {
+      const res = await perfilService.obtenerPorId(rol.id);
+      if (res && res.success) {
+        setRolVer(res.data);
+      } else {
+        setRolVer(rol);
+      }
+    } catch (err) {
+      setRolVer(rol);
+    }
     setShowDetalleModal(true);
   };
 
-  // Toggle Checkbox Permisos
-  const handleTogglePermiso = (moduloId) => {
-    setPermisosSeleccionados(prev =>
-      prev.includes(moduloId)
-        ? prev.filter(id => id !== moduloId)
-        : [...prev, moduloId]
+  // Checkbox Permisos Toggle
+  const handleTogglePermiso = (opcionId) => {
+    setOpcionesSeleccionadasIds(prev =>
+      prev.includes(opcionId)
+        ? prev.filter(id => id !== opcionId)
+        : [...prev, opcionId]
     );
   };
 
-  // Guardar Permisos
-  const handleGuardarPermisos = (e) => {
+  // Guardar Permisos de un Rol
+  const handleGuardarPermisos = async (e) => {
     e.preventDefault();
-    setRoles(prev => prev.map(r => r.id === rolPermisos.id ? { ...r, permisos: permisosSeleccionados } : r));
-    setToast({
-      type: 'info',
-      title: 'Permisos Actualizados',
-      message: `Se actualizaron los permisos para el rol "${rolPermisos.nombre}".`
-    });
-    setShowPermisosModal(false);
+    if (!rolPermisos) return;
+
+    const payload = {
+      id: rolPermisos.id,
+      nombre: rolPermisos.nombre,
+      descripcion: rolPermisos.descripcion,
+      opciones: opcionesSeleccionadasIds.map(id => ({ id }))
+    };
+
+    try {
+      const res = await perfilService.guardar(payload);
+      if (res.success) {
+        setToast({
+          type: 'info',
+          title: 'Permisos Actualizados',
+          message: `Se actualizaron los permisos para el rol "${rolPermisos.nombre}".`
+        });
+        setShowPermisosModal(false);
+        cargarDatos();
+      }
+    } catch (err) {
+      const errMsg = err.response?.data?.message || 'Error al actualizar los permisos.';
+      setToast({ type: 'error', title: 'Error', message: errMsg });
+    }
   };
 
-  // Dar de Baja Rol
+  // Desactivar o Eliminar Rol
   const handleEliminar = (id, nombre) => {
     setConfirmState({
       isOpen: true,
       title: `¿Dar de baja el rol "${nombre}"?`,
       message: 'Los usuarios con este perfil asignado perderán sus accesos asociados de inmediato.',
       type: 'warning',
-      onConfirm: () => {
-        setRoles(prev => prev.map(r => r.id === id ? { ...r, estado: 'Inactivo' } : r));
-        setToast({ type: 'info', title: 'Rol Desactivado', message: `El rol "${nombre}" ha sido desactivado.` });
-        setConfirmState(prev => ({ ...prev, isOpen: false }));
+      onConfirm: async () => {
+        try {
+          const res = await perfilService.cambiarEstado(id);
+          if (res.success) {
+            setToast({ type: 'info', title: 'Estado Actualizado', message: res.message });
+            cargarDatos();
+          }
+        } catch (err) {
+          const errMsg = err.response?.data?.message || 'No se pudo cambiar el estado del perfil.';
+          setToast({ type: 'error', title: 'Operación Rechazada', message: errMsg });
+        } finally {
+          setConfirmState(prev => ({ ...prev, isOpen: false }));
+        }
       }
     });
   };
 
-  // Guardar Rol (Nuevo o Editar)
-  const handleGuardarRol = (e) => {
+  // Guardar o Editar Datos de Rol
+  const handleGuardarRol = async (e) => {
     e.preventDefault();
     if (!formData.nombre.trim()) {
       setToast({ type: 'error', title: 'Campo Requerido', message: 'Escriba el nombre del rol.' });
       return;
     }
 
-    if (rolEditar) {
-      setRoles(roles.map(r => r.id === rolEditar.id ? { ...r, ...formData } : r));
-      setToast({ type: 'info', title: 'Rol Actualizado', message: `Se actualizaron los datos del rol "${formData.nombre}".` });
-    } else {
-      const nuevo = {
-        id: Date.now(),
-        ...formData,
-        estado: 'Activo',
-        permisos: ['dashboard']
-      };
-      setRoles([nuevo, ...roles]);
-      setToast({ type: 'info', title: '¡Rol Registrado!', message: `El rol "${formData.nombre}" fue registrado correctamente.` });
-    }
+    const payload = {
+      id: rolEditar ? rolEditar.id : null,
+      nombre: formData.nombre.trim(),
+      descripcion: formData.descripcion.trim(),
+      opciones: rolEditar && rolEditar.opciones ? rolEditar.opciones : []
+    };
 
-    setShowRolModal(false);
+    try {
+      const res = await perfilService.guardar(payload);
+      if (res.success) {
+        setToast({
+          type: 'info',
+          title: rolEditar ? 'Rol Actualizado' : '¡Rol Registrado!',
+          message: res.message
+        });
+        setShowRolModal(false);
+        cargarDatos();
+      }
+    } catch (err) {
+      const errMsg = err.response?.data?.message || 'Error al guardar el rol.';
+      setToast({ type: 'error', title: 'Error al Guardar', message: errMsg });
+    }
   };
 
   return (
@@ -191,7 +234,7 @@ export const RolesPage = () => {
         </div>
       )}
 
-      {/* DATATABLE UNIVERSAL DE ROLES */}
+      {/* DATATABLE ROLES */}
       <DataTable
         title="Lista de Roles del Sistema"
         icon={
@@ -207,42 +250,39 @@ export const RolesPage = () => {
         columns={COLUMNAS_ROLES}
         data={rolesFiltrados}
         itemsPerPage={5}
-        emptyMessage="No se encontraron roles coincidentes."
-        renderRow={(rol) => (
-          <tr key={rol.id} className={rol.estado === 'Inactivo' ? 'tr-disabled' : ''}>
-            <td><span className="rol-id-bold">{rol.id}</span></td>
-            <td><span className="rol-nombre-text">{rol.nombre}</span></td>
-            <td><span className="rol-descripcion-text">{rol.descripcion}</span></td>
-            <td>
-              <span className={`badge-estado-pill ${rol.estado === 'Activo' ? 'activo' : 'inactivo'}`}>
-                {rol.estado}
-              </span>
-            </td>
-            <td>
-              <div className="acciones-buttons-group">
-                {/* 1. Editar Rol (Cuadrado Naranja) */}
-                <button className="btn-action-icon edit" title="Editar datos del rol" onClick={() => handleAbrirEditar(rol)}>
-                  <EditIcon />
-                </button>
+        emptyMessage={loading ? "Cargando roles del sistema..." : "No se encontraron roles coincidentes."}
+        renderRow={(rol) => {
+          const esActivo = rol.estado === 1 || rol.estado === 'Activo';
 
-                {/* 2. Asignar Permisos (Cuadrado Gris / Llave) */}
-                <button className="btn-action-icon key" title="Asignar permisos del sistema" onClick={() => handleAbrirPermisos(rol)}>
-                  <KeyIcon />
-                </button>
-
-                {/* 3. Ver Detalle (Cuadrado Verde / Ojo) */}
-                <button className="btn-action-icon view" title="Ver detalle del rol" onClick={() => handleAbrirDetalle(rol)}>
-                  <EyeIcon />
-                </button>
-
-                {/* 4. Dar de Baja (Cuadrado Rojo / Ojo Ocultar) */}
-                <button className="btn-action-icon delete" title="Dar de baja rol" onClick={() => handleEliminar(rol.id, rol.nombre)}>
-                  <HideIcon />
-                </button>
-              </div>
-            </td>
-          </tr>
-        )}
+          return (
+            <tr key={rol.id} className={!esActivo ? 'tr-disabled' : ''}>
+              <td><span className="rol-id-bold">#{rol.id}</span></td>
+              <td><span className="rol-nombre-text">{rol.nombre}</span></td>
+              <td><span className="rol-descripcion-text">{rol.descripcion || 'Sin descripción'}</span></td>
+              <td>
+                <span className={`badge-estado-pill ${esActivo ? 'activo' : 'inactivo'}`}>
+                  {esActivo ? 'Activo' : 'Inactivo'}
+                </span>
+              </td>
+              <td>
+                <div className="acciones-buttons-group">
+                  <button className="btn-action-icon edit" title="Editar datos del rol" onClick={() => handleAbrirEditar(rol)}>
+                    <EditIcon />
+                  </button>
+                  <button className="btn-action-icon key" title="Asignar permisos del sistema" onClick={() => handleAbrirPermisos(rol)}>
+                    <KeyIcon />
+                  </button>
+                  <button className="btn-action-icon view" title="Ver detalle del rol" onClick={() => handleAbrirDetalle(rol)}>
+                    <EyeIcon />
+                  </button>
+                  <button className="btn-action-icon delete" title="Cambiar estado del rol" onClick={() => handleEliminar(rol.id, rol.nombre)}>
+                    <HideIcon />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          );
+        }}
       />
 
       {/* MODAL 1: REGISTRAR / EDITAR ROL */}
@@ -289,7 +329,7 @@ export const RolesPage = () => {
         </form>
       </Modal>
 
-      {/* MODAL 2: ASIGNAR PERMISOS DEL SISTEMA (FIDELIDAD CAPTURA) */}
+      {/* MODAL 2: ASIGNAR PERMISOS / MÓDULOS DEL SISTEMA */}
       <Modal
         isOpen={showPermisosModal}
         onClose={() => setShowPermisosModal(false)}
@@ -303,21 +343,19 @@ export const RolesPage = () => {
       >
         <form onSubmit={handleGuardarPermisos}>
           <div className="modal-body-custom permisos-modal-body">
-            {/* Caja Informativa Dorada con Nombre del Rol */}
             <div className="permisos-warning-box">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="permisos-alert-icon">
                 <path d="M12 2L1 21h22L12 2zm1 14h-2v-2h2v2zm0-4h-2V10h2v2z"/>
               </svg>
               <div className="permisos-warning-content">
-                <p>Seleccione los módulos operativos a los que tendrá acceso comercial el perfil:</p>
+                <p>Seleccione los módulos operativos a los que tendrá acceso el perfil:</p>
                 <h4 className="rol-destacado-title">{rolPermisos?.nombre}</h4>
               </div>
             </div>
 
-            {/* Lista de Checkboxes de Módulos Operativos */}
             <div className="modulos-checklist-container">
-              {MODULOS_SISTEMA.map((modulo) => {
-                const isChecked = permisosSeleccionados.includes(modulo.id);
+              {modulosSistema.map((modulo) => {
+                const isChecked = opcionesSeleccionadasIds.includes(modulo.id);
                 return (
                   <label key={modulo.id} className={`modulo-check-row ${isChecked ? 'selected' : ''}`}>
                     <input
@@ -364,25 +402,22 @@ export const RolesPage = () => {
               </div>
               <div className="detalle-row">
                 <span className="detalle-label">Descripción:</span>
-                <span className="detalle-val">{rolVer.descripcion}</span>
+                <span className="detalle-val">{rolVer.descripcion || 'Sin descripción'}</span>
               </div>
               <div className="detalle-row">
                 <span className="detalle-label">Estado:</span>
-                <span className={`badge-estado-pill ${rolVer.estado === 'Activo' ? 'activo' : 'inactivo'}`}>
-                  {rolVer.estado}
+                <span className={`badge-estado-pill ${(rolVer.estado === 1 || rolVer.estado === 'Activo') ? 'activo' : 'inactivo'}`}>
+                  {(rolVer.estado === 1 || rolVer.estado === 'Activo') ? 'Activo' : 'Inactivo'}
                 </span>
               </div>
               <div className="detalle-row flex-col">
-                <span className="detalle-label">Permisos Habilitados ({rolVer.permisos?.length || 0}):</span>
+                <span className="detalle-label">Permisos Habilitados ({rolVer.opciones?.length || 0}):</span>
                 <div className="permisos-pills-wrap">
-                  {rolVer.permisos?.map(pId => {
-                    const mod = MODULOS_SISTEMA.find(m => m.id === pId);
-                    return (
-                      <span key={pId} className="badge-permiso-pill">
-                        {mod ? mod.nombre : pId}
-                      </span>
-                    );
-                  })}
+                  {rolVer.opciones?.map(op => (
+                    <span key={op.id} className="badge-permiso-pill">
+                      {op.nombre}
+                    </span>
+                  ))}
                 </div>
               </div>
             </div>
@@ -402,8 +437,8 @@ export const RolesPage = () => {
         title={confirmState.title}
         message={confirmState.message}
         type={confirmState.type}
-        confirmText="Sí, Dar de Baja"
-        cancelText="Conservar Activo"
+        confirmText="Sí, Cambiar Estado"
+        cancelText="Conservar Estado"
         onConfirm={confirmState.onConfirm}
         onCancel={() => setConfirmState(prev => ({ ...prev, isOpen: false }))}
       />

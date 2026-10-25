@@ -31,9 +31,7 @@ export const Modal = ({
 
   const handleClose = () => {
     setIsClosing(true);
-    setTimeout(() => {
-      onClose();
-    }, 250);
+    onClose();
   };
 
   return (

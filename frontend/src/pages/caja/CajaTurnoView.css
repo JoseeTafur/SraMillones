@@ -1,0 +1,363 @@
+/* CONTENEDOR PRINCIPAL CAJA */
+.caja-turno-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+/* BLOQUE 1: MÉTRICAS CABECERA */
+.caja-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+.caja-metric-card {
+  padding: 1.35rem 1.6rem;
+  border-radius: 18px;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.caja-metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+}
+
+.caja-metric-card.apertura {
+  background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+}
+
+.caja-metric-card.ventas {
+  background: linear-gradient(135deg, #1e3a8a 0%, #172554 100%);
+}
+
+.caja-metric-card.esperado {
+  background: linear-gradient(135deg, #4a0811 0%, #200307 100%);
+}
+
+.metric-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  opacity: 0.9;
+}
+
+.metric-value {
+  margin: 0;
+  font-size: 1.9rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+/* BLOQUE 2: MÉTODOS DE PAGO (SUBPANEL) */
+.caja-subpanel-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+}
+
+.subpanel-card {
+  border-radius: 16px;
+  padding: 1rem 1.15rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  transition: transform 0.15s ease;
+}
+
+.subpanel-card:hover {
+  transform: translateY(-2px);
+}
+
+.subpanel-card.efectivo {
+  background: linear-gradient(135deg, #15803d 0%, #16a34a 100%);
+  color: #ffffff;
+}
+
+.subpanel-card.yape {
+  background: linear-gradient(135deg, #6b21a8 0%, #7e22ce 100%);
+  color: #ffffff;
+}
+
+.subpanel-card.plin {
+  background: linear-gradient(135deg, #0e7490 0%, #06b6d4 100%);
+  color: #ffffff;
+}
+
+.subpanel-card.tarjeta {
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+  color: #ffffff;
+}
+
+.subpanel-card.mover-manual {
+  background-color: #200307;
+  color: #ffffff;
+  border: 1px solid #4a0811;
+}
+
+.subpanel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.subpanel-title {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.95;
+}
+
+.subpanel-amount {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+.badge-app-pill {
+  padding: 0.18rem 0.55rem;
+  border-radius: 8px;
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: lowercase;
+}
+
+.badge-app-pill.yape {
+  background-color: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.badge-app-pill.plin {
+  background-color: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.mover-manual-counts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.83rem;
+  margin-top: 0.4rem;
+}
+
+.count-row.ingreso {
+  color: #4ade80;
+  font-weight: 700;
+}
+
+.count-row.egreso {
+  color: #f87171;
+  font-weight: 700;
+}
+
+.count-val {
+  font-weight: 900;
+}
+
+/* BOTONES DE ACCIÓN BARRA DE HERRAMIENTAS */
+.caja-toolbar-actions {
+  display: flex;
+  gap: 0.85rem;
+  justify-content: flex-end;
+}
+
+.btn-caja-action {
+  padding: 0.75rem 1.35rem;
+  border-radius: 14px;
+  font-size: 0.88rem;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.btn-caja-action:hover {
+  transform: translateY(-1px);
+}
+
+.btn-caja-action.dark {
+  background-color: #200307;
+  color: #ffffff;
+}
+
+.btn-caja-action.dark:hover {
+  background-color: #32050b;
+}
+
+.btn-caja-action.guinda {
+  background: linear-gradient(135deg, #4a0811 0%, #200307 100%);
+  color: #ffffff;
+}
+
+.btn-caja-action.guinda:hover {
+  box-shadow: 0 6px 16px rgba(74, 8, 17, 0.25);
+}
+
+/* CONTENEDOR DE TABLAS Y PESTAÑAS */
+.caja-table-wrapper {
+  background-color: #ffffff;
+  border-radius: 18px;
+  border: 1.5px solid #e2e8f0;
+  padding: 1.35rem;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
+}
+
+.caja-tabs-bar {
+  display: flex;
+  gap: 0.6rem;
+  border-bottom: 1.5px solid #e2e8f0;
+  padding-bottom: 0.85rem;
+  margin-bottom: 1.15rem;
+}
+
+.tab-btn {
+  padding: 0.65rem 1.25rem;
+  border-radius: 12px;
+  background-color: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  color: #64748b;
+  font-weight: 800;
+  font-size: 0.86rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+.tab-btn.active {
+  background-color: #4a0811;
+  color: #ffffff;
+  border-color: #4a0811;
+  box-shadow: 0 3px 10px rgba(74, 8, 17, 0.2);
+}
+
+/* ESTADO: CAJA CERRADA (PLACEHOLDER & APERTURA) */
+.caja-cerrada-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4.5rem 2rem;
+  background-color: #ffffff;
+  border-radius: 20px;
+  border: 2px dashed #cbd5e1;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.02);
+}
+
+.caja-cerrada-placeholder h2 {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.caja-cerrada-placeholder p {
+  color: #64748b;
+  font-size: 0.95rem;
+  max-width: 480px;
+  margin-bottom: 1.75rem;
+}
+
+/* MINIPANELES DENTRO DE MODALES (COBRO & CIERRE) */
+.apertura-info-text {
+  font-size: 0.92rem;
+  color: #334155;
+  background-color: #f8fafc;
+  padding: 0.85rem 1.1rem;
+  border-radius: 12px;
+  border-left: 4px solid #15803d;
+  margin-bottom: 1.25rem;
+}
+
+.apertura-info-text strong {
+  color: #15803d;
+  font-size: 1.05rem;
+}
+
+.cierre-resumen-box {
+  padding: 1rem 1.15rem;
+  background-color: #f8fafc;
+  border-radius: 14px;
+  border: 1.5px solid #e2e8f0;
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.cierre-resumen-box span {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.cierre-resumen-box strong {
+  font-size: 1.45rem;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+/* BADGES DE ESTADO Y PRECIOS */
+.badge-por-cobrar {
+  display: inline-block;
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  background-color: #fef3c7;
+  color: #b45309;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.precio-monto-destacado {
+  font-weight: 900;
+  color: #0f172a;
+  font-size: 0.98rem;
+}
+
+/* ESTILOS ADICIONALES PARA BOTONES GUINDA Y VERDE BOTÁNICO */
+.btn-save-senior.guinda-theme {
+  background: linear-gradient(135deg, #4a0811 0%, #200307 100%);
+  color: #ffffff;
+}
+
+.btn-save-senior.guinda-theme:hover {
+  background: #200307;
+}
+
+/* RESPONSIVO */
+@media (max-width: 1200px) {
+  .caja-subpanel-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .caja-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+  .caja-subpanel-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .caja-toolbar-actions {
+    flex-direction: column;
+  }
+}

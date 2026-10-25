@@ -10,8 +10,6 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import java.time.LocalDateTime;
-
 @RequiredArgsConstructor
 @Component
 public class SessionInterceptor implements HandlerInterceptor {
@@ -24,32 +22,32 @@ public class SessionInterceptor implements HandlerInterceptor {
             @NonNull HttpServletResponse response,
             @NonNull Object handler) throws Exception {
 
-        HttpSession session = request.getSession(false);
         String path = request.getServletPath();
         String queryString = request.getQueryString();
 
+        // 1. Bypass para peticiones preflight de CORS
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            return true;
+        }
+
+        // 2. Bypass para endpoints públicos de autenticación o assets
+        if (path.startsWith("/api/auth/") || path.startsWith("/css/") || path.startsWith("/js/")) {
+            return true;
+        }
+
+        HttpSession session = request.getSession(false);
+
+        // 3. Excepción RateLimit
         if (queryString != null && queryString.contains("error=ratelimit")) {
             return true;
         }
 
-        if ("/login".equals(path) || "/logout".equals(path)) {
-            String ip = request.getHeader("X-Forwarded-For");
-            String claveIP = "IP_" + (ip == null || ip.isEmpty() ? request.getRemoteAddr() : ip.split(",")[0].trim());
-
-            Bucket bucketAnonimo = rateLimitManager.obtenerBucket(claveIP, false);
-
-            if (!bucketAnonimo.tryConsume(1)) {
-                manejadorBloqueoRateLimit(request, response, session);
-                return false;
-            }
-
-            return true;
-        }
-
+        // 4. Rate Limiting por IP o Sesión
         String claveIdentificadora;
         boolean esAutenticado = false;
 
-        if (session != null && session.getAttribute("usuarioLogueado") != null) {
+        // 🟢 Corregido: se verifica "datosSesion" o "usuarioId" que establece AuthController
+        if (session != null && (session.getAttribute("datosSesion") != null || session.getAttribute("usuarioId") != null)) {
             claveIdentificadora = "SESSION_" + session.getId();
             esAutenticado = true;
         } else {
@@ -64,66 +62,26 @@ public class SessionInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        if (session == null || session.getAttribute("usuarioLogueado") == null) {
+        // 5. Verificación de Sesión para Peticiones API REST (Acepta /api/ y /usuarios/api/)
+        boolean esRutaApi = path.startsWith("/api/") || path.contains("/api/");
+
+        if (esRutaApi) {
+            if (!esAutenticado) {
+                response.setStatus(HttpStatus.UNAUTHORIZED.value()); // HTTP 401
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"success\": false, \"message\": \"Sesión no válida o expirada.\"}");
+                return false;
+            }
+            return true; // 🟢 Permite continuar a cualquier endpoint API estando autenticado
+        }
+
+        // 6. Verificación para Vistas HTML Clásicas
+        if (!esAutenticado) {
             response.sendRedirect("/login");
             return false;
         }
 
-        if ("/dashboard".equals(path) ||
-                "/admin/MiPerfil".equals(path) ||
-                "/admin/sidebar".equals(path) ||
-                "admin/sidebar".equals(path)) {
-            return true;
-        }
-
-        String rol = session.getAttribute("rol") != null
-                ? session.getAttribute("rol").toString().trim().toUpperCase()
-                : "INVITADO";
-
-        if ("SUPER_ADMIN".equals(rol) || "ADMIN".equals(rol)) return true;
-
-        if (path.startsWith("/admin/caja") ||
-                path.startsWith("/admin/despacho") ||
-                path.startsWith("/admin/productos") ||
-                path.startsWith("/admin/pagos-digitales") ||
-                path.startsWith("/delivery") ||
-                path.startsWith("/historial")) {
-            return verificar(rol, response, "CAJERO");
-        }
-
-        if (path.startsWith("/admin/mesas") || path.startsWith("/admin/mesero")) {
-            return verificar(rol, response, "MESERO");
-        }
-
-        if (path.startsWith("/admin/cocina") ||
-                path.startsWith("/insumos") ||
-                path.startsWith("/proteinas")) {
-
-            if ("COCINA".equals(rol)) return true;
-            if ("CAJERO".equals(rol)) return true;
-        }
-
-        if (path.startsWith("/admin/entregas") || path.startsWith("/entregas") || path.startsWith("/repartidor")) {
-            if ("SUPER_ADMIN".equals(rol) || "ADMIN".equals(rol)) return true;
-            return verificar(rol, response, "REPARTIDOR");
-        }
-
-        if (path.startsWith("/usuarios") ||
-                path.startsWith("/empleados") ||
-                path.startsWith("/perfiles")) {
-            response.sendRedirect("/dashboard?error=unauthorized");
-            return false;
-        }
-
         return true;
-    }
-
-    private boolean verificar(String rolActual, HttpServletResponse response, String rolRequerido) throws Exception {
-        if (rolRequerido.equals(rolActual)) {
-            return true;
-        }
-        response.sendRedirect("/dashboard?error=unauthorized");
-        return false;
     }
 
     private void manejadorBloqueoRateLimit(HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
@@ -131,22 +89,18 @@ public class SessionInterceptor implements HandlerInterceptor {
         String requestedWith = request.getHeader("X-Requested-With");
 
         boolean esPeticionJson = (acceptHeader != null && acceptHeader.contains("application/json")) ||
-                "XMLHttpRequest".equals(requestedWith);
+                "XMLHttpRequest".equals(requestedWith) || request.getServletPath().startsWith("/api/");
 
         if (esPeticionJson) {
             response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value()); // HTTP 429
             response.setContentType("application/json;charset=UTF-8");
 
-            String jsonError = "{\"success\": false, \"message\": \"Has hecho demasiadas solicitudes en un lapso corto de tiempo. ¡Ve despacio, La Jama está procesando!\"}";
+            String jsonError = "{\"success\": false, \"message\": \"Demasiadas solicitudes. Por favor espera un momento.\"}";
             response.getWriter().write(jsonError);
-            System.out.println("🚨 [RATE LIMIT] Petición JSON bloqueada de forma conforme por saturación.");
         } else {
-            String rutaDestino = (session != null && session.getAttribute("usuarioLogueado") != null)
-                    ? "/dashboard?error=ratelimit"
-                    : "/login?error=ratelimit";
-
+            boolean tieneSesion = session != null && (session.getAttribute("datosSesion") != null || session.getAttribute("usuarioId") != null);
+            String rutaDestino = tieneSesion ? "/dashboard?error=ratelimit" : "/login?error=ratelimit";
             response.sendRedirect(rutaDestino);
-            System.out.println("🚨 [RATE LIMIT] Navegación web redirigida de forma estética a: " + rutaDestino);
         }
     }
 }

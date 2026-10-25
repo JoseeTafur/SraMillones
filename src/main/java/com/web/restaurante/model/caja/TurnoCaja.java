@@ -1,4 +1,4 @@
-package com.web.restaurante.model;
+package com.web.restaurante.model.caja;
 
 import jakarta.persistence.*;
 import lombok.Getter;

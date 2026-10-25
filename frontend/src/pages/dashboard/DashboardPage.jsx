@@ -77,7 +77,7 @@ export const DashboardPage = () => {
             <h2>¡Sazón y Eficiencia en Cocina!</h2>
             <p>Resumen operacional del restaurante en tiempo real.</p>
           </div>
-          <div className="banner-tag">LA JAMA / SRA. MILLONES</div>
+          <div className="banner-tag">SRA. MILLONES</div>
         </div>
 
         {/* Tarjetas KPI */}

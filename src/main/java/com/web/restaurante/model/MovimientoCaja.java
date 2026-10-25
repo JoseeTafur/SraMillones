@@ -1,5 +1,6 @@
 package com.web.restaurante.model;
 
+import com.web.restaurante.model.caja.TurnoCaja;
 import com.web.restaurante.model.enums.MetodoPago;
 import com.web.restaurante.model.enums.TipoMovimientoCaja;
 import jakarta.persistence.*;

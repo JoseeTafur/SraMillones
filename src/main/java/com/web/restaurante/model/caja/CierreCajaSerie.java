@@ -1,22 +1,20 @@
-package com.web.restaurante.model;
+package com.web.restaurante.model.caja;
 
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@Entity
+@Table(name = "cierre_caja_serie")
 @Getter
 @Setter
-@NoArgsConstructor
-@Entity
-@Table(name = "caja_serie")
-public class CajaSerie {
+public class CierreCajaSerie {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "serie", nullable = false, length = 4, unique = true)
+    @Column(nullable = false, unique = true, length = 10)
     private String serie;
 
     @Column(name = "ultimo_correlativo", nullable = false)

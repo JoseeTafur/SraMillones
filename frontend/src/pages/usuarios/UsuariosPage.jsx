@@ -1,27 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DataTable from '../../components/common/DataTable';
 import Modal from '../../components/common/Modal';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import Toast from '../../components/common/Toast';
 import { EditIcon, HideIcon, EyeIcon } from '../../components/common/Icons';
+import usuarioService from '../../services/usuarioService';
 import './UsuariosPage.css';
 
 export const UsuariosPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [toast, setToast] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Estados para Modal de Registro / Edición
+  // Lista de usuarios y perfiles
+  const [usuarios, setUsuarios] = useState([]);
+  const [perfiles, setPerfiles] = useState([]);
+
+  // Modales
   const [showModal, setShowModal] = useState(false);
   const [usuarioEditar, setUsuarioEditar] = useState(null);
-
-  // Estados para Modal de Ver Detalle
   const [showDetalleModal, setShowDetalleModal] = useState(false);
   const [usuarioVer, setUsuarioVer] = useState(null);
 
   const [formData, setFormData] = useState({
     username: '',
     email: '',
-    rol: 'Cocinero frío',
+    perfilId: '',
     password: ''
   });
 
@@ -33,22 +37,6 @@ export const UsuariosPage = () => {
     onConfirm: () => {}
   });
 
-  const [usuarios, setUsuarios] = useState([
-    { id: 9, username: 'superadmin', rol: 'SUPER_ADMIN', email: 'superadmin@lajama.com', estado: 'Activo' },
-    { id: 11, username: 'CocineroFrio', rol: 'Cocinero frío', email: 'cocineroF@gmail.com', estado: 'Activo' },
-    { id: 12, username: 'CocineroCaliente', rol: 'Cocinero Caliente', email: 'cocineroC@gmail.com', estado: 'Activo' },
-    { id: 13, username: 'Mesero', rol: 'Mesero', email: 'mesero@gmail.com', estado: 'Activo' }
-  ]);
-
-  const ROLES_SISTEMA = [
-    'SUPER_ADMIN',
-    'Administrador',
-    'Cajero',
-    'Cocinero frío',
-    'Cocinero Caliente',
-    'Mesero'
-  ];
-
   const COLUMNAS_USUARIOS = [
     { header: 'ID', width: '70px' },
     { header: 'USUARIO' },
@@ -58,22 +46,67 @@ export const UsuariosPage = () => {
     { header: 'ACCIONES', width: '160px', align: 'center' }
   ];
 
+  // 1. Cargar Usuarios y Perfiles (Ejecución única y protegida)
+  const cargarDatos = async () => {
+    setLoading(true);
+    try {
+      const resUsuarios = await usuarioService.listar();
+      if (resUsuarios && resUsuarios.success) {
+        setUsuarios(resUsuarios.data || []);
+      }
+
+      // Consulta de perfiles segura
+      let resPerfiles;
+      if (typeof usuarioService.listarPerfiles === 'function') {
+        resPerfiles = await usuarioService.listarPerfiles();
+      } else {
+        resPerfiles = await usuarioService.obtenerPerfiles ? await usuarioService.obtenerPerfiles() : null;
+      }
+
+      if (resPerfiles && resPerfiles.success) {
+        setPerfiles(resPerfiles.data || []);
+      }
+    } catch (error) {
+      console.error("Error al cargar lista de usuarios:", error);
+      setToast({
+        type: 'error',
+        title: 'Error de Carga',
+        message: 'No se pudieron recuperar los usuarios. Asegúrese de haber iniciado sesión.'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 🟢 Se ejecuta ÚNICAMENTE 1 vez al cargar la vista
+  useEffect(() => {
+    cargarDatos();
+  }, []);
+
   const usuariosFiltrados = usuarios.filter(u => {
     const txt = searchTerm.toLowerCase();
-    return u.username.toLowerCase().includes(txt) ||
-           u.email.toLowerCase().includes(txt) ||
-           u.rol.toLowerCase().includes(txt);
+    const nombreUser = (u.usuario || u.username || '').toLowerCase();
+    const correoUser = (u.correo || u.email || '').toLowerCase();
+    const perfilUser = (u.perfil?.nombre || u.rol || '').toLowerCase();
+
+    return nombreUser.includes(txt) || correoUser.includes(txt) || perfilUser.includes(txt);
   });
 
   const handleAbrirNuevo = () => {
     setUsuarioEditar(null);
-    setFormData({ username: '', email: '', rol: 'Cocinero frío', password: '' });
+    const primerPerfilId = perfiles.length > 0 ? perfiles[0].id : '';
+    setFormData({ username: '', email: '', perfilId: primerPerfilId, password: '' });
     setShowModal(true);
   };
 
   const handleAbrirEditar = (user) => {
     setUsuarioEditar(user);
-    setFormData({ username: user.username, email: user.email, rol: user.rol, password: '' });
+    setFormData({
+      username: user.usuario || user.username || '',
+      email: user.correo || user.email || '',
+      perfilId: user.perfil ? user.perfil.id : '',
+      password: ''
+    });
     setShowModal(true);
   };
 
@@ -82,37 +115,61 @@ export const UsuariosPage = () => {
     setShowDetalleModal(true);
   };
 
+  // 2. Desactivar / Cambiar estado con confirmación
   const handleEliminar = (id, username) => {
     setConfirmState({
       isOpen: true,
       title: `¿Dar de baja a "${username}"?`,
-      message: 'El usuario perderá el acceso al sistema de inmediato, conservando sus registros en el historial.',
+      message: 'El usuario perderá el acceso al sistema de inmediato.',
       type: 'warning',
-      onConfirm: () => {
-        setUsuarios(prev => prev.map(u => u.id === id ? { ...u, estado: 'Inactivo' } : u));
-        setToast({ type: 'info', title: 'Usuario Desactivado', message: `El usuario "${username}" ha sido desactivado.` });
-        setConfirmState(prev => ({ ...prev, isOpen: false }));
+      onConfirm: async () => {
+        try {
+          const res = await usuarioService.cambiarEstado(id);
+          if (res && res.success) {
+            setToast({ type: 'info', title: 'Estado Actualizado', message: res.message });
+            cargarDatos();
+          }
+        } catch (err) {
+          const errMsg = err.response?.data?.message || 'No se pudo cambiar el estado del usuario.';
+          setToast({ type: 'error', title: 'Operación Rechazada', message: errMsg });
+        } finally {
+          setConfirmState(prev => ({ ...prev, isOpen: false }));
+        }
       }
     });
   };
 
-  const handleGuardarUsuario = (e) => {
+  // 3. Guardar o Actualizar Usuario
+  const handleGuardarUsuario = async (e) => {
     e.preventDefault();
     if (!formData.username.trim() || !formData.email.trim()) {
-      setToast({ type: 'error', title: 'Campos requeridos', message: 'Por favor complete el nombre de usuario y correo electrónico.' });
+      setToast({ type: 'error', title: 'Campos requeridos', message: 'Por favor complete el usuario y correo electrónico.' });
       return;
     }
 
-    if (usuarioEditar) {
-      setUsuarios(usuarios.map(u => u.id === usuarioEditar.id ? { ...u, ...formData } : u));
-      setToast({ type: 'info', title: 'Usuario Actualizado', message: `Los datos de "${formData.username}" fueron guardados exitosamente.` });
-    } else {
-      const nuevo = { id: Date.now(), ...formData, estado: 'Activo' };
-      setUsuarios([nuevo, ...usuarios]);
-      setToast({ type: 'info', title: '¡Usuario Creado!', message: `El usuario "${formData.username}" fue registrado en el sistema.` });
-    }
+    const payload = {
+      id: usuarioEditar ? usuarioEditar.id : null,
+      usuario: formData.username.trim(),
+      correo: formData.email.trim(),
+      clave: formData.password ? formData.password.trim() : null,
+      perfil: formData.perfilId ? { id: parseInt(formData.perfilId) } : null
+    };
 
-    setShowModal(false);
+    try {
+      const res = await usuarioService.guardar(payload);
+      if (res && res.success) {
+        setToast({
+          type: 'info',
+          title: usuarioEditar ? 'Usuario Actualizado' : '¡Usuario Creado!',
+          message: res.message
+        });
+        setShowModal(false);
+        cargarDatos();
+      }
+    } catch (err) {
+      const errMsg = err.response?.data?.message || 'Error al guardar el usuario en el servidor.';
+      setToast({ type: 'error', title: 'Error al Guardar', message: errMsg });
+    }
   };
 
   return (
@@ -123,7 +180,7 @@ export const UsuariosPage = () => {
         </div>
       )}
 
-      {/* DATATABLE UNIVERSAL CON EL ÍCONO JUNTO AL TÍTULO */}
+      {/* DATATABLE UNIVERSAL */}
       <DataTable
         title="Usuarios del Sistema"
         icon={
@@ -142,45 +199,52 @@ export const UsuariosPage = () => {
         columns={COLUMNAS_USUARIOS}
         data={usuariosFiltrados}
         itemsPerPage={5}
-        emptyMessage="No se encontraron usuarios coincidentes."
-        renderRow={(user) => (
-          <tr key={user.id} className={user.estado === 'Inactivo' ? 'tr-disabled' : ''}>
-            <td><span className="usuario-id-bold">{user.id}</span></td>
-            <td><span className="usuario-name">{user.username}</span></td>
-            <td><span className="usuario-rol-text">{user.rol}</span></td>
-            <td><span className="usuario-email-text">{user.email}</span></td>
-            <td>
-              <span className={`badge-estado-pill ${user.estado === 'Activo' ? 'activo' : 'inactivo'}`}>
-                {user.estado}
-              </span>
-            </td>
-            <td>
-              <div className="acciones-buttons-group">
-                <button
-                  className="btn-action-icon edit"
-                  title="Editar usuario"
-                  onClick={() => handleAbrirEditar(user)}
-                >
-                  <EditIcon />
-                </button>
-                <button
-                  className="btn-action-icon view"
-                  title="Ver detalle de usuario"
-                  onClick={() => handleAbrirDetalle(user)}
-                >
-                  <EyeIcon />
-                </button>
-                <button
-                  className="btn-action-icon delete"
-                  title="Dar de baja usuario"
-                  onClick={() => handleEliminar(user.id, user.username)}
-                >
-                  <HideIcon />
-                </button>
-              </div>
-            </td>
-          </tr>
-        )}
+        emptyMessage={loading ? "Cargando usuarios..." : "No se encontraron usuarios coincidentes."}
+        renderRow={(user) => {
+          const esActivo = user.estado === 1 || user.estado === 'Activo';
+          const nombreUser = user.usuario || user.username;
+          const correoUser = user.correo || user.email;
+          const rolUser = user.perfil ? user.perfil.nombre : (user.rol || 'Sin Perfil');
+
+          return (
+            <tr key={user.id} className={!esActivo ? 'tr-disabled' : ''}>
+              <td><span className="usuario-id-bold">#{user.id}</span></td>
+              <td><span className="usuario-name">{nombreUser}</span></td>
+              <td><span className="usuario-rol-text">{rolUser}</span></td>
+              <td><span className="usuario-email-text">{correoUser}</span></td>
+              <td>
+                <span className={`badge-estado-pill ${esActivo ? 'activo' : 'inactivo'}`}>
+                  {esActivo ? 'Activo' : 'Inactivo'}
+                </span>
+              </td>
+              <td>
+                <div className="acciones-buttons-group">
+                  <button
+                    className="btn-action-icon edit"
+                    title="Editar usuario"
+                    onClick={() => handleAbrirEditar(user)}
+                  >
+                    <EditIcon />
+                  </button>
+                  <button
+                    className="btn-action-icon view"
+                    title="Ver detalle de usuario"
+                    onClick={() => handleAbrirDetalle(user)}
+                  >
+                    <EyeIcon />
+                  </button>
+                  <button
+                    className="btn-action-icon delete"
+                    title="Dar de baja usuario"
+                    onClick={() => handleEliminar(user.id, nombreUser)}
+                  >
+                    <HideIcon />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          );
+        }}
       />
 
       {/* MODAL REGISTRAR / EDITAR */}
@@ -217,7 +281,7 @@ export const UsuariosPage = () => {
                   type="email"
                   required
                   className="input-senior"
-                  placeholder="ejemplo@lajama.com"
+                  placeholder="ejemplo@sramillones.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
@@ -227,11 +291,13 @@ export const UsuariosPage = () => {
                 <label className="label-senior">PERFIL / ROL DE ACCESO *</label>
                 <select
                   className="input-senior select-senior"
-                  value={formData.rol}
-                  onChange={(e) => setFormData({ ...formData, rol: e.target.value })}
+                  value={formData.perfilId}
+                  onChange={(e) => setFormData({ ...formData, perfilId: e.target.value })}
+                  required
                 >
-                  {ROLES_SISTEMA.map(r => (
-                    <option key={r} value={r}>{r}</option>
+                  <option value="">-- Seleccionar Perfil --</option>
+                  {perfiles.map(p => (
+                    <option key={p.id} value={p.id}>{p.nombre}</option>
                   ))}
                 </select>
               </div>
@@ -241,9 +307,10 @@ export const UsuariosPage = () => {
                 <input
                   type="password"
                   className="input-senior"
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder={usuarioEditar ? "Dejar en blanco para conservar" : "Mínimo 6 caracteres"}
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  required={!usuarioEditar}
                 />
               </div>
             </div>
@@ -270,7 +337,7 @@ export const UsuariosPage = () => {
       <Modal
         isOpen={showDetalleModal}
         onClose={() => setShowDetalleModal(false)}
-        title={usuarioVer ? `Detalle de Usuario: ${usuarioVer.username}` : 'Detalle de Usuario'}
+        title={usuarioVer ? `Detalle de Usuario: ${usuarioVer.usuario || usuarioVer.username}` : 'Detalle de Usuario'}
         maxWidth="520px"
         icon={
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
@@ -288,20 +355,22 @@ export const UsuariosPage = () => {
               </div>
               <div className="detalle-row">
                 <span className="detalle-label">Nombre de Usuario:</span>
-                <span className="detalle-val">{usuarioVer.username}</span>
+                <span className="detalle-val">{usuarioVer.usuario || usuarioVer.username}</span>
               </div>
               <div className="detalle-row">
                 <span className="detalle-label">Rol / Cargo:</span>
-                <span className="detalle-val badge-rol">{usuarioVer.rol}</span>
+                <span className="detalle-val badge-rol">
+                  {usuarioVer.perfil ? usuarioVer.perfil.nombre : (usuarioVer.rol || 'Sin Perfil')}
+                </span>
               </div>
               <div className="detalle-row">
                 <span className="detalle-label">Correo Electrónico:</span>
-                <span className="detalle-val">{usuarioVer.email}</span>
+                <span className="detalle-val">{usuarioVer.correo || usuarioVer.email}</span>
               </div>
               <div className="detalle-row">
                 <span className="detalle-label">Estado de Acceso:</span>
-                <span className={`badge-estado-pill ${usuarioVer.estado === 'Activo' ? 'activo' : 'inactivo'}`}>
-                  {usuarioVer.estado}
+                <span className={`badge-estado-pill ${(usuarioVer.estado === 1 || usuarioVer.estado === 'Activo') ? 'activo' : 'inactivo'}`}>
+                  {(usuarioVer.estado === 1 || usuarioVer.estado === 'Activo') ? 'Activo' : 'Inactivo'}
                 </span>
               </div>
             </div>
@@ -321,8 +390,8 @@ export const UsuariosPage = () => {
         title={confirmState.title}
         message={confirmState.message}
         type={confirmState.type}
-        confirmText="Sí, Dar de Baja"
-        cancelText="Conservar Activo"
+        confirmText="Sí, Cambiar Estado"
+        cancelText="Conservar Estado"
         onConfirm={confirmState.onConfirm}
         onCancel={() => setConfirmState(prev => ({ ...prev, isOpen: false }))}
       />

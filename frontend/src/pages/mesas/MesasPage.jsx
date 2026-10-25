@@ -1,62 +1,93 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MesaCard from '../../components/common/MesaCard';
 import Toast from '../../components/common/Toast';
 import MesaGestionModal from './components/MesaGestionModal';
 import MesaPagoModal from './components/MesaPagoModal';
 import ComanderaPage from './ComanderaPage';
+import mesaService from '../../services/mesaService';
 import './MesasPage.css';
 
 export const MesasPage = () => {
   const [toast, setToast] = useState(null);
-  const [activeTab, setActiveTab] = useState('SALON');
   const [vistaActual, setVistaActual] = useState('SALON'); // 'SALON' | 'COMANDERA'
+  const [pisoActivo, setPisoActivo] = useState('PISO_1'); // 'PISO_1' | 'PISO_2' | 'TODOS'
+  const [loading, setLoading] = useState(false);
 
   // Modales
   const [showGestionModal, setShowGestionModal] = useState(false);
   const [showPagoModal, setShowPagoModal] = useState(false);
   const [selectedMesa, setSelectedMesa] = useState(null);
 
-  // Lista simulada de Mesas con Comandas
-  const [mesas, setMesas] = useState([
-    {
-      id: 1,
-      numero: '1',
-      estado: 'LISTO_PARA_PAGAR',
-      comensales: 2,
-      comanda: [{ id: 101, cant: 1, nombre: 'Lomo saltado', precio: 35.00, estado: 'Entregado' }]
-    },
-    {
-      id: 2,
-      numero: '2',
-      estado: 'EN_COCINA',
-      comensales: 3,
-      comanda: [
-        { id: 102, cant: 2, nombre: 'Causa Limeña', precio: 20.00, estado: 'En Cocina' },
-        { id: 103, cant: 1, nombre: 'Ají de Gallina', precio: 20.00, estado: 'En Cocina' }
-      ]
-    },
-    { id: 3, numero: '3', estado: 'LIBRE', comensales: 0, comanda: [] },
-    { id: 4, numero: '4', estado: 'LIBRE', comensales: 0, comanda: [] },
-    {
-      id: 5,
-      numero: '5',
-      estado: 'LISTO_PARA_PAGAR',
-      comensales: 4,
-      comanda: [
-        { id: 104, cant: 2, nombre: 'Ceviche de Pescado', precio: 30.00, estado: 'Entregado' },
-        { id: 105, cant: 1, nombre: 'Chicha Morada 1L', precio: 12.00, estado: 'Entregado' }
-      ]
-    },
-    { id: 6, numero: '6', estado: 'LIBRE', comensales: 0, comanda: [] },
-    { id: 7, numero: '7', estado: 'LIBRE', comensales: 0, comanda: [] },
-    { id: 8, numero: '8', estado: 'LIBRE', comensales: 0, comanda: [] },
-    { id: 9, numero: '9', estado: 'LIBRE', comensales: 0, comanda: [] },
-    { id: 10, numero: '10', estado: 'LIBRE', comensales: 0, comanda: [] },
-    { id: 11, numero: '11', estado: 'LIBRE', comensales: 0, comanda: [] },
-    { id: 12, numero: '12', estado: 'LIBRE', comensales: 0, comanda: [] },
-    { id: 13, numero: '13', estado: 'LIBRE', comensales: 0, comanda: [] },
-    { id: 14, numero: '14', estado: 'LIBRE', comensales: 0, comanda: [] }
-  ]);
+  // Lista Dinámica de Mesas del Backend
+  const [mesas, setMesas] = useState([]);
+
+  // Cargar estado inicial del plano de salón desde Spring Boot
+  useEffect(() => {
+    cargarPlanoSalon();
+  }, []);
+
+  const cargarPlanoSalon = async () => {
+    try {
+      setLoading(true);
+      const data = await mesaService.obtenerPlanoSalon();
+      
+      const mesasBackend = data.mesas || data || [];
+      const comandasBackend = data.comandas || data.pedidos || [];
+
+      const mesasFormateadas = mesasBackend
+        .filter(m => m != null) 
+        .map(m => {
+          const numMesa = parseInt(m.numero ?? m.id ?? 0, 10);
+
+          // Asignación de Piso según el número de mesa (1-4 -> Piso 1 | 5-13 -> Piso 2)
+          const pisoMesa = numMesa <= 4 ? 'PISO_1' : 'PISO_2';
+
+          const comandaActiva = Array.isArray(comandasBackend)
+            ? comandasBackend.find(c => c && (c.numeroMesa === m.numero || c.numeroMesa === m.id))
+            : null;
+          
+          const listaDetalles = comandaActiva?.detalles || comandaActiva?.listaDetalles || [];
+          const comandaFormateada = listaDetalles
+            .filter(d => !d.pagado)
+            .map(d => {
+              let estadoTexto = 'Pendiente';
+              if (d.canceladoPorCliente) estadoTexto = 'Cancelado';
+              else if (d.pagado) estadoTexto = 'Pagado';
+
+              return {
+                id: d.id,
+                cant: d.cantidad || 1,
+                nombre: d.producto?.nombre || d.nombreProducto || 'Plato',
+                precio: parseFloat(d.precioUnitario || d.precio || 0),
+                pagado: d.pagado || false,
+                estado: estadoTexto
+              };
+            });
+
+          return {
+            id: m.id,
+            numero: String(m.numero ?? m.id ?? 'S/N'),
+            numInt: numMesa,
+            piso: pisoMesa,
+            estado: m.estado || (comandaFormateada.length > 0 ? 'OCUPADA' : 'LIBRE'),
+            comensales: m.comensales || m.capacidad || 0,
+            comandaId: comandaActiva ? comandaActiva.id : null,
+            comanda: comandaFormateada
+          };
+        });
+
+      setMesas(mesasFormateadas);
+    } catch (error) {
+      console.error("Error al cargar plano de salón:", error);
+      setToast({
+        type: 'error',
+        title: 'Error de Red',
+        message: 'No se pudo obtener la distribución de mesas desde el servidor.'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleMesaClick = (mesa) => {
     setSelectedMesa(mesa);
@@ -64,7 +95,7 @@ export const MesasPage = () => {
   };
 
   const handleAbrirPagoDesdeGestion = () => {
-    if (!selectedMesa || selectedMesa.comanda.length === 0) {
+    if (!selectedMesa || !selectedMesa.comanda || selectedMesa.comanda.length === 0) {
       setToast({ type: 'error', title: 'Mesa Vacía', message: 'No hay consumos registrados para cobrar.' });
       return;
     }
@@ -72,43 +103,59 @@ export const MesasPage = () => {
     setShowPagoModal(true);
   };
 
-  // Abrir la Comandera de Mesero al presionar "Añadir Producto"
   const handleAbrirComanderaDesdeGestion = () => {
     setShowGestionModal(false);
     setVistaActual('COMANDERA');
   };
 
-  // Guardar pedido desde Comandera y regresar automáticamente al Salón
-  const handleGuardarComanda = (numeroMesa, nuevosItems, instrucciones) => {
-    setMesas(prev => prev.map(m => {
-      if (m.numero === numeroMesa) {
-        return {
-          ...m,
-          estado: 'EN_COCINA',
-          comanda: [...m.comanda, ...nuevosItems]
-        };
+  const handleGuardarComanda = async (numeroMesa) => {
+    await cargarPlanoSalon();
+    setVistaActual('SALON');
+    setToast({
+      type: 'info',
+      title: '¡Orden Enviada!',
+      message: `La comanda de la Mesa #${numeroMesa} fue creada con éxito.`
+    });
+  };
+
+  const handleConfirmarPagoMesa = async (datosPago) => {
+    try {
+      if (selectedMesa && selectedMesa.comandaId) {
+        const idsDetalles = selectedMesa.selectedItemsPay && selectedMesa.selectedItemsPay.length > 0
+          ? selectedMesa.selectedItemsPay
+          : selectedMesa.comanda.map(item => item.id);
+
+        await mesaService.procesarCobro(
+          selectedMesa.comandaId,
+          selectedMesa.id,
+          idsDetalles,
+          datosPago.tickets
+        );
       }
-      return m;
-    }));
 
-    setToast({
-      type: 'info',
-      title: '¡Orden Enviada a Cocina!',
-      message: `La comanda de la Mesa #${numeroMesa} fue enviada con éxito.`
-    });
+      await cargarPlanoSalon();
+
+      setToast({
+        type: 'info',
+        title: '¡Cobro Procesado!',
+        message: `Se registraron las ventas para la Mesa #${selectedMesa?.numero} correctamente.`
+      });
+    } catch (error) {
+      console.error("Error al procesar el cobro:", error);
+      setToast({
+        type: 'error',
+        title: 'Error de Cobro',
+        message: 'Ocurrió un inconveniente al registrar el pago multiticket.'
+      });
+    } finally {
+      setShowPagoModal(false);
+    }
   };
 
-  const handleConfirmarPagoMesa = (ticketsGenerados) => {
-    setMesas(prev => prev.map(m => m.id === selectedMesa.id ? { ...m, estado: 'LIBRE', comanda: [] } : m));
-    setToast({
-      type: 'info',
-      title: '¡Mesa Cobrada y Liquidada!',
-      message: `Se emitieron ${ticketsGenerados.length} comprobante(s) correctamente. La Mesa #${selectedMesa.numero} quedó libre.`
-    });
-    setShowPagoModal(false);
-  };
+  // Filtrar mesas según el piso seleccionado
+  const mesasPiso1 = mesas.filter(m => m.numInt <= 4);
+  const mesasPiso2 = mesas.filter(m => m.numInt >= 5 && m.numInt <= 13);
 
-  // Renderizado condicional según vista
   if (vistaActual === 'COMANDERA') {
     return (
       <ComanderaPage
@@ -127,72 +174,116 @@ export const MesasPage = () => {
         </div>
       )}
 
-      {/* HEADER DE MONITOR */}
+      {/* HEADER PRINCIPAL */}
       <div className="mesas-header-banner">
         <div className="banner-title-box">
-          <h2 className="banner-main-title">Distribución de Comensales</h2>
-          <p className="banner-sub-text">Monitoreo e inteligencia de atención en tiempo real</p>
+          <h2 className="banner-main-title">Distribución del Salón (13 Mesas)</h2>
+          <p className="banner-sub-text">SRA MILLONES — Control de Nivel por Pisos</p>
         </div>
 
         <div className="mesas-legend-bar">
-          <span className="legend-badge libre">● Libre</span>
-          <span className="legend-badge en-cocina">🔥 En Cocina</span>
-          <span className="legend-badge para-recoger">🔔 Para Recoger</span>
-          <span className="legend-badge listo-pagar">👤 Listo para Pagar</span>
-          <span className="legend-badge unificada">🔗 Unificada</span>
+          <span className="legend-badge libre">● Libre (Verde)</span>
+          <span className="legend-badge ocupada">🔴 Ocupado (Rojo)</span>
         </div>
       </div>
 
-      {/* PESTAÑAS VISTA SALÓN */}
+      {/* FILTRO DE NAVEGACIÓN POR PISOS */}
       <div className="mesas-navigation-bar">
         <div className="pills-tabs-center">
-          <button className={`tab-pill-btn ${activeTab === 'SALON' ? 'active' : ''}`} onClick={() => setActiveTab('SALON')}>
-            ⠿ Vista Salón
+          <button 
+            className={`tab-pill-btn ${pisoActivo === 'PISO_1' ? 'active' : ''}`} 
+            onClick={() => setPisoActivo('PISO_1')}
+          >
+            🏢 Primer Piso (Mesas 1 - 4)
           </button>
-          <button className={`tab-pill-btn ${activeTab === 'UNIFICADAS' ? 'active' : ''}`} onClick={() => setActiveTab('UNIFICADAS')}>
-            👥 Mesas Unificadas
+          <button 
+            className={`tab-pill-btn ${pisoActivo === 'PISO_2' ? 'active' : ''}`} 
+            onClick={() => setPisoActivo('PISO_2')}
+          >
+            🏢 Segundo Piso (Mesas 5 - 13)
           </button>
-          <button className={`tab-pill-btn ${activeTab === 'RESERVADAS' ? 'active' : ''}`} onClick={() => setActiveTab('RESERVADAS')}>
-            ☑ Mesas Reservadas
+          <button 
+            className={`tab-pill-btn ${pisoActivo === 'TODOS' ? 'active' : ''}`} 
+            onClick={() => setPisoActivo('TODOS')}
+          >
+            ⠿ Ver Salón Completo (13 Mesas)
           </button>
         </div>
       </div>
 
-      {/* GRILLA DE MESAS */}
-      <div className="mesas-grid-card-wrapper">
-        <div className="mesas-grid-top-row">
-          <div className="mesas-grid-title">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-            </svg>
-            <h3>Mesas del salón</h3>
+      {/* VISTA DE PISO 1 */}
+      {(pisoActivo === 'PISO_1' || pisoActivo === 'TODOS') && (
+        <div className="mesas-grid-card-wrapper">
+          <div className="mesas-grid-top-row">
+            <div className="mesas-grid-title">
+              <h3>📍 PRIMER PISO — 4 Mesas</h3>
+            </div>
           </div>
 
-          <button
-            className="btn-asignar-reservas"
-            onClick={() => setToast({ type: 'info', title: 'Bloque de Reservas', message: 'Seleccione las mesas a reservar.' })}
-          >
-            🏷 Asignar Bloque de Reservas
-          </button>
+          <div className="mesas-layout-grid">
+            {loading ? (
+              <div className="empty-mesas-msg">Cargando Primer Piso...</div>
+            ) : mesasPiso1.length === 0 ? (
+              <div className="empty-mesas-msg">Sin mesas registradas para el Primer Piso.</div>
+            ) : (
+              mesasPiso1.map(mesa => (
+                <div key={mesa.id} className="mesa-card-relative-wrapper">
+                  {/* ETIQUETA EN LA ESQUINA */}
+                  <span className={`badge-corner-status ${mesa.estado === 'OCUPADA' ? 'ocupado' : 'libre'}`}>
+                    {mesa.estado === 'OCUPADA' ? 'Ocupado' : 'Libre'}
+                  </span>
+                  
+                  <MesaCard
+                    numero={mesa.numero}
+                    estado={mesa.estado}
+                    comensales={mesa.comensales}
+                    monto={Array.isArray(mesa.comanda) ? mesa.comanda.reduce((acc, i) => acc + (i.cant * i.precio), 0) : 0}
+                    onClick={() => handleMesaClick(mesa)}
+                  />
+                </div>
+              ))
+            )}
+          </div>
         </div>
+      )}
 
-        <div className="mesas-layout-grid">
-          {mesas.map(mesa => (
-            <MesaCard
-              key={mesa.id}
-              numero={mesa.numero}
-              estado={mesa.estado}
-              comensales={mesa.comensales}
-              monto={mesa.comanda.reduce((acc, i) => acc + (i.cant * i.precio), 0)}
-              onClick={() => handleMesaClick(mesa)}
-            />
-          ))}
+      {/* VISTA DE PISO 2 */}
+      {(pisoActivo === 'PISO_2' || pisoActivo === 'TODOS') && (
+        <div className="mesas-grid-card-wrapper" style={{ marginTop: '1.5rem' }}>
+          <div className="mesas-grid-top-row">
+            <div className="mesas-grid-title">
+              <h3>📍 SEGUNDO PISO — 9 Mesas</h3>
+            </div>
+          </div>
+
+          <div className="mesas-layout-grid">
+            {loading ? (
+              <div className="empty-mesas-msg">Cargando Segundo Piso...</div>
+            ) : mesasPiso2.length === 0 ? (
+              <div className="empty-mesas-msg">Sin mesas registradas para el Segundo Piso.</div>
+            ) : (
+              mesasPiso2.map(mesa => (
+                <div key={mesa.id} className="mesa-card-relative-wrapper">
+                  {/* ETIQUETA EN LA ESQUINA */}
+                  <span className={`badge-corner-status ${mesa.estado === 'OCUPADA' ? 'ocupado' : 'libre'}`}>
+                    {mesa.estado === 'OCUPADA' ? 'Ocupado' : 'Libre'}
+                  </span>
+
+                  <MesaCard
+                    numero={mesa.numero}
+                    estado={mesa.estado}
+                    comensales={mesa.comensales}
+                    monto={Array.isArray(mesa.comanda) ? mesa.comanda.reduce((acc, i) => acc + (i.cant * i.precio), 0) : 0}
+                    onClick={() => handleMesaClick(mesa)}
+                  />
+                </div>
+              ))
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* MODAL 1: GESTIÓN OPERATIVA */}
+      {/* MODALES DE ATENCIÓN */}
       <MesaGestionModal
         isOpen={showGestionModal}
         onClose={() => setShowGestionModal(false)}
@@ -202,9 +293,9 @@ export const MesasPage = () => {
         setToast={setToast}
         mesas={mesas}
         setMesas={setMesas}
+        onActualizarSalon={cargarPlanoSalon}
       />
 
-      {/* MODAL 2: DIVISIÓN DE PAGO Y CAJA */}
       <MesaPagoModal
         isOpen={showPagoModal}
         onClose={() => setShowPagoModal(false)}

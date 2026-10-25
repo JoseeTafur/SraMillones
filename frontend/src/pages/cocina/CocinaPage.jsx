@@ -1,140 +1,173 @@
 import React, { useState, useEffect } from 'react';
+import cocinaService from '../../services/cocinaService';
 import Toast from '../../components/common/Toast';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import './CocinaPage.css';
 
 export const CocinaPage = () => {
   const [toast, setToast] = useState(null);
-  const [filtroEstado, setFiltroEstado] = useState('TODOS'); // 'TODOS', 'EN_PREPARACION', 'LISTO', 'EN_ESPERA'
-  const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, orderId: null });
+  const [filtroEstado, setFiltroEstado] = useState('TODOS');
+  const [confirmDialog, setConfirmDialog] = useState({ 
+    isOpen: false, 
+    orderId: null, 
+    detalleId: null, 
+    nombrePlato: '', 
+    numeroMesa: '',
+    tipoAccion: 'ITEM' // 'ITEM' | 'COMANDA'
+  });
+  const [ordenes, setOrdenes] = useState([]);
 
-  // Lista simulada de comandas en cocina
-  const [ordenes, setOrdenes] = useState([
-    {
-      id: 1,
-      ticketNum: '#T-0012',
-      mesa: '3',
-      horaPedido: '14:20',
-      minutosTranscurridos: 12,
-      estadoGeneral: 'EN_PREPARACION',
-      platillos: [
-        { id: 101, nombre: 'Lomo Saltado', notas: 'Poco hecho', estado: 'EN_PREPARACION' },
-        { id: 102, nombre: 'Arroz Chaufa de Pollo', notas: '', estado: 'EN_PREPARACION' },
-        { id: 103, nombre: 'Inca Kola (1L)', notas: '', estado: 'LISTO' }
-      ]
-    },
-    {
-      id: 2,
-      ticketNum: '#T-0013',
-      mesa: '7',
-      horaPedido: '14:24',
-      minutosTranscurridos: 8,
-      estadoGeneral: 'EN_PREPARACION',
-      platillos: [
-        { id: 201, nombre: 'Pollo a la Brasa', notas: 'Con papas crujientes', estado: 'EN_PREPARACION' },
-        { id: 202, nombre: 'Ensalada César', notas: '', estado: 'EN_PREPARACION' },
-        { id: 203, nombre: 'Chicha Morada 1L', notas: '', estado: 'LISTO' }
-      ]
-    },
-    {
-      id: 3,
-      ticketNum: '#T-0010',
-      mesa: '2',
-      horaPedido: '14:12',
-      minutosTranscurridos: 18,
-      estadoGeneral: 'LISTO',
-      platillos: [
-        { id: 301, nombre: 'Papa a la Huancaína', notas: '', estado: 'LISTO' },
-        { id: 302, nombre: 'Causa de Pollo', notas: '', estado: 'LISTO' }
-      ]
-    },
-    {
-      id: 4,
-      ticketNum: '#T-0015',
-      mesa: '4',
-      horaPedido: '14:30',
-      minutosTranscurridos: 3,
-      estadoGeneral: 'EN_ESPERA',
-      platillos: [
-        { id: 401, nombre: 'Pescado a lo Macho', notas: 'Con arroz blanco', estado: 'EN_ESPERA' },
-        { id: 402, nombre: 'Sopa a la Criolla', notas: '', estado: 'EN_ESPERA' }
-      ]
+  // 🔄 Cargar comandas activas desde el backend
+  const cargarComandas = async () => {
+    try {
+      const data = await cocinaService.obtenerPedidosActivos();
+      setOrdenes(data || []);
+    } catch (error) {
+      mostrarToast('error', 'Error de red', 'No se pudieron recuperar los pedidos de cocina.');
     }
-  ]);
+  };
 
-  // Timer para incrementar los minutos transcurridos
   useEffect(() => {
-    const timer = setInterval(() => {
-      setOrdenes(prev => prev.map(ord => ({
-        ...ord,
-        minutosTranscurridos: ord.minutosTranscurridos + 1
-      })));
-    }, 60000);
-    return () => clearInterval(timer);
+    cargarComandas();
+    const interval = setInterval(cargarComandas, 15000);
+    return () => clearInterval(interval);
   }, []);
 
-  // Cambiar estado individual de un plato dentro de una comanda
-  const handleToggleEstadoPlato = (ordenId, platoId) => {
-    setOrdenes(prev => prev.map(ord => {
-      if (ord.id === ordenId) {
-        const nuevosPlatos = ord.platillos.map(p => {
-          if (p.id === platoId) {
-            const nuevoEstado = p.estado === 'LISTO' ? 'EN_PREPARACION' : 'LISTO';
-            return { ...p, estado: nuevoEstado };
-          }
-          return p;
-        });
-
-        // Verificar si todos los platos están listos para actualizar la tarjeta completa
-        const todosListos = nuevosPlatos.every(p => p.estado === 'LISTO');
-        return {
-          ...ord,
-          platillos: nuevosPlatos,
-          estadoGeneral: todosListos ? 'LISTO' : 'EN_PREPARACION'
-        };
-      }
-      return ord;
-    }));
+  // ⏱ Timer para recalcular visualmente el tiempo transcurrido desde la fecha de apertura
+  const calcularMinutosTranscurridos = (fechaAperturaStr) => {
+    if (!fechaAperturaStr) return 0;
+    const creacion = new Date(fechaAperturaStr);
+    const ahora = new Date();
+    const diferenciaMs = ahora - creacion;
+    return Math.max(0, Math.floor(diferenciaMs / 60000));
   };
 
-  // Simular impresión de comanda en ticketera
-  const handleImprimirComanda = (orden) => {
-    setToast({
-      type: 'info',
-      title: 'Imprimiendo Ticket...',
-      message: `Enviando orden de Mesa #${orden.mesa} (${orden.ticketNum}) a la ticketera de cocina.`
+  const mostrarToast = (type, title, message) => {
+    setToast({ type, title, message });
+  };
+
+  // 🖨 Procesar e imprimir ticket
+  const handleImprimirComanda = async (orden) => {
+    try {
+      mostrarToast('info', 'Imprimiendo Ticket...', `Enviando orden a la ticketera de cocina.`);
+      await cocinaService.obtainTicket(orden.id);
+      await cargarComandas();
+    } catch (error) {
+      mostrarToast('error', 'Error de Impresión', 'No se pudo comunicar el cambio al servidor.');
+    }
+  };
+
+  // 1. Abrir modal para Marcar Listo un plato individual
+  const handleSolicitarMarcarListo = (ordenId, detalleId, nombrePlato, numeroMesa) => {
+    setConfirmDialog({
+      isOpen: true,
+      orderId: ordenId,
+      detalleId: detalleId,
+      nombrePlato: nombrePlato,
+      numeroMesa: numeroMesa ? `Mesa #${numeroMesa}` : 'Delivery / Llevar',
+      tipoAccion: 'ITEM'
     });
   };
 
-  // Solicitar despachar/finalizar comanda completa
-  const handleSolicitarDespacho = (ordenId) => {
-    setConfirmDialog({ isOpen: true, orderId: ordenId });
+  // 2. Ejecutar la acción tras confirmar en el modal para plato individual
+  const handleConfirmarMarcarListo = async () => {
+    const { orderId, detalleId } = confirmDialog;
+    try {
+      await cocinaService.completarItemIndividual(orderId, detalleId);
+      
+      setOrdenes(prev => prev.map(ord => {
+        if (ord.id === orderId) {
+          const listaDetalles = ord.detalles || ord.listaDetalles || [];
+          const nuevosDetalles = listaDetalles.map(d => {
+            if (d.id === detalleId) {
+              return { ...d, cocinado: true, entregado: true };
+            }
+            return d;
+          });
+          
+          const todosListos = nuevosDetalles.every(d => d.canceladoPorCliente || d.cocinado);
+          return {
+            ...ord,
+            detalles: nuevosDetalles,
+            estado: todosListos ? 'PREPARADO' : ord.estado
+          };
+        }
+        return ord;
+      }));
+      
+      mostrarToast('info', 'Plato Listo', 'El platillo fue marcado como listo y notificado.');
+    } catch (error) {
+      const errorMsg = error.response?.data || 'No se pudo registrar el cambio en el servidor.';
+      mostrarToast('error', 'Error al despachar', errorMsg);
+    } finally {
+      cerrarModalConfirmacion();
+    }
   };
 
-  const handleConfirmarDespacho = () => {
-    setOrdenes(prev => prev.filter(o => o.id !== confirmDialog.orderId));
-    setConfirmDialog({ isOpen: false, orderId: null });
-    setToast({
-      type: 'info',
-      title: 'Comanda Despachada',
-      message: 'La orden fue entregada al mozo para su servicio en mesa.'
+  // 3. Abrir modal para Despachar Comanda Completa
+  const handleSolicitarDespachoComanda = (ordenId) => {
+    setConfirmDialog({
+      isOpen: true,
+      orderId: ordenId,
+      detalleId: null,
+      nombrePlato: '',
+      numeroMesa: '',
+      tipoAccion: 'COMANDA'
     });
   };
 
-  // Filtrado de tarjetas según pestaña activa
+  // 4. Ejecutar despacho de comanda completa
+  const handleConfirmarDespachoComanda = async () => {
+    try {
+      await cocinaService.completarPedido(confirmDialog.orderId);
+      setOrdenes(prev => prev.filter(o => o.id !== confirmDialog.orderId));
+      mostrarToast('info', 'Comanda Despachada', 'La orden fue entregada para su servicio en mesa.');
+    } catch (error) {
+      mostrarToast('error', 'Error al despachar', 'No se pudo finalizar la comanda en el servidor.');
+    } finally {
+      cerrarModalConfirmacion();
+    }
+  };
+
+  const cerrarModalConfirmacion = () => {
+    setConfirmDialog({ 
+      isOpen: false, 
+      orderId: null, 
+      detalleId: null, 
+      nombrePlato: '', 
+      numeroMesa: '', 
+      tipoAccion: 'ITEM' 
+    });
+  };
+
   const ordenesFiltradas = ordenes.filter(o => {
+    const listaDetalles = o.detalles || o.listaDetalles || [];
+    const detallesPendientes = listaDetalles.filter(d => !d.canceladoPorCliente && !d.entregado);
+    
+    // Si la tarjeta ya no tiene platillos pendientes por despachar, no se dibuja en pantalla
+    if (detallesPendientes.length === 0) return false;
+
+    const todosListos = detallesPendientes.every(d => d.cocinado);
+    const esEspera = o.estado === 'PENDIENTE';
+    const esPreparacion = o.estado === 'EN_COCINA' && !todosListos;
+    const esListo = o.estado === 'PREPARADO' || todosListos;
+
     if (filtroEstado === 'TODOS') return true;
-    return o.estadoGeneral === filtroEstado;
+    if (filtroEstado === 'EN_PREPARACION') return esPreparacion;
+    if (filtroEstado === 'LISTO') return esListo;
+    if (filtroEstado === 'EN_ESPERA') return esEspera;
+    return true;
   });
 
-  // Contadores
-  const countPreparacion = ordenes.filter(o => o.estadoGeneral === 'EN_PREPARACION').length;
-  const countListo = ordenes.filter(o => o.estadoGeneral === 'LISTO').length;
-  const countEspera = ordenes.filter(o => o.estadoGeneral === 'EN_ESPERA').length;
+  const countEspera = ordenes.filter(o => o.estado === 'PENDIENTE').length;
+  const countListo = ordenes.filter(o => {
+    const lista = o.detalles || o.listaDetalles || [];
+    return lista.length > 0 && lista.every(d => d.canceladoPorCliente || d.cocinado);
+  }).length;
+  const countPreparacion = ordenes.length - countEspera - countListo;
 
   return (
     <div className="cocina-page-container">
-      {/* Toast Flotante */}
       {toast && (
         <div className="toast-floating-container">
           <Toast type={toast.type} title={toast.title} message={toast.message} onClose={() => setToast(null)} />
@@ -200,11 +233,19 @@ export const CocinaPage = () => {
           </div>
         ) : (
           ordenesFiltradas.map(orden => {
-            const esRetrasado = orden.minutosTranscurridos > 15;
-            const esListo = orden.estadoGeneral === 'LISTO';
+            const fechaRef = orden.fechaApertura || orden.fechaCreacion;
+            const minutos = calcularMinutosTranscurridos(fechaRef);
+            const esRetrasado = minutos > 15;
+            
+            const listaDetalles = orden.detalles || orden.listaDetalles || [];
+            const esListo = listaDetalles.length > 0 && listaDetalles.every(d => d.canceladoPorCliente || d.cocinado);
+            
+            const horaFormateada = fechaRef 
+              ? new Date(fechaRef).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+              : '00:00';
 
             return (
-              <div key={orden.id} className={`comanda-card-box ${orden.estadoGeneral.toLowerCase()} ${esRetrasado ? 'retrasado' : ''}`}>
+              <div key={orden.id} className={`comanda-card-box ${esListo ? 'listo' : 'en_preparacion'} ${esRetrasado ? 'retrasado' : ''}`}>
                 {/* Cabecera Tarjeta */}
                 <div className="comanda-card-header">
                   <div className="card-mesa-box">
@@ -212,47 +253,56 @@ export const CocinaPage = () => {
                       <path d="M17 8h1a4 4 0 1 1 0 8h-1"></path>
                       <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"></path>
                     </svg>
-                    <h3>Mesa #{orden.mesa}</h3>
+                    <h3>{orden.numeroMesa ? `Mesa #${orden.numeroMesa}` : 'Delivery / Llevar'}</h3>
                   </div>
 
                   <div className="card-meta-right">
-                    <span className="ticket-id">{orden.ticketNum}</span>
+                    <span className="ticket-id">#T-00{orden.id}</span>
                     <span className={`timer-pill ${esRetrasado ? 'danger' : ''} ${esListo ? 'success' : ''}`}>
-                      ⏱ {orden.minutosTranscurridos} min
+                      ⏱ {minutos} min
                     </span>
                   </div>
                 </div>
 
-                {/* Lista de Platos en la Comanda */}
+                {/* Lista de Platos Reales en la Comanda */}
                 <div className="comanda-platillos-list">
-                  {orden.platillos.map(item => {
-                    const itemListo = item.estado === 'LISTO';
-                    return (
-                      <div key={item.id} className={`platillo-item-row ${itemListo ? 'platillo-listo' : ''}`}>
-                        <div className="p-left">
-                          <span className="p-cant">1x</span>
-                          <div className="p-details">
-                            <span className="p-nombre">{item.nombre}</span>
-                            {item.notas && <span className="p-notas">• {item.notas}</span>}
+                  {listaDetalles
+                    .filter(item => !item.canceladoPorCliente && !item.entregado)
+                    .map(item => {
+                      const itemListo = item.cocinado;
+                      
+                      return (
+                        <div key={item.id} className={`platillo-item-row ${itemListo ? 'platillo-listo' : ''}`}>
+                          <div className="p-left">
+                            <span className="p-cant">{item.cantidad}x</span>
+                            <div className="p-details">
+                              <span className="p-nombre">{item.producto?.nombre || item.nombreProducto || 'Plato'}</span>
+                              {item.observaciones && <span className="p-notas">• {item.observaciones}</span>}
+                            </div>
                           </div>
-                        </div>
 
-                        <button
-                          className={`btn-estado-platillo ${itemListo ? 'btn-listo' : 'btn-preparar'}`}
-                          onClick={() => handleToggleEstadoPlato(orden.id, item.id)}
-                        >
-                          {itemListo ? '✔ Listo' : 'En preparación'}
-                        </button>
-                      </div>
-                    );
-                  })}
+                          <button
+                            className={`btn-estado-platillo ${itemListo ? 'btn-listo' : 'btn-preparar'}`}
+                            disabled={itemListo}
+                            onClick={() => handleSolicitarMarcarListo(
+                              orden.id, 
+                              item.id, 
+                              item.producto?.nombre || item.nombreProducto || 'este plato', 
+                              orden.numeroMesa
+                            )}
+                          >
+                            {itemListo ? '✔ Listo' : 'Marcar Listo'}
+                          </button>
+                        </div>
+                      );
+                    })}
                 </div>
 
                 {/* Footer Info & Acciones */}
                 <div className="comanda-card-footer">
                   <div className="footer-info-row">
-                    <span>Pedido: <strong>{orden.horaPedido}</strong></span>
-                    <span>Cliente: <strong>Mesa #{orden.mesa}</strong></span>
+                    <span>Pedido: <strong>{horaFormateada}</strong></span>
+                    <span>Atención: <strong>Mesa #{orden.numeroMesa}</strong></span>
                   </div>
 
                   <div className="footer-actions-row">
@@ -260,15 +310,15 @@ export const CocinaPage = () => {
                       className="btn-print-ticket"
                       onClick={() => handleImprimirComanda(orden)}
                     >
-                      🖨 REIMPRIMIR
+                      🖨 TICKET
                     </button>
 
                     {esListo && (
                       <button
                         className="btn-despachar-final"
-                        onClick={() => handleSolicitarDespacho(orden.id)}
+                        onClick={() => handleSolicitarDespachoComanda(orden.id)}
                       >
-                        ✔ DESPACHAR MESA
+                        ✔ DESPACHAR
                       </button>
                     )}
                   </div>
@@ -279,16 +329,19 @@ export const CocinaPage = () => {
         )}
       </div>
 
-      {/* CONFIRMAR DESPACHO COMPLETO DE COMANDA */}
       <ConfirmDialog
         isOpen={confirmDialog.isOpen}
-        title="Confirmar Despacho"
-        message="¿Desea marcar esta comanda como entregada y retirarla del monitor de cocina?"
-        confirmText="Sí, Despachar"
+        title={confirmDialog.tipoAccion === 'ITEM' ? "¿Confirmar despacho de plato?" : "Confirmar Despacho"}
+        message={
+          confirmDialog.tipoAccion === 'ITEM'
+            ? `¿Desea marcar como listo "${confirmDialog.nombrePlato}" de la ${confirmDialog.numeroMesa}?`
+            : "¿Desea marcar esta comanda como entregada y retirarla del monitor de cocina?"
+        }
+        confirmText={confirmDialog.tipoAccion === 'ITEM' ? "Sí, Marcar Listo" : "Sí, Despachar"}
         cancelText="Cancelar"
         type="warning"
-        onConfirm={handleConfirmarDespacho}
-        onCancel={() => setConfirmDialog({ isOpen: false, orderId: null })}
+        onConfirm={confirmDialog.tipoAccion === 'ITEM' ? handleConfirmarMarcarListo : handleConfirmarDespachoComanda}
+        onCancel={cerrarModalConfirmacion}
       />
     </div>
   );

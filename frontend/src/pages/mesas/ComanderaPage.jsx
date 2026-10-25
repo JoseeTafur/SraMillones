@@ -1,92 +1,95 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import Toast from '../../components/common/Toast';
 import { SearchIcon, PlusIcon } from '../../components/common/Icons';
+import meseroService from '../../services/meseroService';
+import comandaService from '../../services/comandaService';
 import './ComanderaPage.css';
 
-export const ComanderaPage = ({ mesa = { numero: '2' }, onVolverAlSalon, onGuardarComanda }) => {
+export const ComanderaPage = ({ mesa = { id: 1, numero: '1' }, onVolverAlSalon, onGuardarComanda }) => {
   const [toast, setToast] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoriaActiva, setCategoriaActiva] = useState('TODOS');
   const [instrucciones, setInstrucciones] = useState('');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Carrito de compras con ítems independientes
+  // Catálogo de productos desde la API
+  const [productosCatalogo, setProductosCatalogo] = useState([]);
+  const [productosAgotados, setProductosAgotados] = useState({});
+  const [categorias, setCategorias] = useState(['TODOS']);
+
+  // Carrito de compras local
   const [cart, setCart] = useState([]);
 
-  // Catálogo de productos
-  const productosCatalogo = [
-    {
-      id: 1,
-      nombre: 'Lomo Saltado',
-      precio: 35.00,
-      categoria: 'FONDOS',
-      imagen: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=500&auto=format&fit=crop&q=60'
-    },
-    {
-      id: 2,
-      nombre: 'Causa Limeña',
-      precio: 20.00,
-      categoria: 'ENTRADAS',
-      imagen: 'https://images.unsplash.com/photo-1535399831218-d5bd36d1a6b3?w=500&auto=format&fit=crop&q=60'
-    },
-    {
-      id: 3,
-      nombre: 'Ají de Gallina',
-      precio: 20.00,
-      categoria: 'FONDOS',
-      imagen: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60'
-    },
-    {
-      id: 4,
-      nombre: 'Ceviche de Pescado',
-      precio: 32.00,
-      categoria: 'ENTRADAS',
-      imagen: 'https://images.unsplash.com/photo-1535399831218-d5bd36d1a6b3?w=500&auto=format&fit=crop&q=60'
-    },
-    {
-      id: 5,
-      nombre: 'Chicha Morada 1L',
-      precio: 12.00,
-      categoria: 'BEBIDAS',
-      imagen: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=500&auto=format&fit=crop&q=60'
-    },
-    {
-      id: 6,
-      nombre: 'Pisco Sour Clásico',
-      precio: 18.00,
-      categoria: 'BEBIDAS',
-      imagen: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=500&auto=format&fit=crop&q=60'
-    }
-  ];
+  useEffect(() => {
+    cargarDatosComandera();
+  }, [mesa]);
 
-  // Agregar producto como ítem independiente
+  const cargarDatosComandera = async () => {
+    try {
+      setLoading(true);
+      const data = await meseroService.obtenerDatosComandera(mesa.id);
+
+      const lista = data.productos || [];
+      const agotados = data.productosAgotados || {};
+
+      setProductosCatalogo(lista);
+      setProductosAgotados(agotados);
+
+      const catsUnicas = ['TODOS', ...new Set(
+        lista
+          .map(p => p.categoria?.nombre || p.categoria || 'VARIOS')
+          .filter(Boolean)
+      )];
+      setCategorias(catsUnicas);
+
+    } catch (error) {
+      console.error("Error al cargar carta de mesero:", error);
+      setToast({
+        type: 'error',
+        title: 'Error de Red',
+        message: 'No se pudo obtener la lista de productos desde el servidor.'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleAgregarProducto = (producto) => {
+    if (productosAgotados[producto.id]) {
+      setToast({
+        type: 'error',
+        title: 'Producto Agotado',
+        message: `El producto "${producto.nombre}" no cuenta con insumos en cocina.`
+      });
+      return;
+    }
+
     const nuevoItemIndependiente = {
       cartItemId: Date.now() + Math.random(),
-      id: producto.id,
+      idProducto: producto.id,
       nombre: producto.nombre,
-      precio: producto.precio,
-      cant: 1,
-      estado: 'En Cocina'
+      precioUnitario: parseFloat(producto.precio || 0),
+      cantidad: 1
     };
 
     setCart(prev => [...prev, nuevoItemIndependiente]);
   };
 
-  // Quitar ítem individual
   const handleEliminarItem = (cartItemId) => {
     setCart(prev => prev.filter(item => item.cartItemId !== cartItemId));
   };
 
-  // Filtrado de catálogo por búsqueda y categoría
   const productosFiltrados = productosCatalogo.filter(p => {
-    const coincideTexto = p.nombre.toLowerCase().includes(searchTerm.toLowerCase());
-    const coincideCat = categoriaActiva === 'TODOS' || p.categoria === categoriaActiva;
+    const nombreProd = p.nombre || '';
+    const catProd = p.categoria?.nombre || p.categoria || 'VARIOS';
+    const coincideTexto = nombreProd.toLowerCase().includes(searchTerm.toLowerCase());
+    const coincideCat = categoriaActiva === 'TODOS' || catProd === categoriaActiva;
     return coincideTexto && coincideCat;
   });
 
-  const totalOrden = cart.reduce((acc, i) => acc + i.precio, 0);
+  const totalOrden = cart.reduce((acc, i) => acc + i.precioUnitario, 0);
 
   const handleSolicitarEnviarCocina = () => {
     if (cart.length === 0) {
@@ -100,21 +103,49 @@ export const ComanderaPage = ({ mesa = { numero: '2' }, onVolverAlSalon, onGuard
     setShowConfirmModal(true);
   };
 
-  const handleConfirmarEnvioCocina = () => {
+  // 🚀 Enviar la comanda hacia la nueva API desacoplada de Comandas
+  const handleConfirmarEnvioCocina = async () => {
     setShowConfirmModal(false);
+    setLoading(true);
 
-    if (onGuardarComanda) {
-      onGuardarComanda(mesa.numero, cart, instrucciones);
-    }
+    try {
+      const comandaPayload = {
+        observaciones: instrucciones,
+        detalles: cart.map(item => ({
+          producto: { id: item.idProducto },
+          cantidad: item.cantidad,
+          precioUnitario: item.precioUnitario,
+          subtotal: item.precioUnitario * item.cantidad
+        }))
+      };
 
-    if (onVolverAlSalon) {
-      onVolverAlSalon();
+      // 1. Guardar en la nueva tabla 'comanda'
+      const comandaGuardada = await comandaService.guardarComanda(comandaPayload, parseInt(mesa.numero, 10));
+
+      // 2. Notificar al padre pasando la comanda ya guardada (solo para refrescar la UI en pantalla)
+      if (onGuardarComanda) {
+        await onGuardarComanda(mesa.numero, comandaGuardada);
+      }
+
+      if (onVolverAlSalon) {
+        onVolverAlSalon();
+      }
+
+    } catch (error) {
+      console.error("Error al enviar comanda a cocina:", error);
+      const msg = error.response?.data?.message || 'Ocurrió un inconveniente al guardar la comanda.';
+      setToast({
+        type: 'error',
+        title: 'Error de Envío',
+        message: msg
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="comandera-page-container">
-      {/* Toast Flotante */}
       {toast && (
         <div className="toast-floating-container">
           <Toast type={toast.type} title={toast.title} message={toast.message} onClose={() => setToast(null)} />
@@ -139,32 +170,29 @@ export const ComanderaPage = ({ mesa = { numero: '2' }, onVolverAlSalon, onGuard
       </div>
 
       <div className="comandera-main-layout">
-        {/* COLUMNA IZQUIERDA: BÚSQUEDA, FILTROS Y CATÁLOGO */}
+        {/* COLUMNA IZQUIERDA: CATÁLOGO DE PRODUCTOS */}
         <div className="comandera-catalogo-section">
           
-          {/* FILA DE BÚSQUEDA Y FILTROS USANDO ESTILOS ESTÁNDAR DE LA JAMA */}
           <div className="comandera-filters-row">
-            {/* Buscador Estándar */}
             <div className="search-input-box">
-  <div className="search-icon-wrapper">
-    <SearchIcon width={18} height={18} />
-  </div>
-  <input
-    type="text"
-    placeholder="Buscar plato o bebida..."
-    value={searchTerm}
-    onChange={(e) => setSearchTerm(e.target.value)}
-  />
-  {searchTerm && (
-    <button className="btn-clear-search" onClick={() => setSearchTerm('')}>
-      ✕
-    </button>
-  )}
-</div>
+              <div className="search-icon-wrapper">
+                <SearchIcon width={18} height={18} />
+              </div>
+              <input
+                type="text"
+                placeholder="Buscar plato o bebida..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              {searchTerm && (
+                <button className="btn-clear-search" onClick={() => setSearchTerm('')}>
+                  ✕
+                </button>
+              )}
+            </div>
 
-            {/* Pastillas / Pills de Categoría Estándar */}
             <div className="category-pills-filter">
-              {['TODOS', 'ENTRADAS', 'FONDOS', 'BEBIDAS'].map(cat => (
+              {categorias.map(cat => (
                 <button
                   key={cat}
                   className={`btn-filter-pill ${categoriaActiva === cat ? 'active' : ''}`}
@@ -176,34 +204,50 @@ export const ComanderaPage = ({ mesa = { numero: '2' }, onVolverAlSalon, onGuard
             </div>
           </div>
 
-          {/* Grilla de Platillos */}
           <div className="platillos-grid-container">
-            {productosFiltrados.map(prod => (
-              <div key={prod.id} className="platillo-card-box">
-                <div className="platillo-img-wrapper">
-                  <img src={prod.imagen} alt={prod.nombre} className="platillo-img" />
-                </div>
-
-                <div className="platillo-card-info">
-                  <h4 className="platillo-title">{prod.nombre}</h4>
-                  
-                  <div className="platillo-price-row">
-                    <strong className="platillo-precio">S/ {prod.precio.toFixed(2)}</strong>
-                    <button
-                      className="btn-add-circle"
-                      onClick={() => handleAgregarProducto(prod)}
-                      title="Agregar ítem"
-                    >
-                      <PlusIcon width={16} height={16} />
-                    </button>
-                  </div>
-                </div>
+            {loading ? (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem', color: '#64748b' }}>
+                Cargando carta de productos...
               </div>
-            ))}
+            ) : productosFiltrados.length === 0 ? (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem', color: '#64748b' }}>
+                No se encontraron productos disponibles.
+              </div>
+            ) : (
+              productosFiltrados.map(prod => {
+                const estaAgotado = productosAgotados[prod.id];
+                const imagenProd = prod.imagenUrl || prod.imagen || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60';
+
+                return (
+                  <div key={prod.id} className={`platillo-card-box ${estaAgotado ? 'agotado' : ''}`}>
+                    <div className="platillo-img-wrapper">
+                      <img src={imagenProd} alt={prod.nombre} className="platillo-img" />
+                      {estaAgotado && <span className="badge-agotado">AGOTADO</span>}
+                    </div>
+
+                    <div className="platillo-card-info">
+                      <h4 className="platillo-title">{prod.nombre}</h4>
+                      
+                      <div className="platillo-price-row">
+                        <strong className="platillo-precio">S/ {parseFloat(prod.precio || 0).toFixed(2)}</strong>
+                        <button
+                          className="btn-add-circle"
+                          onClick={() => handleAgregarProducto(prod)}
+                          title={estaAgotado ? 'Producto agotado' : 'Agregar ítem'}
+                          disabled={estaAgotado}
+                        >
+                          <PlusIcon width={16} height={16} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
 
-        {/* COLUMNA DERECHA: DETALLE DE ORDEN POR ÍTEMS INDEPENDIENTES */}
+        {/* COLUMNA DERECHA: TICKET DE ORDEN */}
         <div className="comandera-ticket-section">
           <div className="ticket-header-box">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
@@ -216,7 +260,6 @@ export const ComanderaPage = ({ mesa = { numero: '2' }, onVolverAlSalon, onGuard
             <span className="items-count-badge">{cart.length} ítems</span>
           </div>
 
-          {/* Lista de Ítems */}
           <div className="ticket-items-scroll-list">
             {cart.length === 0 ? (
               <div className="ticket-empty-notice">
@@ -232,7 +275,7 @@ export const ComanderaPage = ({ mesa = { numero: '2' }, onVolverAlSalon, onGuard
                   </div>
 
                   <div className="cart-item-single-right">
-                    <strong className="single-item-monto">S/ {item.precio.toFixed(2)}</strong>
+                    <strong className="single-item-monto">S/ {item.precioUnitario.toFixed(2)}</strong>
                     <button
                       className="btn-del-single-item"
                       title="Quitar este plato"
@@ -246,7 +289,6 @@ export const ComanderaPage = ({ mesa = { numero: '2' }, onVolverAlSalon, onGuard
             )}
           </div>
 
-          {/* Instrucciones para Cocina */}
           <div className="instrucciones-cocina-wrap">
             <label className="label-senior">Instrucciones de cocina...</label>
             <textarea
@@ -258,7 +300,6 @@ export const ComanderaPage = ({ mesa = { numero: '2' }, onVolverAlSalon, onGuard
             />
           </div>
 
-          {/* Total & Botón Enviar */}
           <div className="ticket-footer-action-box">
             <div className="total-enviar-row">
               <span>Total a enviar:</span>
@@ -268,14 +309,14 @@ export const ComanderaPage = ({ mesa = { numero: '2' }, onVolverAlSalon, onGuard
             <button
               className="btn-enviar-cocina-lux"
               onClick={handleSolicitarEnviarCocina}
+              disabled={loading}
             >
-              🔥 ENVIAR A COCINA
+              {loading ? 'ENVIANDO...' : '🔥 ENVIAR A COCINA'}
             </button>
           </div>
         </div>
       </div>
 
-      {/* CONFIRMAR ENVÍO A COCINA */}
       <ConfirmDialog
         isOpen={showConfirmModal}
         title="Confirmar Envío a Cocina"

@@ -1,141 +1,123 @@
 package com.web.restaurante.service;
 
-import com.web.restaurante.model.DetallePedido;
-import com.web.restaurante.model.Pedido;
-import com.web.restaurante.model.enums.EstadoPedido;
-import com.web.restaurante.repository.InsumoProductoRepository;
-import com.web.restaurante.repository.PedidoRepository;
+import com.web.restaurante.model.Comanda;
+import com.web.restaurante.model.DetalleComanda;
+import com.web.restaurante.model.Notificacion;
+import com.web.restaurante.model.enums.EstadoComanda;
+import com.web.restaurante.repository.ComandaRepository;
+import com.web.restaurante.repository.MesaRepository;
+import com.web.restaurante.repository.NotificacionRepository;
+import com.web.restaurante.service.MesaService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class CocinaService {
 
-    private final PedidoRepository pedidoRepository;
-    private final InsumoProductoRepository insumoProductoRepository;
-    private final InsumoService insumoService;
+    private final ComandaRepository comandaRepository;
+    private final SimpMessagingTemplate messagingTemplate;
+    private final NotificacionRepository notificacionRepository;
+    private final MesaRepository mesaRepository;
+    private final MesaService mesaService;
 
     @Transactional(readOnly = true)
-    public List<Pedido> listarPedidosFrios() {
-        return pedidoRepository.findAll().stream()
-                .filter(p -> p.getEstado() == EstadoPedido.EN_COCINA ||
-                        (p.getEstado() == EstadoPedido.PENDIENTE && p.getNumeroMesa() != null))
-                .filter(p -> p.getListaDetalles() != null && p.getListaDetalles().stream()
-                        .anyMatch(d -> !d.isCanceladoPorCliente() && !d.isCocinado() && d.getProducto() != null && d.getProducto().getCategoria() != null
-                                && (d.getProducto().getCategoria().getNombre().toUpperCase().contains("FRI")
-                                || d.getProducto().getCategoria().getNombre().toUpperCase().contains("FRÍ"))))
-                .sorted(Comparator.comparing(Pedido::getFechaCreacion))
+    public List<Comanda> listarPedidosActivos() {
+        return comandaRepository.findAll().stream()
+                .filter(c -> c.getEstado() == EstadoComanda.EN_COCINA)
+                .filter(c -> c.getDetalles() != null && c.getDetalles().stream()
+                        .anyMatch(d -> !d.isCanceladoPorCliente() && !d.isEntregado()))
+                .sorted(Comparator.comparing(Comanda::getFechaApertura))
                 .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public List<Pedido> listarPedidosCalientes() {
-        return pedidoRepository.findAll().stream()
-                .filter(p -> p.getEstado() == EstadoPedido.EN_COCINA ||
-                        (p.getEstado() == EstadoPedido.PENDIENTE && p.getNumeroMesa() != null))
-                .filter(p -> p.getListaDetalles() != null && p.getListaDetalles().stream()
-                        .anyMatch(d -> !d.isCanceladoPorCliente() && !d.isCocinado() && d.getProducto() != null && d.getProducto().getCategoria() != null
-                                && d.getProducto().getCategoria().getNombre().toUpperCase().contains("CALIENTE")))
-                .sorted(Comparator.comparing(Pedido::getFechaCreacion))
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public List<DetallePedido> obtenerDetallesPorTipo(Long pedidoId, String tipoCocina) {
-        Pedido pedido = pedidoRepository.findById(pedidoId).orElse(new Pedido());
-        return pedido.getListaDetalles().stream()
-                .filter(d -> {
-                    String nombreCat = d.getProducto().getCategoria().getNombre().toUpperCase();
-                    if ("caliente".equalsIgnoreCase(tipoCocina)) return nombreCat.contains("CALIENTE");
-                    else return nombreCat.contains("FRI") || nombreCat.contains("FRÍ");
-                })
-                .collect(Collectors.toList());
     }
 
     @Transactional
-    public void despacharPlatoIndividual(Long pedidoId, Long detalleId) {
-        Pedido p = pedidoRepository.findById(pedidoId)
-                .orElseThrow(() -> new RuntimeException("Pedido no encontrado con ID: " + pedidoId));
+    public void obtainTicket(Long comandaId) {
+        Comanda comanda = comandaRepository.findById(comandaId)
+                .orElseThrow(() -> new RuntimeException("Comanda no encontrada con ID: " + comandaId));
 
-        if (p.getListaDetalles() == null) return;
+        comanda.setTicketImpresoCocina(true);
+        if (comanda.getDetalles() != null) {
+            for (DetalleComanda d : comanda.getDetalles()) {
+                if (!d.isCanceladoPorCliente()) {
+                    d.setImpresoEnCocina(true);
+                }
+            }
+        }
+        comandaRepository.save(comanda);
+    }
 
-        DetallePedido detalleTarget = p.getListaDetalles().stream()
+    @Transactional
+    public void despacharItemFila(Long comandaId, Long detalleId) {
+        Comanda c = comandaRepository.findById(comandaId)
+                .orElseThrow(() -> new RuntimeException("Comanda no encontrada con ID: " + comandaId));
+
+        if (c.getDetalles() == null) return;
+
+        DetalleComanda detalleTarget = c.getDetalles().stream()
                 .filter(d -> d.getId().equals(detalleId))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Fila de detalle no encontrada"));
+                .orElseThrow(() -> new RuntimeException("Fila de detalle no encontrada en la comanda"));
 
-        if (!detalleTarget.isImpresoEnCocina()) {
-            throw new IllegalStateException("¡Bloqueado! No puedes despachar '"
-                    + detalleTarget.getProducto().getNombre() + "' porque aún no ha sido impreso del ticket.");
+        // 🍳 SOLO COCINADO: La cocina termina la preparación (cocinado = true, entregado = false)
+        detalleTarget.setCocinado(true);
+
+        // Evaluar si todos los platos ya fueron terminados de cocinar
+        boolean quedanPendientesCocina = c.getDetalles().stream()
+                .anyMatch(d -> !d.isCanceladoPorCliente() && !d.isCocinado());
+
+        if (!quedanPendientesCocina) {
+            c.setEstado(EstadoComanda.PREPARADO);
         }
 
-        if (!detalleTarget.isCocinado()) {
-            detalleTarget.setCocinado(true);
+        comandaRepository.save(c);
+
+        // Sincronizar icono de campana (PARA_RECOGER) en el salón del mozo
+        if (c.getNumeroMesa() != null) {
+            mesaRepository.findByNumero(c.getNumeroMesa())
+                    .ifPresent(mesaService::recalcularYNotificarEstadoCocinaMesa);
         }
 
-        boolean tieneFrioPendiente = p.getListaDetalles().stream()
-                .anyMatch(d -> !d.isCanceladoPorCliente() && !d.isCocinado() && (d.getProducto().getCategoria().getNombre().toUpperCase().contains("FRI")
-                        || d.getProducto().getCategoria().getNombre().toUpperCase().contains("FRÍ")));
-
-        boolean tieneCalientePendiente = p.getListaDetalles().stream()
-                .anyMatch(d -> !d.isCanceladoPorCliente() && !d.isCocinado() && d.getProducto().getCategoria().getNombre().toUpperCase().contains("CALIENTE"));
-
-        p.setFrioListo(!tieneFrioPendiente);
-        p.setCalienteListo(!tieneCalientePendiente);
-
-        if (!tieneFrioPendiente && !tieneCalientePendiente) {
-            p.setEstado(EstadoPedido.PREPARADO);
-        }
-
-        pedidoRepository.save(p);
+        String identificadorMesa = (c.getNumeroMesa() != null) ? "Mesa N° " + c.getNumeroMesa() : "Carta/Delivery";
+        String msgNotif = "🍳 ¡Listo para servir! " + detalleTarget.getProducto().getNombre() + " asignado a la " + identificadorMesa;
+        registrarYEnviarNotificacion(msgNotif);
     }
 
     @Transactional
-    public void completarEstacion(Long pedidoId, String tipoEstacion) {
-        Pedido p = pedidoRepository.findById(pedidoId)
-                .orElseThrow(() -> new RuntimeException("Pedido no encontrado"));
+    public void despacharLoteEstacion(Long comandaId, String tipoEstacion) {
+        Comanda c = comandaRepository.findById(comandaId)
+                .orElseThrow(() -> new RuntimeException("Comanda no encontrada con ID: " + comandaId));
 
-        if (p.getListaDetalles() != null) {
-            for (DetallePedido d : p.getListaDetalles()) {
-                if (d.getProducto() != null && d.getProducto().getCategoria() != null) {
-                    String catNombre = d.getProducto().getCategoria().getNombre().toUpperCase();
-
-                    boolean esFriaCorrespondiente = "fria".equalsIgnoreCase(tipoEstacion) && (catNombre.contains("FRI") || catNombre.contains("FRÍ"));
-                    boolean esCalienteCorrespondiente = "caliente".equalsIgnoreCase(tipoEstacion) && catNombre.contains("CALIENTE");
-
-                    if ((esFriaCorrespondiente || esCalienteCorrespondiente) && !d.isCocinado()) {
-                        d.setCocinado(true);
-                    }
+        if (c.getDetalles() != null) {
+            for (DetalleComanda d : c.getDetalles()) {
+                if (!d.isCanceladoPorCliente() && !d.isCocinado()) {
+                    d.setCocinado(true);
                 }
             }
         }
 
-        if ("fria".equalsIgnoreCase(tipoEstacion)) p.setFrioListo(true);
-        else if ("caliente".equalsIgnoreCase(tipoEstacion)) p.setCalienteListo(true);
+        c.setEstado(EstadoComanda.PREPARADO);
+        comandaRepository.save(c);
 
-        boolean tieneFrio = p.getListaDetalles().stream().anyMatch(d -> d.getProducto().getCategoria().getNombre().toUpperCase().contains("FRI") || d.getProducto().getCategoria().getNombre().toUpperCase().contains("FRÍ"));
-        boolean tieneCaliente = p.getListaDetalles().stream().anyMatch(d -> d.getProducto().getCategoria().getNombre().toUpperCase().contains("CALIENTE"));
-
-        if ((!tieneFrio || p.isFrioListo()) && (!tieneCaliente || p.isCalienteListo())) {
-            p.setEstado(EstadoPedido.PREPARADO);
-        }
-        pedidoRepository.save(p);
+        // 🔔 NOTIFICACIÓN DE LOTE COMPLETO
+        String identificadorMesa = (c.getNumeroMesa() != null) ? "Mesa N° " + c.getNumeroMesa() : String.valueOf(comandaId);
+        String msgNotif = "🔔 ¡Lote Completo! La " + identificadorMesa + " tiene todos sus platos listos en barra.";
+        registrarYEnviarNotificacion(msgNotif);
     }
 
     @Transactional
-    public void eliminarItemComanda(Long pedidoId, Long detalleId, boolean forzarMerma) {
-        Pedido pedido = pedidoRepository.findById(pedidoId)
-                .orElseThrow(() -> new RuntimeException("Pedido no encontrado con ID: " + pedidoId));
+    public void eliminarItemComanda(Long comandaId, Long detalleId, boolean forzarMerma) {
+        Comanda comanda = comandaRepository.findById(comandaId)
+                .orElseThrow(() -> new RuntimeException("Comanda no encontrada con ID: " + comandaId));
 
-        if (pedido.getListaDetalles() == null) return;
+        if (comanda.getDetalles() == null) return;
 
-        DetallePedido detalleTarget = pedido.getListaDetalles().stream()
+        DetalleComanda detalleTarget = comanda.getDetalles().stream()
                 .filter(d -> d.getId().equals(detalleId))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Línea de comanda no encontrada ID: " + detalleId));
@@ -146,33 +128,56 @@ public class CocinaService {
             detalleTarget.setCanceladoPorCliente(true);
             detalleTarget.setImpresoEnCocina(true);
         } else {
-            pedido.getListaDetalles().remove(detalleTarget);
-            detalleTarget.setPedido(null);
+            comanda.getDetalles().remove(detalleTarget);
+            detalleTarget.setComanda(null);
         }
 
         if (!detalleTarget.isCocinado()) {
             detalleTarget.setCocinado(true);
+            detalleTarget.setEntregado(true);
         }
 
-        recalcularTotalesPedido(pedido);
-
-        boolean tienePlatosActivosPendientes = pedido.getListaDetalles().stream()
+        boolean tienePlatosActivosPendientes = comanda.getDetalles().stream()
                 .anyMatch(d -> !d.isCanceladoPorCliente() && !d.isCocinado());
 
         if (!tienePlatosActivosPendientes) {
-            pedido.setFrioListo(true);
-            pedido.setCalienteListo(true);
-            pedido.setEstado(EstadoPedido.PREPARADO);
+            comanda.setEstado(EstadoComanda.PREPARADO);
         }
 
-        pedidoRepository.save(pedido);
+        comandaRepository.save(comanda);
     }
 
-    private void recalcularTotalesPedido(Pedido pedido) {
-        double nuevoTotal = pedido.getListaDetalles().stream()
-                .filter(d -> !d.isCanceladoPorCliente() || (d.isCanceladoPorCliente() && !d.isPagado()))
-                .mapToDouble(d -> d.getPrecioUnitario() * d.getCantidad())
-                .sum();
-        pedido.setMontoTotal(nuevoTotal);
+    private void registrarYEnviarNotificacion(String mensaje) {
+        Notificacion n = new Notificacion();
+        n.setMensaje(mensaje);
+        n.setTipo("SUCCESS");
+        n.setDestinoPerfil("MESERO");
+        n.setLeido(false);
+        notificacionRepository.save(n);
+
+        messagingTemplate.convertAndSend("/topic/notificaciones/mozos", mensaje);
+    }
+
+    @Transactional
+    public void entregarItemFila(Long comandaId, Long detalleId) {
+        Comanda comanda = comandaRepository.findById(comandaId)
+                .orElseThrow(() -> new RuntimeException("Comanda no encontrada"));
+
+        DetalleComanda detalle = comanda.getDetalles().stream()
+                .filter(d -> d.getId().equals(detalleId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Detalle no encontrado"));
+
+        detalle.setEntregado(true);
+
+        boolean todosEntregados = comanda.getDetalles().stream()
+                .filter(d -> !d.isCanceladoPorCliente())
+                .allMatch(DetalleComanda::isEntregado);
+
+        if (todosEntregados) {
+            comanda.setEstado(EstadoComanda.ENTREGADO);
+        }
+
+        comandaRepository.save(comanda);
     }
 }

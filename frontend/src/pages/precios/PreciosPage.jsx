@@ -1,14 +1,16 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import DataTable from '../../components/common/DataTable';
 import Modal from '../../components/common/Modal';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import Toast from '../../components/common/Toast';
 import { EditIcon, HideIcon, SearchIcon, ClearIcon } from '../../components/common/Icons';
+import productoPrecioService from '../../services/productoPrecioService';
 import './PreciosPage.css';
 
 export const PreciosPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [toast, setToast] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   // Categorías base del menú del restaurante
   const CATEGORIAS_MENU = [
@@ -18,6 +20,9 @@ export const PreciosPage = () => {
     { id: 'BEBIDAS', nombre: 'Bebidas' },
     { id: 'POSTRES', nombre: 'Postres' }
   ];
+
+  // Lista de productos sincronizada con la Base de Datos
+  const [productos, setProductos] = useState([]);
 
   // Estados para Modal de Edición Individual de Precio
   const [showEditModal, setShowEditModal] = useState(false);
@@ -45,14 +50,52 @@ export const PreciosPage = () => {
     onConfirm: () => {}
   });
 
-  // Lista simulada de productos
-  const [productos, setProductos] = useState([
-    { id: 1, nombre: 'Lomo saltado', categoria: 'PLATOS FUERTES', insumos: ['Carne', 'Arroz', 'Papa'], precio: 35.00, disponible: true, imagen: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=150&auto=format&fit=crop&q=80' },
-    { id: 2, nombre: 'Causa Limeña', categoria: 'ENTRADAS', insumos: ['Pollo', 'Arroz', 'Papa'], precio: 20.00, disponible: true, imagen: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=150&auto=format&fit=crop&q=80' },
-    { id: 3, nombre: 'Ají de Gallina', categoria: 'PLATOS FUERTES', insumos: ['Pollo', 'Arroz', 'Papa'], precio: 20.00, disponible: true, imagen: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=150&auto=format&fit=crop&q=80' },
-    { id: 4, nombre: 'Ceviche de Pescado', categoria: 'MARISCOS', insumos: ['Pescado blanco', 'Papa'], precio: 30.00, disponible: true, imagen: 'https://images.unsplash.com/photo-1535400255456-984241443b29?w=150&auto=format&fit=crop&q=80' },
-    { id: 5, nombre: 'Chicha Morada 1L', categoria: 'BEBIDAS', insumos: ['Maíz Morado', 'Piña'], precio: 12.00, disponible: true, imagen: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=150&auto=format&fit=crop&q=80' }
-  ]);
+  // Cargar productos y precios desde Spring Boot al cargar el componente
+  useEffect(() => {
+    cargarPreciosBackend();
+  }, []);
+
+  const cargarPreciosBackend = async () => {
+    try {
+      setLoading(true);
+      const res = await productoPrecioService.listarPrecios();
+      const data = res.data || res;
+
+      const productosMapeados = data.map(p => {
+        const prodData = p.producto || p;
+        const rawImagen = prodData.imgUrl || p.imgUrl || prodData.imagen || prodData.foto || prodData.rutaImagen || p.imagen || '';
+
+        let urlFinal = '';
+        if (rawImagen && rawImagen.trim() !== '') {
+          if (rawImagen.startsWith('http') || rawImagen.startsWith('blob:')) {
+            urlFinal = rawImagen;
+          } else if (rawImagen.startsWith('/')) {
+            urlFinal = `http://localhost:8080${rawImagen}`;
+          } else {
+            urlFinal = `http://localhost:8080/imagenes/${rawImagen}`;
+          }
+        }
+
+        return {
+          id: prodData.id || p.id,
+          nombre: prodData.nombre || 'Sin nombre',
+          categoria: prodData.categoria ? (typeof prodData.categoria === 'object' ? prodData.categoria.nombre : prodData.categoria).toUpperCase() : 'PLATOS FUERTES',
+          insumos: Array.isArray(prodData.insumos) 
+            ? prodData.insumos.map(ins => typeof ins === 'object' ? (ins.nombre || ins.nombreInsumo) : ins) 
+            : (Array.isArray(prodData.ingredientes) ? prodData.ingredientes.map(i => typeof i === 'object' ? i.nombre : i) : []),
+          precio: parseFloat(p.precio || prodData.precio || 0),
+          disponible: prodData.estado === 1 || prodData.disponible === true,
+          imagen: urlFinal
+        };
+      });
+
+      setProductos(productosMapeados);
+    } catch (error) {
+      console.error("Error al obtener los precios:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Extraer automáticamente la lista de insumos únicos sin duplicados
   const listaInsumosUnicos = useMemo(() => {
@@ -78,7 +121,9 @@ export const PreciosPage = () => {
   const productosFiltrados = productos.filter(p => {
     const texto = searchTerm.toLowerCase();
     const coincideNombre = p.nombre.toLowerCase().includes(texto);
-    const coincideInsumo = p.insumos.some(i => i.toLowerCase().includes(texto));
+    const coincideInsumo = Array.isArray(p.insumos) && p.insumos.some(i => 
+      (typeof i === 'string' ? i : (i?.nombre || '')).toLowerCase().includes(texto)
+    );
     return coincideNombre || coincideInsumo;
   });
 
@@ -89,8 +134,8 @@ export const PreciosPage = () => {
     setShowEditModal(true);
   };
 
-  // Guardar Precio Individual
-  const handleGuardarPrecioIndividual = (e) => {
+  // Guardar Precio Individual enviando actualización al backend
+  const handleGuardarPrecioIndividual = async (e) => {
     e.preventDefault();
     const precioNum = parseFloat(nuevoPrecio);
     if (isNaN(precioNum) || precioNum <= 0) {
@@ -98,9 +143,17 @@ export const PreciosPage = () => {
       return;
     }
 
-    setProductos(prev => prev.map(p => p.id === productoEditar.id ? { ...p, precio: precioNum } : p));
-    setToast({ type: 'info', title: 'Precio Actualizado', message: `El plato "${productoEditar.nombre}" ahora cuesta S/ ${precioNum.toFixed(2)}.` });
-    setShowEditModal(false);
+    try {
+      const payload = [{ id: productoEditar.id, precio: precioNum }];
+      await productoPrecioService.actualizarPreciosMasivo(payload);
+
+      setProductos(prev => prev.map(p => p.id === productoEditar.id ? { ...p, precio: precioNum } : p));
+      setToast({ type: 'info', title: 'Precio Actualizado', message: `El plato "${productoEditar.nombre}" ahora cuesta S/ ${precioNum.toFixed(2)}.` });
+      setShowEditModal(false);
+    } catch (error) {
+      console.error("Error al actualizar precio individual:", error);
+      setToast({ type: 'error', title: 'Error al Guardar', message: 'No se pudo actualizar el precio en el servidor.' });
+    }
   };
 
   // Dar de baja plato
@@ -125,15 +178,15 @@ export const PreciosPage = () => {
     setCategoriaMasivaFilter('TODAS');
     setValorAjuste('');
     setOperacionMasiva('SUMAR');
-    setSelectedIds(productos.map(p => p.id)); // Todos marcados por defecto
+    setSelectedIds(productos.map(p => p.id));
     setShowAjusteMasivoModal(true);
   };
 
   // Lógica de filtrado combinado: Texto + Insumo + Categoría
   const productosMasivosVisibles = productos.filter(p => {
     const txt = filtroMasivoText.toLowerCase();
-    const coincideTexto = p.nombre.toLowerCase().includes(txt) || p.insumos.some(i => i.toLowerCase().includes(txt));
-    const coincideInsumo = insumoMasivoFilter === 'TODOS' || p.insumos.includes(insumoMasivoFilter);
+    const coincideTexto = p.nombre.toLowerCase().includes(txt) || (Array.isArray(p.insumos) && p.insumos.some(i => i.toLowerCase().includes(txt)));
+    const coincideInsumo = insumoMasivoFilter === 'TODOS' || (Array.isArray(p.insumos) && p.insumos.includes(insumoMasivoFilter));
     const coincideCat = categoriaMasivaFilter === 'TODAS' || p.categoria === categoriaMasivaFilter;
 
     return coincideTexto && coincideInsumo && coincideCat;
@@ -162,7 +215,8 @@ export const PreciosPage = () => {
     return precioActual;
   };
 
-  const handleAplicarAjusteMasivo = (e) => {
+  // Aplicar Ajuste Masivo guardando cambios en la Base de Datos
+  const handleAplicarAjusteMasivo = async (e) => {
     e.preventDefault();
     const valor = parseFloat(valorAjuste);
     if (isNaN(valor) || valor <= 0) {
@@ -175,18 +229,39 @@ export const PreciosPage = () => {
       return;
     }
 
-    setProductos(prev => prev.map(p => {
-      if (!selectedIds.includes(p.id)) return p;
-      const nuevoCalculado = calcularPrecioProyectado(p.precio);
-      return { ...p, precio: Math.round(nuevoCalculado * 100) / 100 };
-    }));
-
-    setToast({
-      type: 'info',
-      title: 'Ajuste Masivo Aplicado',
-      message: `Se actualizó el precio de ${selectedIds.length} producto(s) correctamente.`
+    // Generar la lista de actualizaciones para la API
+    const listaActualizaciones = selectedIds.map(id => {
+      const prodOriginal = productos.find(p => p.id === id);
+      const nuevoCalculado = calcularPrecioProyectado(prodOriginal.precio);
+      return {
+        id: id,
+        precio: Math.round(nuevoCalculado * 100) / 100
+      };
     });
-    setShowAjusteMasivoModal(false);
+
+    try {
+      await productoPrecioService.actualizarPreciosMasivo(listaActualizaciones);
+
+      setProductos(prev => prev.map(p => {
+        if (!selectedIds.includes(p.id)) return p;
+        const nuevoCalculado = calcularPrecioProyectado(p.precio);
+        return { ...p, precio: Math.round(nuevoCalculado * 100) / 100 };
+      }));
+
+      setToast({
+        type: 'info',
+        title: 'Ajuste Masivo Aplicado',
+        message: `Se actualizó el precio de ${selectedIds.length} producto(s) en el servidor.`
+      });
+      setShowAjusteMasivoModal(false);
+    } catch (error) {
+      console.error("Error al guardar ajuste masivo:", error);
+      setToast({
+        type: 'error',
+        title: 'Error de Actualización',
+        message: 'Ocurrió un inconveniente al actualizar los precios en la base de datos.'
+      });
+    }
   };
 
   return (
@@ -214,14 +289,21 @@ export const PreciosPage = () => {
         columns={COLUMNAS_PRECIOS}
         data={productosFiltrados}
         itemsPerPage={5}
-        emptyMessage="No se encontraron platos ni insumos coincidentes."
+        emptyMessage={loading ? "Cargando lista de precios desde el servidor..." : "No se encontraron platos ni insumos coincidentes."}
         renderRow={(prod) => (
           <tr key={prod.id} className={!prod.disponible ? 'tr-disabled' : ''}>
-            <td><img src={prod.imagen} alt={prod.nombre} className="precio-img-thumb" /></td>
+            <td>
+              <img
+                src={prod.imagen || 'https://placeholder.com'}
+                alt={prod.nombre}
+                className="precio-img-thumb"
+                onError={(e) => { e.target.src = 'https://placeholder.com'; }}
+              />
+            </td>
             <td><span className="precio-producto-nombre">{prod.nombre}</span></td>
             <td>
               <div className="insumos-pills-container">
-                {prod.insumos.map((ins, i) => (
+                {Array.isArray(prod.insumos) && prod.insumos.map((ins, i) => (
                   <span key={i} className="badge-insumo-pill">{ins}</span>
                 ))}
               </div>
@@ -231,9 +313,6 @@ export const PreciosPage = () => {
               <div className="acciones-buttons-group">
                 <button className="btn-action-icon edit" title="Editar precio" onClick={() => handleAbrirEditar(prod)}>
                   <EditIcon />
-                </button>
-                <button className="btn-action-icon delete" title="Dar de baja plato" onClick={() => handleDarDeBaja(prod.id, prod.nombre)}>
-                  <HideIcon />
                 </button>
               </div>
             </td>
@@ -448,7 +527,7 @@ export const PreciosPage = () => {
                 </span>
               </div>
 
-              {/* CUADRÍCULA (GRID) DE TARJETAS CUADRADAS CON 1 SOLO SCROLLBAR */}
+              {/* CUADRÍCULA (GRID) DE TARJETAS CUADRADAS */}
               <div className="masivo-grid-scroll-container">
                 {productosMasivosVisibles.length === 0 ? (
                   <div className="masivo-empty-filter-state">
@@ -475,11 +554,16 @@ export const PreciosPage = () => {
                           />
                         </div>
 
-                        <img src={p.imagen} alt={p.nombre} className="grid-card-thumb" />
+                        <img
+                          src={p.imagen || 'https://placeholder.com'}
+                          alt={p.nombre}
+                          className="grid-card-thumb"
+                          onError={(e) => { e.target.src = 'https://placeholder.com'; }}
+                        />
 
                         <div className="grid-card-info">
                           <span className="grid-card-title">{p.nombre}</span>
-                          <span className="grid-card-insumos">{p.insumos.join(', ')}</span>
+                          <span className="grid-card-insumos">{Array.isArray(p.insumos) ? p.insumos.join(', ') : ''}</span>
                         </div>
 
                         <div className="grid-card-precio-box">
@@ -500,7 +584,7 @@ export const PreciosPage = () => {
             </div>
           </div>
 
-          {/* FOOTER DEL MODAL CON BOTONES SIEMPRE VISIBLES */}
+          {/* FOOTER DEL MODAL */}
           <div className="modal-footer-custom elder-footer compact">
             <button type="button" className="btn-cancel-senior" onClick={() => setShowAjusteMasivoModal(false)}>
               Cancelar

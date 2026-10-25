@@ -2,14 +2,24 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import './Sidebar.css';
+import logoImage from '../../assets/logo.png';
 
-export const Sidebar = ({ isCollapsed, toggleSidebar }) => {
-  const { user, logout } = useAuth();
+export const Sidebar = ({ isCollapsed }) => {
+  const { user, permisos, logout } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation(); // Hook para saber en qué página/URL estamos actualmente
+  const location = useLocation();
 
-  // Configuración completa del menú
-  const menuConfig = [
+  const rolUpper = (user?.rol || '').toUpperCase();
+  const esAdminAbsoluto = rolUpper.includes('SUPER') || rolUpper.includes('ADMIN');
+
+  const rutasHabilitadas = React.useMemo(() => {
+    if (!Array.isArray(permisos)) return [];
+    return permisos
+      .map(p => (typeof p === 'string' ? p : p?.ruta))
+      .filter(Boolean);
+  }, [permisos]);
+
+  const menuMasterConfig = [
     {
       title: 'Dashboard',
       icon: (
@@ -20,8 +30,7 @@ export const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
         </svg>
       ),
-      path: '/admin/dashboard',
-      roles: ['ADMIN', 'CAJERO']
+      path: '/admin/dashboard'
     },
     {
       title: 'Salón & Mesas',
@@ -32,23 +41,9 @@ export const Sidebar = ({ isCollapsed, toggleSidebar }) => {
         </svg>
       ),
       key: 'salon',
-      roles: ['ADMIN', 'MESERO', 'CAJERO'],
       submenu: [
-        { title: 'Mapa de Mesas', path: '/admin/mesas' },
+        { title: 'Mesas y Salón', path: '/admin/mesas' },
         { title: 'Reservas', path: '/admin/reservas' }
-      ]
-    },
-    {
-      title: 'Estación Cocina',
-      icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-        </svg>
-      ),
-      key: 'cocina',
-      roles: ['ADMIN', 'COCINA'],
-      submenu: [
-        { title: 'Cocina', path: '/admin/cocina' }
       ]
     },
     {
@@ -60,9 +55,9 @@ export const Sidebar = ({ isCollapsed, toggleSidebar }) => {
         </svg>
       ),
       key: 'caja',
-      roles: ['ADMIN', 'CAJERO'],
       submenu: [
-        { title: 'Caja Abierta', path: '/admin/caja' }
+        { title: 'Control de Caja (POS)', path: '/admin/caja' },
+        { title: 'Caja General', path: '/admin/caja-general' }
       ]
     },
     {
@@ -73,10 +68,9 @@ export const Sidebar = ({ isCollapsed, toggleSidebar }) => {
         </svg>
       ),
       key: 'almacen',
-      roles: ['ADMIN'],
       submenu: [
-        { title: 'Catálogo Productos', path: '/admin/productos' },
-        { title: 'Ajuste de Precios', path: '/admin/productos-ajuste' },
+        { title: 'Gestión de Productos', path: '/admin/productos' },
+        { title: 'Ajuste de Stock', path: '/admin/productos-ajuste' }
       ]
     },
     {
@@ -90,23 +84,63 @@ export const Sidebar = ({ isCollapsed, toggleSidebar }) => {
         </svg>
       ),
       key: 'admin',
-      roles: ['ADMIN'],
       submenu: [
-        { title: 'Mi Perfil', path: '/admin/perfil' },
-        { title: 'Usuarios', path: '/admin/usuarios' },
-        { title: 'Perfiles', path: '/admin/perfiles' },
-        { title: 'Empleados', path: '/admin/empleados' }
+        { title: 'Gestión de Usuarios', path: '/admin/usuarios' },
+        { title: 'Roles y Permisos', path: '/admin/perfiles' },
+        { title: 'Gestión de Empleados', path: '/admin/empleados' }
       ]
+    },
+    {
+      title: 'Mi Perfil',
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      ),
+      path: '/admin/perfil'
     }
   ];
 
-  // Estado del submenú abierto
+  const tienePermisoRuta = (pathConfig) => {
+    if (esAdminAbsoluto) return true;
+    if (!pathConfig) return false;
+    if (pathConfig === '/admin/perfil') return true;
+
+    if (rolUpper.includes('MESERO') || rolUpper.includes('MOZO')) {
+      if (pathConfig === '/admin/mesas' || pathConfig === '/admin/reservas') return true;
+    }
+    if (rolUpper.includes('CAJA') || rolUpper.includes('CAJERO')) {
+      if (pathConfig.includes('/caja')) return true;
+    }
+
+    const pathLimpio = pathConfig.replace(/^\/admin/, '');
+    return rutasHabilitadas.some(rutaBD => {
+      if (!rutaBD) return false;
+      const rutaBDLimpia = rutaBD.replace(/^\/admin/, '');
+      return rutaBD === pathConfig || rutaBDLimpia === pathLimpio;
+    });
+  };
+
+  const filteredMenu = menuMasterConfig
+    .map(group => {
+      if (!group.submenu) {
+        const tieneAcceso = tienePermisoRuta(group.path);
+        return tieneAcceso ? group : null;
+      }
+      const submenusPermitidos = group.submenu.filter(sub => tienePermisoRuta(sub.path));
+      if (submenusPermitidos.length > 0) {
+        return { ...group, submenu: submenusPermitidos };
+      }
+      return null;
+    })
+    .filter(Boolean);
+
   const [openSubmenu, setOpenSubmenu] = useState(null);
 
-  // EFECTO MÁGICO: Mantiene abierto automáticamente el submenú de la ruta actual
   useEffect(() => {
-    const activeGroup = menuConfig.find((item) =>
-      item.submenu?.some((sub) => sub.path === location.pathname)
+    const activeGroup = filteredMenu.find(item =>
+      item.submenu?.some(sub => sub.path === location.pathname)
     );
     if (activeGroup) {
       setOpenSubmenu(activeGroup.key);
@@ -114,45 +148,37 @@ export const Sidebar = ({ isCollapsed, toggleSidebar }) => {
   }, [location.pathname]);
 
   const toggleSubmenu = (menuKey) => {
-    setOpenSubmenu(openSubmenu === menuKey ? null : menuKey);
+    setOpenSubmenu(prevKey => (prevKey === menuKey ? null : menuKey));
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate('/login');
   };
 
-  const userRole = user?.rol || 'ADMIN';
-  const filteredMenu = menuConfig.filter((item) => item.roles.includes(userRole));
-
   return (
     <aside className={`sidebar-container ${isCollapsed ? 'collapsed' : ''}`}>
-      {/* Header del Sidebar */}
       <div className="sidebar-brand">
         <div className="brand-logo-wrapper">
           <div className="brand-logo-circle">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 10.58 0A4 4 0 0 1 18 13.87V21H6z" />
-              <line x1="6" y1="17" x2="18" y2="17" />
-            </svg>
+            <img src={logoImage} alt="SRA MILLONES Logo" className="sidebar-brand-img" />
           </div>
           <span className="logo-glow"></span>
         </div>
 
         {!isCollapsed && (
           <div className="brand-info">
-            <span className="brand-name">LA JAMA</span>
+            <span className="brand-name">SRA MILLONES</span>
             <div className="brand-badge-pill">
               <span className="badge-pulse"></span>
-              <span className="brand-badge-text">{userRole}</span>
+              <span className="brand-badge-text">{user?.rol || 'SIN ROL'}</span>
             </div>
           </div>
         )}
       </div>
 
-      {/* Menú de Opciones */}
       <nav className="sidebar-nav">
-        {filteredMenu.map((item) => {
+        {filteredMenu.map(item => {
           if (!item.submenu) {
             return (
               <NavLink
@@ -169,12 +195,13 @@ export const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           }
 
           const isSubmenuOpen = openSubmenu === item.key;
-          const isCategoryActive = item.submenu.some((sub) => sub.path === location.pathname);
+          const isCategoryActive = item.submenu.some(sub => sub.path === location.pathname);
+          const isExpanded = isSubmenuOpen || isCategoryActive;
 
           return (
-            <div key={item.key} className={`nav-item-group ${isSubmenuOpen ? 'open' : ''}`}>
-              <div 
-                className={`nav-item has-submenu ${isCategoryActive ? 'category-active' : ''}`} 
+            <div key={item.key} className={`nav-item-group ${isExpanded ? 'open' : ''}`}>
+              <div
+                className={`nav-item has-submenu ${isCategoryActive ? 'category-active' : ''}`}
                 onClick={() => toggleSubmenu(item.key)}
                 title={isCollapsed ? item.title : ''}
               >
@@ -183,7 +210,7 @@ export const Sidebar = ({ isCollapsed, toggleSidebar }) => {
                   <>
                     <span className="nav-title">{item.title}</span>
                     <svg
-                      className={`chevron-icon ${isSubmenuOpen ? 'rotate' : ''}`}
+                      className={`chevron-icon ${isExpanded ? 'rotate' : ''}`}
                       width="16"
                       height="16"
                       viewBox="0 0 24 24"
@@ -198,9 +225,9 @@ export const Sidebar = ({ isCollapsed, toggleSidebar }) => {
               </div>
 
               {!isCollapsed && (
-                <div className={`submenu-wrapper ${isSubmenuOpen ? 'expanded' : ''}`}>
+                <div className={`submenu-wrapper ${isExpanded ? 'expanded' : ''}`}>
                   <div className="submenu-list">
-                    {item.submenu.map((sub) => (
+                    {item.submenu.map(sub => (
                       <NavLink
                         key={sub.path}
                         to={sub.path}
@@ -218,7 +245,6 @@ export const Sidebar = ({ isCollapsed, toggleSidebar }) => {
         })}
       </nav>
 
-      {/* Botón de Salir */}
       <div className="sidebar-footer">
         <button className="btn-logout-sidebar" onClick={handleLogout} title="Cerrar Sesión">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

@@ -1,6 +1,6 @@
 package com.web.restaurante.service;
 
-import com.web.restaurante.model.CierreCajaSerie;
+import com.web.restaurante.model.caja.CierreCajaSerie;
 import com.web.restaurante.repository.CierreCajaSerieRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

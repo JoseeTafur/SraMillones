@@ -1,7 +1,8 @@
 package com.web.restaurante.controller;
 
 import com.web.restaurante.service.MetricasService;
-import com.web.restaurante.service.TurnoCajaService;
+import com.web.restaurante.service.caja.TurnoCajaService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

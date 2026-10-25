@@ -26,6 +26,7 @@
   padding: 1.2rem;
   border-radius: 18px;
   border: 1.5px solid #e2e8f0;
+  overflow-y: auto;
 }
 
 .pago-total-mesa-banner-xl {
@@ -63,7 +64,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  max-height: 180px;
+  max-height: 220px;
   overflow-y: auto;
   border: 1.5px solid #e2e8f0;
   padding: 0.6rem;
@@ -100,33 +101,48 @@
   color: #0f172a;
 }
 
+.c-pago-right {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.monto-prod {
+  font-weight: 800;
+  color: #0f172a;
+  font-size: 0.85rem;
+}
+
 .xl-select {
   padding: 0.7rem !important;
   font-size: 0.92rem !important;
 }
 
+/* Botones de división de modalidades */
 .division-mode-buttons-xl {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.6rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
 }
 
 .btn-div-mode-xl {
-  padding: 0.65rem;
+  padding: 0.65rem 0.3rem;
   border-radius: 12px;
   border: 1.5px solid #cbd5e1;
   background-color: #ffffff;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 800;
   color: #334155;
   cursor: pointer;
   transition: all 0.2s ease;
+  text-align: center;
 }
 
 .btn-div-mode-xl.active {
   background-color: #4a0811;
   border-color: #4a0811;
   color: #ffffff;
+  box-shadow: 0 4px 10px rgba(74, 8, 17, 0.2);
 }
 
 .cuadre-status-footer-xl {
@@ -146,7 +162,7 @@
   font-weight: 900;
 }
 
-/* Columna Derecha: Scroll de Tickets Más Grandes */
+/* Columna Derecha: Scroll Horizontal de Tickets Amplios */
 .pago-col-tickets-scroll-xl {
   display: flex;
   gap: 1.2rem;
@@ -169,6 +185,14 @@
   flex-direction: column;
   gap: 0.85rem;
   justify-content: space-between;
+  transition: all 0.25 ease;
+}
+
+/* Advertencia para Ticket Vacío */
+.ticket-card-box-xl.ticket-warning {
+  border-color: #fca5a5;
+  background-color: #fff5f5;
+  box-shadow: 0 6px 18px rgba(239, 68, 68, 0.1);
 }
 
 .ticket-top-header {
@@ -188,6 +212,16 @@
   border-radius: 20px;
 }
 
+.badge-ticket-vacio {
+  background-color: #fef2f2;
+  color: #991b1b;
+  font-weight: 800;
+  font-size: 0.72rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 12px;
+  border: 1px solid #fecaca;
+}
+
 .ticket-porcentaje-badge {
   font-size: 0.82rem;
   font-weight: 800;
@@ -201,7 +235,7 @@
 }
 
 .input-porcentaje-xl {
-  width: 55px;
+  width: 58px;
   padding: 0.25rem 0.4rem;
   border-radius: 8px;
   border: 1.5px solid #d97706;
@@ -243,6 +277,12 @@
   color: #334155;
   border-bottom: 1px dashed #fef3c7;
   padding-bottom: 0.2rem;
+}
+
+.empty-ticket-msg {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  font-style: italic;
 }
 
 .item-detail-left {
@@ -331,11 +371,49 @@
   color: #c2410c;
 }
 
+/* Botón Guardar / Confirmar */
 .btn-save-senior.green-glow-xl {
   background-color: #1a3827;
   color: #ffffff;
   padding: 0.8rem 1.6rem;
   font-size: 0.92rem;
+  border-radius: 12px;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-save-senior.green-glow-xl:hover:not(:disabled) {
+  background-color: #142a1d;
+  box-shadow: 0 4px 14px rgba(26, 56, 39, 0.35);
+}
+
+.btn-save-senior.btn-disabled {
+  background-color: #94a3b8 !important;
+  color: #f1f5f9 !important;
+  cursor: not-allowed !important;
+  opacity: 0.8;
+  box-shadow: none !important;
+}
+
+/* Dropdown para asignar cada producto a un ticket */
+.select-ticket-item-assign {
+  background-color: #f1f5f9;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.25rem 0.45rem;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #4a0811;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.select-ticket-item-assign:focus {
+  border-color: #4a0811;
+  background-color: #ffffff;
+  outline: none;
 }
 
 @media (max-width: 1024px) {

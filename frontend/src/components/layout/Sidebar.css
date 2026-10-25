@@ -320,3 +320,23 @@
   from { opacity: 0; transform: translateX(-6px); }
   to { opacity: 1; transform: translateX(0); }
 }
+
+/* Ajustes para la imagen del logo en la cabecera del Sidebar */
+.brand-logo-circle {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #4a0811;
+  border: 1.5px solid #fed7aa;
+}
+
+.sidebar-brand-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+}

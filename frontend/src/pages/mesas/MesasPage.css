@@ -161,3 +161,56 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* ENVOLTORIO PARA POSICIONAMIENTO DE ETIQUETA EN ESQUINA */
+.mesa-card-relative-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ETIQUETA EN LA ESQUINA SUPERIOR DERECHA DE CADA MESA */
+.badge-corner-status {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 5;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+
+/* VERDE -> LIBRE */
+.badge-corner-status.libre {
+  background-color: #d1fae5;
+  color: #047857;
+  border: 1px solid #6ee7b7;
+}
+
+/* ROJO -> OCUPADO */
+.badge-corner-status.ocupado {
+  background-color: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+  animation: pulseRed 2s infinite;
+}
+
+@keyframes pulseRed {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.empty-mesas-msg {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 2.5rem;
+  color: #64748b;
+  font-weight: 600;
+}
