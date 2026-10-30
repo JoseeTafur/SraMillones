@@ -1,0 +1,194 @@
+/* ===================================================
+   GESTIÓN DE USUARIOS - ESTILOS BASE Y ACCIONES
+   =================================================== */
+
+.usuarios-page-container {
+  width: 100%;
+}
+
+.usuario-id-bold {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #475569;
+}
+
+.usuario-name {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.usuario-rol-text {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.usuario-email-text {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+/* Badge de Estado */
+.badge-estado-pill {
+  display: inline-block;
+  padding: 0.25rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.badge-estado-pill.activo {
+  background-color: #107c41;
+  color: #ffffff;
+}
+
+.badge-estado-pill.inactivo {
+  background-color: #ef4444;
+  color: #ffffff;
+}
+
+/* ===================================================
+   BOTONES DE ACCIÓN CUADRADOS REDONDEADOS
+   =================================================== */
+
+.acciones-buttons-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+}
+
+.btn-action-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px; /* BORDES CUADRADOS REDONDEADOS OFICIALES */
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+}
+
+/* Variante Editar (Crema / Naranja) */
+.btn-action-icon.edit {
+  background-color: #fef3c7;
+  color: #d97706;
+  border-color: #fde68a;
+}
+
+.btn-action-icon.edit:hover {
+  background-color: #d97706;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* Variante Ver Detalle (Verde Claro) */
+.btn-action-icon.view {
+  background-color: #dcfce7;
+  color: #16a34a;
+  border-color: #bbf7d0;
+}
+
+.btn-action-icon.view:hover {
+  background-color: #16a34a;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* Variante Eliminar / Desactivar (Rojo Claro) */
+.btn-action-icon.delete {
+  background-color: #fee2e2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.btn-action-icon.delete:hover {
+  background-color: #dc2626;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* ===================================================
+   MODALES DE USUARIO
+   =================================================== */
+
+.usuarios-form-body {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.usuarios-grid-2col {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.2rem;
+}
+
+.security-note-box {
+  background-color: #f8fafc;
+  border-left: 4px solid #0284c7;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+}
+
+.security-note-box p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #334155;
+  line-height: 1.4;
+}
+
+.usuario-detalle-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  background-color: #f8fafc;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.detalle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px dashed #cbd5e1;
+}
+
+.detalle-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.detalle-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.detalle-val {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.detalle-val.badge-rol {
+  background-color: #fff1f2;
+  color: #881337;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 640px) {
+  .usuarios-grid-2col {
+    grid-template-columns: 1fr;
+  }
+}

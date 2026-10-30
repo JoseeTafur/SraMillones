@@ -5,13 +5,12 @@ import com.web.restaurante.model.PagoDigital;
 import com.web.restaurante.model.Pedido;
 import com.web.restaurante.model.Producto;
 import com.web.restaurante.repository.CategoriaRepository;
-import com.web.restaurante.repository.InsumoProductoRepository;
 import com.web.restaurante.repository.PagoDigitalRepository;
 import com.web.restaurante.repository.ProductoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
+
 
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +22,6 @@ public class CartaService {
 
     private final ProductoRepository productoRepository;
     private final CategoriaRepository categoriaRepository;
-    private final InsumoProductoRepository insumoProductoRepository;
     private final PagoDigitalRepository pagoDigitalRepository;
     private final PedidoService pedidoService;
 
@@ -31,17 +29,15 @@ public class CartaService {
         return categoriaRepository.findAll();
     }
 
-    @Transactional
-    public Map<Long, Boolean> productosAgotados(){
+    @Transactional(readOnly = true)
+    public Map<Long, Boolean> productosAgotados() {
 
         List<Producto> listaProductos = productoRepository.findByEstado(1);
         Map<Long, Boolean> productosAgotados = new HashMap<>();
 
+        // Sin gestión de stock, todos los productos están disponibles por defecto (false = no agotado)
         for (Producto p : listaProductos) {
-            boolean agotado = insumoProductoRepository.findByProductoId(p.getId()).stream()
-                    .anyMatch(ip -> ip.getInsumo() != null && "PROTEINA".equalsIgnoreCase(ip.getInsumo().getCategoria())
-                            && (ip.getInsumo().getStockActual() != null ? ip.getInsumo().getStockActual() : 0.0) < (ip.getCantidadUsada() != null ? ip.getCantidadUsada() : 0.0));
-            productosAgotados.put(p.getId(), agotado);
+            productosAgotados.put(p.getId(), false);
         }
 
         return productosAgotados;

@@ -1,6 +1,8 @@
 package com.web.restaurante.controller;
 
+import com.web.restaurante.model.Cargo;
 import com.web.restaurante.model.Empleado;
+import com.web.restaurante.model.Usuario;
 import com.web.restaurante.service.EmpleadoService;
 import com.web.restaurante.service.UsuarioService;
 import com.web.restaurante.util.ValidationUtil;
@@ -8,32 +10,22 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@RestController
+@RequestMapping("/api/empleados")
 @RequiredArgsConstructor
-@Controller
-@RequestMapping("/empleados")
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class EmpleadoController {
 
     private final EmpleadoService empleadoService;
     private final UsuarioService usuarioService;
 
     @GetMapping
-    public String mostrarPagina(Model model) {
-        model.addAttribute("activeUri", "/empleados");
-        model.addAttribute("titleHeader", "Control de Empleados y Planillas");
-
-        return "empleados";
-    }
-
-    @GetMapping("/api/listar")
-    @ResponseBody
     public ResponseEntity<?> listar() {
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
@@ -41,8 +33,7 @@ public class EmpleadoController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/api/cargos")
-    @ResponseBody
+    @GetMapping("/cargos")
     public ResponseEntity<?> listarCargos() {
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
@@ -50,8 +41,7 @@ public class EmpleadoController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/api/usuarios-disponibles")
-    @ResponseBody
+    @GetMapping("/usuarios-disponibles")
     public ResponseEntity<?> listarUsuariosDisponibles() {
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
@@ -59,9 +49,8 @@ public class EmpleadoController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/api/obtener/{id}")
-    @ResponseBody
-    public ResponseEntity<?> obtener(@PathVariable Long id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<?> obtenerPorId(@PathVariable Long id) {
         return empleadoService.obtenerPorId(id)
                 .map(emp -> {
                     Map<String, Object> response = new HashMap<>();
@@ -72,14 +61,13 @@ public class EmpleadoController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/api/buscar")
-    @ResponseBody
+    @GetMapping("/buscar")
     public ResponseEntity<?> buscar(@RequestParam(required = false) String termino,
                                     @RequestParam(required = false) String turno) {
         Map<String, Object> response = new HashMap<>();
         List<Empleado> resultado;
 
-        if (turno != null && !turno.isBlank()) {
+        if (turno != null && !turno.isBlank() && !"TODOS".equalsIgnoreCase(turno)) {
             resultado = empleadoService.buscarPorTurno(turno);
         } else {
             resultado = empleadoService.buscarPorTermino(termino);
@@ -90,18 +78,11 @@ public class EmpleadoController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/api/guardar")
-    @ResponseBody
+    @PostMapping("/guardar")
     public ResponseEntity<?> guardar(@RequestBody Empleado empleado, HttpSession session) {
         Map<String, Object> response = new HashMap<>();
         try {
-            String rol = session.getAttribute("rol") != null ? session.getAttribute("rol").toString().toUpperCase() : "";
-            if (!"SUPER_ADMIN".equals(rol) && !"ADMIN".equals(rol)) {
-                response.put("success", false);
-                response.put("message", "Acceso denegado: Rango insuficiente para alterar el registro de personal.");
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
-            }
-
+            // Validaciones de negocio y campos
             if (empleado.getNombre() == null || empleado.getNombre().isBlank()) {
                 response.put("success", false);
                 response.put("message", "El nombre del empleado es obligatorio.");
@@ -109,12 +90,7 @@ public class EmpleadoController {
             }
             if (!ValidationUtil.soloLetras(empleado.getNombre())) {
                 response.put("success", false);
-                response.put("message", "El nombre solo puede contener letras, sin números ni caracteres especiales.");
-                return ResponseEntity.badRequest().body(response);
-            }
-            if (!ValidationUtil.longitudValida(empleado.getNombre(), ValidationUtil.NOMBRE_MAX)) {
-                response.put("success", false);
-                response.put("message", "El nombre no puede superar los " + ValidationUtil.NOMBRE_MAX + " caracteres.");
+                response.put("message", "El nombre solo puede contener letras.");
                 return ResponseEntity.badRequest().body(response);
             }
 
@@ -125,30 +101,16 @@ public class EmpleadoController {
             }
             if (!ValidationUtil.soloLetras(empleado.getApellido())) {
                 response.put("success", false);
-                response.put("message", "El apellido solo puede contener letras, sin números ni caracteres especiales.");
-                return ResponseEntity.badRequest().body(response);
-            }
-            if (!ValidationUtil.longitudValida(empleado.getApellido(), ValidationUtil.APELLIDO_MAX)) {
-                response.put("success", false);
-                response.put("message", "El apellido no puede superar los " + ValidationUtil.APELLIDO_MAX + " caracteres.");
+                response.put("message", "El apellido solo puede contener letras.");
                 return ResponseEntity.badRequest().body(response);
             }
 
-            if (empleado.getTelefono() == null || empleado.getTelefono().isBlank()) {
-                response.put("success", false);
-                response.put("message", "El número de teléfono es obligatorio.");
-                return ResponseEntity.badRequest().body(response);
-            }
-            if (!empleado.getTelefono().trim().matches("^[0-9]{" + ValidationUtil.TELEFONO_EXACTO + "}$")) {
-                response.put("success", false);
-                response.put("message", "El teléfono debe tener exactamente " + ValidationUtil.TELEFONO_EXACTO + " dígitos numéricos.");
-                return ResponseEntity.badRequest().body(response);
-            }
-
-            if (empleado.getFechaIngreso() != null && !ValidationUtil.fechaDentroDeRango(empleado.getFechaIngreso())) {
-                response.put("success", false);
-                response.put("message", "La fecha de ingreso no es válida. No puede ser una fecha futura.");
-                return ResponseEntity.badRequest().body(response);
+            if (empleado.getTelefono() != null && !empleado.getTelefono().isBlank()) {
+                if (!empleado.getTelefono().trim().matches("^[0-9]{" + ValidationUtil.TELEFONO_EXACTO + "}$")) {
+                    response.put("success", false);
+                    response.put("message", "El teléfono debe tener exactamente " + ValidationUtil.TELEFONO_EXACTO + " dígitos.");
+                    return ResponseEntity.badRequest().body(response);
+                }
             }
 
             Empleado guardado = empleadoService.guardar(empleado);
@@ -170,18 +132,10 @@ public class EmpleadoController {
         }
     }
 
-    @PostMapping("/api/cambiar-estado/{id}")
-    @ResponseBody
-    public ResponseEntity<?> cambiarEstado(@PathVariable Long id, HttpSession session) {
+    @PostMapping("/cambiar-estado/{id}")
+    public ResponseEntity<?> cambiarEstado(@PathVariable Long id) {
         Map<String, Object> response = new HashMap<>();
         try {
-            String rol = session.getAttribute("rol") != null ? session.getAttribute("rol").toString().toUpperCase() : "";
-            if (!"SUPER_ADMIN".equals(rol)) {
-                response.put("success", false);
-                response.put("message", "Operación denegada: Solo el rango SUPER_ADMIN puede alterar la disponibilidad de personal.");
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
-            }
-
             Empleado emp = empleadoService.alternarEstado(id);
             response.put("success", true);
             response.put("message", "Estado del empleado actualizado correctamente");
@@ -198,21 +152,13 @@ public class EmpleadoController {
         }
     }
 
-    @DeleteMapping("/api/eliminar/{id}")
-    @ResponseBody
-    public ResponseEntity<?> eliminar(@PathVariable Long id, HttpSession session) {
+    @DeleteMapping("/eliminar/{id}")
+    public ResponseEntity<?> eliminar(@PathVariable Long id) {
         Map<String, Object> response = new HashMap<>();
         try {
-            String rol = session.getAttribute("rol") != null ? session.getAttribute("rol").toString().toUpperCase() : "";
-            if (!"SUPER_ADMIN".equals(rol)) {
-                response.put("success", false);
-                response.put("message", "Operación denegada: Privilegio exclusivo de la cuenta maestra SUPER_ADMIN.");
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
-            }
-
             empleadoService.eliminar(id);
             response.put("success", true);
-            response.put("message", "Empleado purgado correctamente de los registros de planilla.");
+            response.put("message", "Empleado desactivado correctamente.");
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             response.put("success", false);

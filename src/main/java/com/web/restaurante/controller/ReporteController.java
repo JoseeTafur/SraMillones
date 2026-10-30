@@ -1,6 +1,6 @@
 package com.web.restaurante.controller;
 
-import com.web.restaurante.model.TurnoCaja;
+import com.web.restaurante.model.caja.TurnoCaja;
 import com.web.restaurante.repository.MovimientoCajaRepository;
 import com.web.restaurante.repository.TurnoCajaRepository;
 import com.web.restaurante.service.ReporteComprobantesService;

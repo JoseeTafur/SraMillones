@@ -1,6 +1,7 @@
 package com.web.restaurante.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.web.restaurante.model.caja.TurnoCaja;
 import com.web.restaurante.model.enums.EstadoPago;
 import com.web.restaurante.model.enums.EstadoPedido;
 import com.web.restaurante.model.enums.MetodoPago;
@@ -25,16 +26,13 @@ public class Pedido {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private boolean frioListo = false;
-    private boolean calienteListo = false;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_repartidor")
     @JsonIgnoreProperties("pedidos")
     private Empleado repartidor;
 
     @Column(name = "cliente_nombre", nullable = false)
-    private String cliente;
+    private String cliente = "PÚBLICO GENERAL";
 
     @Column(name = "direccion_entrega", nullable = false)
     private String direccion;
@@ -53,6 +51,25 @@ public class Pedido {
         if (this.estadoPago == null) {
             this.estadoPago = EstadoPago.PENDIENTE;
         }
+        if (this.cliente == null || this.cliente.trim().isEmpty()) {
+            this.cliente = "PÚBLICO GENERAL";
+        }
+    }
+
+    public String getCliente() {
+        return this.cliente;
+    }
+
+    public void setCliente(String cliente) {
+        this.cliente = cliente;
+    }
+
+    public String getClienteNombre() {
+        return this.cliente;
+    }
+
+    public void setClienteNombre(String clienteNombre) {
+        this.cliente = clienteNombre;
     }
 
     private Double latitud;
@@ -141,6 +158,7 @@ public class Pedido {
     @Column(name = "es_nota_venta", nullable = false)
     private boolean esNotaVenta = false;
 
+    // 🍳 Métodos de Cocina Única Unificada
     public boolean isListoParaServir() {
         if (this.estado == EstadoPedido.PREPARADO || this.estado == EstadoPedido.ASIGNADO) {
             return true;
@@ -148,33 +166,7 @@ public class Pedido {
         if (this.estado != EstadoPedido.EN_COCINA) {
             return false;
         }
-
-        boolean tieneFrio = false;
-        boolean tieneCaliente = false;
-
-        if (this.listaDetalles != null) {
-            for (DetallePedido d : this.listaDetalles) {
-                if (d.getProducto() != null && d.getProducto().getCategoria() != null) {
-                    String catNombre = d.getProducto().getCategoria().getNombre().toUpperCase();
-                    if (catNombre.contains("FRI") || catNombre.contains("FRÍ")) {
-                        tieneFrio = true;
-                    }
-                    if (catNombre.contains("CALIENTE")) {
-                        tieneCaliente = true;
-                    }
-                }
-            }
-        }
-
-        if (tieneFrio && tieneCaliente) {
-            return this.frioListo && this.calienteListo;
-        } else if (tieneFrio) {
-            return this.frioListo;
-        } else if (tieneCaliente) {
-            return this.calienteListo;
-        }
-
-        return false;
+        return todosPlatosMicroEntregados() || (this.listaDetalles != null && this.listaDetalles.stream().allMatch(DetallePedido::isCocinado));
     }
 
     public boolean tienePlatosMicroParaRecoger() {

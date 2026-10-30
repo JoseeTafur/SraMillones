@@ -35,3 +35,4 @@ build/
 src/main/resources/application-dev.properties
 
 node_modules/
+frontend/node_modules/

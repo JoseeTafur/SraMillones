@@ -1,4 +1,4 @@
-package com.web.restaurante.controller;
+/*package com.web.restaurante.controller;
 
 import com.web.restaurante.model.Empleado;
 import com.web.restaurante.model.Opcion;
@@ -230,4 +230,4 @@ public class LoginController {
             return "login";
         }
     }
-}
+}*/

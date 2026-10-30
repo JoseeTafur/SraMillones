@@ -1,0 +1,152 @@
+/* ===================================================
+   CONTENEDOR FLOTANTE (MÁXIMA JERARQUÍA / Z-INDEX)
+   =================================================== */
+.toast-floating-container {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 10005 !important; /* Capa superior a los modales (9999) */
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  pointer-events: none; /* Permite interactuar con la pantalla por detrás */
+}
+
+/* Permitir clic dentro del cuerpo de la tarjeta del Toast */
+.toast-floating-container > * {
+  pointer-events: auto;
+}
+
+/* ===================================================
+   TARJETA BASE DEL TOAST
+   =================================================== */
+/* Animación de entrada por la derecha */
+.toast-card {
+  width: 330px;
+  height: 80px;
+  border-radius: 8px;
+  box-sizing: border-box;
+  padding: 10px 15px;
+  background-color: #ffffff;
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 10px 30px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 15px;
+  animation: slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: all 0.35s ease;
+}
+
+/* Animación de salida con Blur y desvanecimiento hacia la derecha */
+.toast-card.leaving {
+  animation: fadeOutBlur 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%) scale(0.95);
+    opacity: 0;
+    filter: blur(4px);
+  }
+  to {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+    filter: blur(0px);
+  }
+}
+
+@keyframes fadeOutBlur {
+  from {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+    filter: blur(0px);
+  }
+  to {
+    transform: translateX(30px) scale(0.95);
+    opacity: 0;
+    filter: blur(8px);
+  }
+}
+
+.toast-wave {
+  position: absolute;
+  transform: rotate(90deg);
+  left: -31px;
+  top: 32px;
+  width: 80px;
+}
+
+.toast-icon-container {
+  width: 35px;
+  height: 35px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.toast-icon {
+  width: 17px;
+  height: 17px;
+}
+
+.toast-text-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  flex-grow: 1;
+}
+
+.toast-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: default;
+}
+
+.toast-subtext {
+  margin: 0;
+  font-size: 13px;
+  color: #555;
+  cursor: default;
+}
+
+.toast-cross-icon {
+  width: 18px;
+  height: 18px;
+  color: #555;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.2s ease;
+}
+
+.toast-cross-icon:hover {
+  opacity: 0.7;
+}
+
+/* ===================================================
+   VARIANTES DE COLOR
+   =================================================== */
+
+/* VARIANTE: WARNING */
+.toast-warning .toast-wave { fill: #ffa30d3a; }
+.toast-warning .toast-icon-container { background-color: #ffa30d48; }
+.toast-warning .toast-icon { color: #db970e; }
+.toast-warning .toast-title { color: #db970e; }
+
+/* VARIANTE: ERROR */
+.toast-error .toast-wave { fill: #fc0c0c3a; }
+.toast-error .toast-icon-container { background-color: #fc0c0c48; }
+.toast-error .toast-icon { color: #d10d0d; }
+.toast-error .toast-title { color: #d10d0d; }
+
+/* VARIANTE: INFO */
+.toast-info .toast-wave { fill: #4777ff3a; }
+.toast-info .toast-icon-container { background-color: #4777ff48; }
+.toast-info .toast-icon { color: #124fff; }
+.toast-info .toast-title { color: #124fff; }

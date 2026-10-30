@@ -18,8 +18,8 @@ import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.web.restaurante.model.Pedido;
+import com.web.restaurante.model.caja.TurnoCaja;
 import com.web.restaurante.model.MovimientoCaja;
-import com.web.restaurante.model.TurnoCaja;
 import com.web.restaurante.repository.PedidoRepository;
 import com.web.restaurante.repository.MovimientoCajaRepository;
 import com.web.restaurante.repository.TurnoCajaRepository;

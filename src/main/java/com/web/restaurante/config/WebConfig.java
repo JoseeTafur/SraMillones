@@ -31,6 +31,20 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(sessionInterceptor)
                 .addPathPatterns("/**")
                 .excludePathPatterns(
+                        "/api/auth/**",
+                        "/api/admin/productos/**",
+                        "/api/admin/cocina/**",
+                        "/api/mesero/**",
+                        "/api/admin/productos-precios/**",
+                        "/api/mesas/**",
+                        "/api/comandas/**",
+                        "/api/caja/**",
+                        "/api/mi-perfil/**",
+                        "/api/empleados/**",
+                        "/api/reservas/**",
+                        "/perfiles/**",
+                        "/api/usuarios/**",
+                        "/api/perfiles/**",
                         "/carta/**",
                         "/admin/pagos-digitales/api/guardar",
                         "/admin/pagos-digitales/api/actualizar-imagen/**",
@@ -50,8 +64,9 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(@NonNull CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:8080", "http://localhost:3000")
+                .allowedOrigins("http://localhost:8080", "http://localhost:3000", "http://localhost:5173")
                 .allowedMethods("GET", "PATCH", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
                 .allowCredentials(true);
     }
 }

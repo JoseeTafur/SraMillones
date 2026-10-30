@@ -1,0 +1,216 @@
+/* ===================================================
+   PLANO DE DISTRIBUCIÓN DE MESAS - LA JAMA
+   =================================================== */
+
+.mesas-page-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.mesas-header-banner {
+  background: linear-gradient(135deg, #4a0811 0%, #290409 100%);
+  border-radius: 20px;
+  padding: 1.25rem 1.6rem;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  box-shadow: 0 4px 14px rgba(74, 8, 17, 0.15);
+  border: 1px solid #881337;
+}
+
+.banner-main-title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: -0.3px;
+  color: #ffffff;
+}
+
+.banner-sub-text {
+  margin: 0.2rem 0 0 0;
+  font-size: 0.8rem;
+  color: #fef3c7;
+  font-weight: 600;
+}
+
+.mesas-legend-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 0.4rem 0.6rem;
+  border-radius: 30px;
+  border: 1px solid rgba(217, 119, 6, 0.3);
+  flex-wrap: wrap;
+}
+
+.legend-badge {
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.legend-badge.libre { background-color: #16a34a; color: #ffffff; }
+.legend-badge.en-cocina { background-color: #dc2626; color: #ffffff; }
+.legend-badge.para-recoger { background-color: #d97706; color: #ffffff; }
+.legend-badge.listo-pagar { background-color: #ffffff; color: #0f172a; }
+.legend-badge.unificada { background-color: #7e22ce; color: #ffffff; }
+
+.mesas-navigation-bar {
+  display: flex;
+  justify-content: center;
+}
+
+.pills-tabs-center {
+  display: flex;
+  background-color: #f8fafc;
+  padding: 0.3rem;
+  border-radius: 14px;
+  gap: 0.3rem;
+  border: 1.5px solid #e2e8f0;
+}
+
+.tab-pill-btn {
+  padding: 0.55rem 1.2rem;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-pill-btn.active {
+  background-color: #4a0811;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(74, 8, 17, 0.25);
+}
+
+.mesas-grid-card-wrapper {
+  background-color: #ffffff;
+  border-radius: 20px;
+  border: 1.5px solid #e2e8f0;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.mesas-grid-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mesas-grid-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #4a0811;
+}
+
+.mesas-grid-title h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.btn-asignar-reservas {
+  background-color: #fffbeb;
+  border: 1.5px solid #fef3c7;
+  color: #b45309;
+  padding: 0.45rem 0.9rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-asignar-reservas:hover {
+  background-color: #d97706;
+  border-color: #d97706;
+  color: #ffffff;
+}
+
+.mesas-layout-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.85rem;
+}
+
+@media (max-width: 1280px) {
+  .mesas-layout-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .mesas-layout-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ENVOLTORIO PARA POSICIONAMIENTO DE ETIQUETA EN ESQUINA */
+.mesa-card-relative-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ETIQUETA EN LA ESQUINA SUPERIOR DERECHA DE CADA MESA */
+.badge-corner-status {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 5;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+
+/* VERDE -> LIBRE */
+.badge-corner-status.libre {
+  background-color: #d1fae5;
+  color: #047857;
+  border: 1px solid #6ee7b7;
+}
+
+/* ROJO -> OCUPADO */
+.badge-corner-status.ocupado {
+  background-color: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+  animation: pulseRed 2s infinite;
+}
+
+@keyframes pulseRed {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.empty-mesas-msg {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 2.5rem;
+  color: #64748b;
+  font-weight: 600;
+}

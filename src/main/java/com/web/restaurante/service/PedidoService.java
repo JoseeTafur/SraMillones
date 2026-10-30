@@ -5,6 +5,8 @@ import com.web.restaurante.model.enums.EstadoPago;
 import com.web.restaurante.model.enums.EstadoPedido;
 import com.web.restaurante.model.enums.TipoPedido;
 import com.web.restaurante.repository.*;
+import com.web.restaurante.service.caja.TurnoCoreService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,15 +20,17 @@ import java.util.*;
 public class PedidoService {
 
     private final PedidoRepository pedidoRepository;
-    private final TurnoCajaService turnoCajaService;
+    private final TurnoCoreService turnoCoreService;
     private final MesaRepository mesaRepository;
     private final ProductoRepository productoRepository;
-    private final InsumoProductoRepository insumoProductoRepository;
 
     @Transactional
     public Pedido guardar(Pedido pedido) {
         if (pedido.getId() == null) {
             pedido.setFechaCreacion(LocalDateTime.now());
+        }
+        if (pedido.getClienteNombre() == null || pedido.getClienteNombre().trim().isEmpty()) {
+            pedido.setClienteNombre("PÚBLICO GENERAL");
         }
         return pedidoRepository.save(pedido);
     }
@@ -75,20 +79,21 @@ public class PedidoService {
             }
         }
 
+        if (pedido.getClienteNombre() == null || pedido.getClienteNombre().trim().isEmpty()) {
+            pedido.setClienteNombre("PÚBLICO GENERAL");
+        }
+
         if (pedido.getEstadoPago() == null) {
             pedido.setEstadoPago(EstadoPago.PENDIENTE);
         }
 
         if (pedido.getTurnoCaja() == null) {
-            turnoCajaService.obtenerTurnoActivo().ifPresent(pedido::setTurnoCaja);
+            turnoCoreService.obtenerTurnoActivo().ifPresent(pedido::setTurnoCaja);
         }
 
         if (pedido.getListaDetalles() != null) {
             for (DetallePedido detalle : pedido.getListaDetalles()) {
                 detalle.setPedido(pedido);
-                if (detalle.getId() == null && !detalle.isCanceladoPorCliente()) {
-                    comprometerStockPorReceta(detalle);
-                }
             }
         }
         pedidoRepository.save(pedido);
@@ -104,8 +109,11 @@ public class PedidoService {
 
             pedidoFinal.setEstado(EstadoPedido.EN_COCINA);
             pedidoFinal.setEstadoPago(EstadoPago.PENDIENTE);
-            pedidoFinal.setCliente(pedidoDeFrontend.getCliente());
             pedidoFinal.setDireccion(pedidoDeFrontend.getDireccion());
+
+            if (pedidoDeFrontend.getClienteNombre() != null && !pedidoDeFrontend.getClienteNombre().trim().isEmpty()) {
+                pedidoFinal.setClienteNombre(pedidoDeFrontend.getClienteNombre());
+            }
 
             if (pedidoDeFrontend.getListaDetalles() != null) {
                 for (DetallePedido nuevoDetalle : pedidoDeFrontend.getListaDetalles()) {
@@ -134,8 +142,12 @@ public class PedidoService {
             }
         }
 
+        if (pedidoFinal.getClienteNombre() == null || pedidoFinal.getClienteNombre().trim().isEmpty()) {
+            pedidoFinal.setClienteNombre("PÚBLICO GENERAL");
+        }
+
         if (pedidoFinal.getTurnoCaja() == null) {
-            turnoCajaService.obtenerTurnoActivo().ifPresent(pedidoFinal::setTurnoCaja);
+            turnoCoreService.obtenerTurnoActivo().ifPresent(pedidoFinal::setTurnoCaja);
         }
 
         if (mesaId != null) {
@@ -144,22 +156,6 @@ public class PedidoService {
             mesa.setEstado("OCUPADA");
             mesaRepository.save(mesa);
         }
-
-        boolean hayFrioPendiente = false;
-        boolean hayCalientePendiente = false;
-
-        if (pedidoFinal.getListaDetalles() != null) {
-            for (DetallePedido d : pedidoFinal.getListaDetalles()) {
-                if (d.getProducto() != null && d.getProducto().getCategoria() != null) {
-                    String cat = d.getProducto().getCategoria().getNombre().toUpperCase();
-                    if ((cat.contains("FRI") || cat.contains("FRÍ")) && !d.isCocinado()) hayFrioPendiente = true;
-                    if (cat.contains("CALIENTE") && !d.isCocinado()) hayCalientePendiente = true;
-                }
-            }
-        }
-
-        pedidoFinal.setFrioListo(!hayFrioPendiente);
-        pedidoFinal.setCalienteListo(!hayCalientePendiente);
 
         double totalAcumulado = 0;
         if (pedidoFinal.getListaDetalles() != null) {
@@ -182,8 +178,12 @@ public class PedidoService {
             pedido.setFechaCreacion(LocalDateTime.now());
         }
 
+        if (pedido.getClienteNombre() == null || pedido.getClienteNombre().trim().isEmpty()) {
+            pedido.setClienteNombre("PÚBLICO GENERAL");
+        }
+
         if (pedido.getTurnoCaja() == null) {
-            turnoCajaService.obtenerTurnoActivo().ifPresent(pedido::setTurnoCaja);
+            turnoCoreService.obtenerTurnoActivo().ifPresent(pedido::setTurnoCaja);
         }
 
         if (pedido.getListaDetalles() != null) {
@@ -192,9 +192,6 @@ public class PedidoService {
                 detalle.setCocinado(false);
                 detalle.setEntregado(false);
                 detalle.setCanceladoPorCliente(false);
-                if (detalle.getId() == null) {
-                    comprometerStockPorReceta(detalle);
-                }
             }
         }
 
@@ -250,7 +247,7 @@ public class PedidoService {
         pedido.setFechaEntrega(LocalDateTime.now());
 
         if (pedido.getTurnoCaja() == null) {
-            turnoCajaService.obtenerTurnoActivo().ifPresent(pedido::setTurnoCaja);
+            turnoCoreService.obtenerTurnoActivo().ifPresent(pedido::setTurnoCaja);
         }
 
         if (EstadoPago.PAGADO.equals(pedido.getEstadoPago())) {
@@ -273,7 +270,7 @@ public class PedidoService {
         pedido.setEstado(EstadoPedido.ASIGNADO);
 
         if (pedido.getTurnoCaja() == null) {
-            turnoCajaService.obtenerTurnoActivo().ifPresent(pedido::setTurnoCaja);
+            turnoCoreService.obtenerTurnoActivo().ifPresent(pedido::setTurnoCaja);
         }
         pedidoRepository.save(pedido);
     }
@@ -289,21 +286,7 @@ public class PedidoService {
         Map<Long, Boolean> productosAgotados = new HashMap<>();
 
         for (Producto p : listaProductos) {
-            boolean agotado = false;
-            List<InsumoProducto> receta = insumoProductoRepository.findByProductoId(p.getId());
-
-            for (InsumoProducto ip : receta) {
-                if (ip.getInsumo() != null && "PROTEINA".equalsIgnoreCase(ip.getInsumo().getCategoria())) {
-                    double stockDisponibleReal = ip.getInsumo().getStockDisponible() != null ? ip.getInsumo().getStockDisponible() : 0.0;
-                    double cantidadRequerida = ip.getCantidadUsada() != null ? ip.getCantidadUsada() : 0.0;
-
-                    if (stockDisponibleReal < cantidadRequerida) {
-                        agotado = true;
-                        break;
-                    }
-                }
-            }
-            productosAgotados.put(p.getId(), agotado);
+            productosAgotados.put(p.getId(), false);
         }
         return productosAgotados;
     }
@@ -329,19 +312,5 @@ public class PedidoService {
                 })
                 .sorted(Comparator.comparing(Pedido::getFechaCreacion).reversed())
                 .toList();
-    }
-
-    private void comprometerStockPorReceta(DetallePedido detalle) {
-        if (detalle.getProducto() != null) {
-            insumoProductoRepository.findByProductoId(detalle.getProducto().getId()).forEach(ip -> {
-                if (ip.getInsumo() != null) {
-                    Insumo insumo = ip.getInsumo();
-                    double cantidadUsada = (ip.getCantidadUsada() != null) ? ip.getCantidadUsada() : 0.0;
-                    double totalAComprometer = cantidadUsada * detalle.getCantidad();
-                    double actualComprometido = (insumo.getStockComprometido() != null) ? insumo.getStockComprometido() : 0.0;
-                    insumo.setStockComprometido(actualComprometido + totalAComprometer);
-                }
-            });
-        }
     }
 }

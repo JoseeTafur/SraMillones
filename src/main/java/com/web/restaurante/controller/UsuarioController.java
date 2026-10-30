@@ -18,7 +18,8 @@ import java.util.Map;
 import java.util.Objects;
 
 @RequiredArgsConstructor
-@Controller
+@RestController 
+@CrossOrigin(origins = "http://localhost:5173") 
 @RequestMapping("/usuarios")
 public class UsuarioController {
     private final UsuarioService usuarioService;
@@ -66,56 +67,43 @@ public class UsuarioController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/api/guardar")
-    @ResponseBody
+   @PostMapping("/api/guardar") // 🟢 Agregamos /api/ para que la URL completa sea /usuarios/api/guardar
     public ResponseEntity<?> guardarUsuarioAjax(@RequestBody Usuario usuario, BindingResult bindingResult, HttpSession session) {
         Map<String, Object> response = new HashMap<>();
 
         if (bindingResult.hasErrors()) {
-            Map<String, String> errores = new HashMap<>();
-            bindingResult.getFieldErrors().forEach(error -> errores.put(error.getField(), error.getDefaultMessage()));
-            response.put("success", false);
-            response.put("message", "Datos inválidos en el formulario.");
-            response.put("errors", errores);
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Datos inválidos en el formulario."));
         }
 
         try {
-            String rol = session.getAttribute("rol") != null
-                    ? session.getAttribute("rol").toString().trim().toUpperCase() : "";
-            boolean esSuperAdmin = "SUPER_ADMIN".equals(rol);
-            boolean esAdmin = "ADMIN".equals(rol);
+            String rolSesion = session.getAttribute("rol") != null 
+                    ? session.getAttribute("rol").toString().trim().toUpperCase() 
+                    : "";
+
+            if (rolSesion.isEmpty() && session.getAttribute("datosSesion") != null) {
+                com.web.restaurante.dto.login.LoginResponseDTO dto = 
+                    (com.web.restaurante.dto.login.LoginResponseDTO) session.getAttribute("datosSesion");
+                if (dto != null && dto.getRol() != null) {
+                    rolSesion = dto.getRol().trim().toUpperCase();
+                }
+            }
+
+            boolean esSuperAdmin = rolSesion.contains("SUPER");
+            boolean esAdmin = rolSesion.contains("ADMIN");
 
             if (usuario.getId() != null) {
                 Usuario existente = usuarioService.obtenerPorId(usuario.getId())
                         .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado en el sistema."));
 
-                String perfilExistente = existente.getPerfil() != null
-                        ? existente.getPerfil().getNombre().toUpperCase().replace(" ", "_") : "";
-                boolean objetivoEsAdmin = perfilExistente.contains("ADMIN") || perfilExistente.contains("ADMINISTRADOR");
-
-                if (esSuperAdmin) {
-                } else if (esAdmin) {
-                    if (objetivoEsAdmin) {
-                        response.put("success", false);
-                        response.put("message", "Operación rechazada: No tienes permisos para modificar cuentas administradoras.");
-                        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
-                    }
-                    usuario.setClave(existente.getClave());
-                    usuario.setPerfil(existente.getPerfil());
-                } else {
+                if (!esSuperAdmin && !esAdmin) {
                     response.put("success", false);
                     response.put("message", "Acceso denegado: Tu rango no permite realizar modificaciones.");
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
                 }
-            }
 
-            if (!esSuperAdmin && usuario.getPerfil() != null && usuario.getPerfil().getId() != null) {
-                perfilService.obtenerPorId(usuario.getPerfil().getId()).ifPresent(p -> {
-                    if (p.getNombre().toUpperCase().replace(" ", "_").contains("SUPER_ADMIN")) {
-                        throw new IllegalArgumentException("Violación de seguridad: No puedes asignar rangos del tipo SUPER_ADMIN.");
-                    }
-                });
+                if (usuario.getPerfil() == null || usuario.getPerfil().getId() == null) {
+                    usuario.setPerfil(existente.getPerfil());
+                }
             }
 
             if (usuario.getId() != null && (usuario.getClave() == null || usuario.getClave().trim().isEmpty())) {
@@ -129,16 +117,9 @@ public class UsuarioController {
             response.put("message", usuario.getId() != null ? "Usuario actualizado correctamente" : "Usuario creado correctamente");
             return ResponseEntity.ok(response);
 
-        } catch (IllegalArgumentException e) {
-            response.put("success", false);
-            response.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
         } catch (Exception e) {
-            System.err.println("💥 COLLAPSE AT GUARDAR_USUARIO: " + e.getMessage());
             e.printStackTrace();
-            response.put("success", false);
-            response.put("message", "Error interno del servidor: " + e.getMessage());
-            return ResponseEntity.internalServerError().body(response);
+            return ResponseEntity.internalServerError().body(Map.of("success", false, "message", e.getMessage()));
         }
     }
 

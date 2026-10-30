@@ -34,12 +34,10 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
             "com.web.restaurante.model.enums.EstadoPedido.EN_CAMINO)")
     List<Pedido> buscarPedidosActivosPorRepartidor(@Param("idEmpleado") Long idEmpleado);
 
-    @Query("SELECT DISTINCT p FROM Pedido p " +
-            "JOIN p.listaDetalles d " +
-            "WHERE UPPER(d.producto.categoria.nombre) LIKE UPPER(CONCAT('%', :categoria, '%')) " +
-            "AND p.estado = com.web.restaurante.model.enums.EstadoPedido.EN_COCINA " +
-            "AND ((:categoria = 'FRI' AND p.frioListo = false) OR (:categoria = 'CALIENTE' AND p.calienteListo = false))")
-    List<Pedido> buscarPedidosPorCocina(@Param("categoria") String categoria);
+    @Query("SELECT DISTINCT p FROM Pedido p JOIN p.listaDetalles d " +
+       "WHERE p.estado = com.web.restaurante.model.enums.EstadoPedido.EN_COCINA " +
+       "AND d.cocinado = false AND d.canceladoPorCliente = false")
+List<Pedido> buscarPedidosPorCocina(@Param("categoria") String categoria);
 
     @Query("SELECT p FROM Pedido p WHERE " +
             "(p.numeroMesa IS NULL AND p.estado IN (com.web.restaurante.model.enums.EstadoPedido.EN_COCINA, com.web.restaurante.model.enums.EstadoPedido.PREPARADO)) " +

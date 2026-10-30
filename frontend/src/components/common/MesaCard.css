@@ -1,0 +1,95 @@
+/* ===================================================
+   TARJETA DE MESA OPERATIVA (ESTADOS DINÁMICOS)
+   =================================================== */
+
+.mesa-card-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 1.4rem 1rem;
+  border-radius: 18px;
+  background-color: #ffffff;
+  border: 2px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+  user-select: none;
+  min-height: 125px;
+}
+
+.mesa-card-box:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+.mesa-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.mesa-card-box:hover .mesa-card-icon {
+  transform: scale(1.08);
+}
+
+.mesa-card-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 900;
+  letter-spacing: -0.2px;
+}
+
+.mesa-card-amount {
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0.15rem 0.55rem;
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+/* ---------------------------------------------------
+   VARIACIONES DE COLOR POR ESTADO (FIDELIDAD CAPTURA)
+   --------------------------------------------------- */
+
+/* 1. MESA LIBRE (Verde Claro) */
+.mesa-card-box.state-libre {
+  background-color: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #166534;
+}
+.mesa-card-box.state-libre .mesa-card-icon { color: #15803d; }
+
+/* 2. MESA EN COCINA (Rojo / Guinda) */
+.mesa-card-box.state-en_cocina {
+  background-color: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+.mesa-card-box.state-en_cocina .mesa-card-icon { color: #dc2626; }
+
+/* 3. MESA PARA RECOGER (Naranja / Dorado) */
+.mesa-card-box.state-para_recoger {
+  background-color: #fffbeb;
+  border-color: #fde68a;
+  color: #92400e;
+}
+.mesa-card-box.state-para_recoger .mesa-card-icon { color: #d97706; }
+
+/* 4. MESA LISTO PARA PAGAR (Crema con Borde Dorado Suave) */
+.mesa-card-box.state-listo_para_pagar {
+  background-color: #ffffff;
+  border-color: #fed7aa;
+  color: #0f172a;
+}
+.mesa-card-box.state-listo_para_pagar .mesa-card-icon { color: #ea580c; }
+
+/* 5. MESA UNIFICADA (Morado) */
+.mesa-card-box.state-unificada {
+  background-color: #faf5ff;
+  border-color: #e9d5ff;
+  color: #6b21a8;
+}
+.mesa-card-box.state-unificada .mesa-card-icon { color: #7e22ce; }

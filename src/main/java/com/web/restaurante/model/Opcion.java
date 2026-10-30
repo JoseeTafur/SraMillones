@@ -19,4 +19,8 @@ public class Opcion {
 
     @Column(name="ruta")
     private String ruta;
+
+    // ↵ Agrega estas líneas
+    @Column(name="icono") 
+    private String icono; 
 }

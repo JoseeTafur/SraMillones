@@ -1,9 +1,6 @@
-package com.web.restaurante.controller;
+/*package com.web.restaurante.controller;
 
-import com.web.restaurante.dto.KardexProteinaDTO;
-import com.web.restaurante.dto.LoteInsumoDTO;
 import com.web.restaurante.dto.MovimientoPorcionesDTO;
-import com.web.restaurante.dto.ProduccionPorcionesDTO;
 import com.web.restaurante.service.ProteinaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -81,4 +78,4 @@ public class ProteinaController {
     public List<KardexProteinaDTO> obtenerKardex(@PathVariable Long idInsumo) {
         return proteinaService.obtenerKardexUnificado(idInsumo);
     }
-}
+}*/

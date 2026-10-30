@@ -1,0 +1,96 @@
+/* ===================================================
+   CAJA PAGE - ESTILOS GENERALES DEL MÓDULO (LA JAMA)
+   =================================================== */
+
+.caja-page-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.caja-loading-screen {
+  padding: 4rem;
+  text-align: center;
+  color: #4a0811;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+/* Badge Por Cobrar */
+.badge-por-cobrar {
+  background-color: #d97706;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 900;
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  display: inline-block;
+  box-shadow: 0 2px 6px rgba(217, 119, 6, 0.2);
+}
+
+/* Monto Destacado en Tablas */
+.precio-monto-destacado {
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: #4a0811;
+  background-color: #fff1f2;
+  padding: 0.25rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid #fecdd3;
+  display: inline-block;
+}
+
+/* Contenedor de Inputs de Precio */
+.price-input-wrapper.large {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.price-input-wrapper.large .currency-symbol {
+  position: absolute;
+  left: 1rem;
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: #4a0811;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.price-input-wrapper.large .price-input {
+  font-size: 1.2rem !important;
+  font-weight: 900 !important;
+  color: #4a0811 !important;
+  padding-left: 2.7rem !important;
+  border-radius: 12px !important;
+}
+
+/* Botones de Selección Operativa */
+.btn-operacion-v {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.65rem 0.8rem;
+  background-color: #ffffff;
+  border: 2px solid #cbd5e1;
+  border-radius: 12px;
+  color: #334155;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.btn-operacion-v.active.sumar {
+  background-color: #dcfce7;
+  border-color: #16a34a;
+  color: #15803d;
+}
+
+.btn-operacion-v.active.restar {
+  background-color: #fee2e2;
+  border-color: #dc2626;
+  color: #b91c1c;
+}

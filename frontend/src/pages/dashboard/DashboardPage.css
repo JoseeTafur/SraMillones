@@ -1,0 +1,247 @@
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Banner Principal */
+.welcome-banner {
+  background: linear-gradient(135deg, #4a0811 0%, #200307 100%);
+  border-radius: 16px;
+  padding: 1.8rem 2.2rem;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 10px 25px rgba(74, 8, 17, 0.2);
+}
+
+.welcome-banner h2 {
+  margin: 0 0 0.3rem 0;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.welcome-banner p {
+  margin: 0;
+  font-size: 0.88rem;
+  opacity: 0.8;
+}
+
+.banner-tag {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  padding: 0.4rem 0.9rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+/* Grilla de KPIs */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.2rem;
+}
+
+.kpi-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 1.2rem 1.4rem;
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+
+.kpi-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #fdf2f2;
+  color: #5c0a15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.kpi-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.kpi-title {
+  font-size: 0.78rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.kpi-value {
+  margin: 0.1rem 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.kpi-sub {
+  font-size: 0.72rem;
+  color: #16a34a;
+  font-weight: 600;
+}
+
+/* Estructura Inferior */
+.dashboard-grid-content {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 1.5rem;
+}
+
+.dash-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+}
+
+.dash-card-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #4a0811;
+  margin: 0 0 1.2rem 0;
+}
+
+/* Gráfico Circular SVG */
+.donut-chart-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.circular-chart {
+  max-width: 140px;
+}
+
+.circle-bg {
+  fill: none;
+  stroke: #f1f5f9;
+  stroke-width: 3.8;
+}
+
+.circle {
+  fill: none;
+  stroke-width: 3.8;
+  stroke-linecap: round;
+  stroke: #5c0a15;
+}
+
+.percentage {
+  fill: #1e293b;
+  font-weight: 800;
+  font-size: 0.5rem;
+  text-anchor: middle;
+}
+
+.chart-legend {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+
+.dot.occupied {
+  background: #5c0a15;
+}
+
+.dot.free {
+  background: #cbd5e1;
+}
+
+/* Lista de Platos Top */
+.top-dishes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.dish-row {
+  display: flex;
+  flex-direction: column;
+}
+
+.dish-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+  color: #334155;
+}
+
+.dish-count {
+  color: #5c0a15;
+}
+
+.progress-bar-bg {
+  height: 8px;
+  background: #f1f5f9;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #5c0a15 0%, #881337 100%);
+  border-radius: 10px;
+}
+
+/* Responsividad */
+@media (max-width: 900px) {
+  .dashboard-grid-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Backdrop con desenfoque progresivo y entrada suave */
+.modal-backdrop-custom {
+  position: fixed;
+  top: 0; 
+  left: 0; 
+  right: 0; 
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 1rem;
+  opacity: 0;
+  animation: backdropFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Tarjeta del modal con entrada de suave rebote */
+.modal-dialog-custom.elder-friendly {
+  background: #ffffff;
+  width: 100%;
+  max-width: 560px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+  transform: scale(0.92) translateY(12px);
+  animation: modalPopIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+

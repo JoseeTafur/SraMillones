@@ -1,9 +1,6 @@
-package com.web.restaurante.service;
+/*package com.web.restaurante.service;
 
-import com.web.restaurante.dto.KardexProteinaDTO;
-import com.web.restaurante.dto.LoteInsumoDTO;
 import com.web.restaurante.dto.MovimientoPorcionesDTO;
-import com.web.restaurante.dto.ProduccionPorcionesDTO;
 import com.web.restaurante.mapper.ProteinaMapper;
 import com.web.restaurante.model.*;
 import com.web.restaurante.repository.*;
@@ -268,4 +265,4 @@ public class ProteinaService {
         movimientoPorcionesRepository.saveAndFlush(mov);
         System.out.println("[La Jama - Logística] Venta procesada unitariamente de 1 en 1 para el Insumo ID: " + insumoId);
     }
-}
+}*/

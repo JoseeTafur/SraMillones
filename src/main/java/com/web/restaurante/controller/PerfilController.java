@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Controller
+@CrossOrigin(origins = "http://localhost:5173") 
 @RequestMapping("/perfiles")
 public class PerfilController {
     private final PerfilService perfilService;

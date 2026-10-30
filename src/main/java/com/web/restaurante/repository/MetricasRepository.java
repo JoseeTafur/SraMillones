@@ -24,12 +24,6 @@ public interface MetricasRepository extends JpaRepository<Pedido, Long> {
             "ORDER BY SUM(dp.cantidad) DESC")
     List<Map<String, Object>> kpiTopPlatosUltimos10Turnos(@Param("fechaLimite") LocalDateTime fechaLimite);
 
-    @Query("SELECT m.insumo.nombre AS nombre, SUM(m.cantidad) AS total " +
-            "FROM MovimientoInsumo m " +
-            "WHERE m.tipo = 'EGRESO' AND UPPER(m.insumo.categoria) LIKE '%PROTEIN%' AND m.fecha >= :fecha " +
-            "GROUP BY m.insumo.id, m.insumo.nombre")
-    List<Map<String, Object>> kpiConsumoProteinas(@Param("fecha") LocalDateTime fecha);
-
     @Query("SELECT UPPER(me.estado) AS estado, COUNT(me) AS total " +
             "FROM Mesa me " +
             "GROUP BY me.estado")

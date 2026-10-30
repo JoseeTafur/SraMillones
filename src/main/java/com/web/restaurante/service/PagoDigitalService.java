@@ -10,6 +10,8 @@ import com.web.restaurante.model.Pedido;
 import com.web.restaurante.model.enums.EstadoPedido;
 import com.web.restaurante.model.enums.SituacionPagoDigital;
 import com.web.restaurante.repository.PagoDigitalRepository;
+import com.web.restaurante.service.caja.TurnoCajaService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

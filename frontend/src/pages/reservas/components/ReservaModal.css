@@ -1,0 +1,135 @@
+/* ===================================================
+   ESTILOS DEL MODAL RESERVA - EXACTO MAQUETA
+   =================================================== */
+
+.reserva-dialog-box {
+  max-width: 680px !important;
+}
+
+.res-modal-header {
+  background: linear-gradient(135deg, #1b382b 0%, #0d1f17 100%) !important; /* Verde botánico */
+}
+
+.res-modal-body {
+  padding: 1.5rem !important;
+}
+
+.reserva-grid-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 1.2rem;
+}
+
+.res-col-left {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-group-res {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group-res.full-width {
+  margin-top: 1rem;
+}
+
+.form-row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+}
+
+/* Minicalendario Visual */
+.mini-calendar-box {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 0.85rem;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.cal-nav-btn {
+  border: 1.5px solid #cbd5e1;
+  background: #ffffff;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.cal-days-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #64748b;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 0.4rem;
+}
+
+.cal-days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.2rem;
+  text-align: center;
+}
+
+.cal-day {
+  font-size: 0.75rem;
+  padding: 0.3rem 0;
+}
+
+.cal-day.disabled {
+  color: #cbd5e1;
+}
+
+.cal-day-btn {
+  border: none;
+  background: transparent;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0.35rem 0;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #0f172a;
+  transition: all 0.2s ease;
+}
+
+.cal-day-btn:hover {
+  background-color: #f1f5f9;
+}
+
+.cal-day-btn.selected {
+  background-color: #1b382b;
+  color: #ffffff;
+  font-weight: 900;
+}
+
+.btn-save-senior.green-theme {
+  background: linear-gradient(135deg, #1b382b 0%, #0d1f17 100%) !important;
+}
+
+.btn-save-senior.green-theme:hover {
+  background: #0d1f17 !important;
+}
+
+@media (max-width: 640px) {
+  .reserva-grid-layout {
+    grid-template-columns: 1fr;
+  }
+}

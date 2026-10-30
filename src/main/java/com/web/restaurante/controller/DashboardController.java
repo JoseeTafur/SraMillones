@@ -1,10 +1,11 @@
 package com.web.restaurante.controller;
 
-import com.web.restaurante.model.TurnoCaja;
+import com.web.restaurante.model.caja.TurnoCaja;
 import com.web.restaurante.service.CajaService;
 import com.web.restaurante.service.EmpleadoService;
-import com.web.restaurante.service.TurnoCajaService;
 import com.web.restaurante.service.UsuarioService;
+import com.web.restaurante.service.caja.TurnoCajaService;
+
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -55,7 +56,6 @@ public class DashboardController {
 
         if ("SUPER_ADMIN".equals(rol) || "ADMIN".equals(rol)) {
             model.addAttribute("totalUsuarios",   usuarioService.contar());
-            model.addAttribute("totalEmpleados",  empleadoService.contar());
         }
 
         return "dashboard";
