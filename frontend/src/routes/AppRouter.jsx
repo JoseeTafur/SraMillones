@@ -15,6 +15,7 @@ import CajaPage from '../pages/caja/CajaPage';
 import MesasPage from '../pages/mesas/MesasPage';
 import CocinaPage from '../pages/cocina/CocinaPage';
 import ReservasPage from '../pages/reservas/ReservasPage';
+import ClientesPage from '../pages/clientes/ClientesPage';
 
 export const AppRouter = () => {
   return (
@@ -39,6 +40,7 @@ export const AppRouter = () => {
             <Route path="/admin/usuarios" element={<UsuariosPage />} />
             <Route path="/admin/perfiles" element={<RolesPage />} />
             <Route path="/admin/empleados" element={<EmpleadosPage />} />
+            <Route path="/admin/clientes" element={<ClientesPage />} />
             <Route path="/admin/mesas" element={<MesasPage />} />
             <Route path="/admin/cocina" element={<CocinaPage />} />
             <Route path="/admin/reservas" element={<ReservasPage />} />
