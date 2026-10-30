@@ -42,6 +42,12 @@ const productoService = {
   eliminarLogico: async (id) => {
     const response = await axios.put(`${API_BASE_URL}/eliminar/${id}`);
     return response.data;
+  },
+
+  // 🟢 NUEVO MÉTODO PÚBLICO AGREGADO AQUÍ
+  obtenerCartaPublica: async () => {
+    const response = await axios.get('http://localhost:8080/api/public/carta');
+    return response.data;
   }
 };
 

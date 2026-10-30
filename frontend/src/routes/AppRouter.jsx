@@ -2,7 +2,12 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '../context/AuthContext';
 import ProtectedRoute from '../components/common/ProtectedRoute';
+
+// Páginas Públicas
 import LoginPage from '../pages/admin/LoginPage';
+import CartaPublicaPage from '../pages/carta/CartaPublicaPage'; 
+
+// Layout y Páginas del Panel Administrativo
 import MainLayout from '../components/layout/MainLayout';
 import DashboardPage from '../pages/dashboard/DashboardPage';
 import ProductosPage from '../pages/productos/ProductosPage';
@@ -21,10 +26,11 @@ export const AppRouter = () => {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Ruta pública del Login */}
+          {/* 🟢 Rutas Públicas (Disponibles sin iniciar sesión y con acceso al AuthContext) */}
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/carta" element={<CartaPublicaPage />} />
 
-          {/* Rutas Administrativas Protegidas con MainLayout */}
+          {/* 🔒 Rutas Administrativas Protegidas con MainLayout */}
           <Route 
             element={
               <ProtectedRoute>
