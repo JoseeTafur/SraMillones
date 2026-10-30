@@ -1,3 +1,4 @@
+
 package com.web.restaurante.dto.productoprecio;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -16,8 +17,8 @@ public record ActualizacionPrecioDTO(
             @JsonProperty("nuevoPrecio") Double nuevoPrecio
     ) {
         this(
-            idProducto != null ? idProducto : id,
-            nuevoPrecio != null ? nuevoPrecio : precio
+                idProducto != null ? idProducto : id,
+                nuevoPrecio != null ? nuevoPrecio : precio
         );
     }
 }
