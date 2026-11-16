@@ -25,6 +25,9 @@ public class Producto {
 
     private Double precio;
 
+    @Column(name = "precio_delivery")
+    private Double precioDelivery;
+
     private Integer estado;
 
     @ManyToOne(fetch = FetchType.LAZY)

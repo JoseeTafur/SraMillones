@@ -4,7 +4,6 @@ import com.web.restaurante.dto.producto.ProductoRequestDTO;
 import com.web.restaurante.model.Producto;
 import com.web.restaurante.repository.CategoriaRepository;
 import com.web.restaurante.repository.ProductoRepository;
-import com.web.restaurante.service.CloudinaryService;
 import com.web.restaurante.util.ValidationUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -38,39 +37,41 @@ public class ProductoService {
     }
 
     @Transactional
-        public Producto guardarOEditar(ProductoRequestDTO dto) {
-    validarCamposNegocio(dto);
+    public Producto guardarOEditar(ProductoRequestDTO dto) {
+        validarCamposNegocio(dto);
 
-    Producto producto = new Producto();
-    if (dto.getId() != null) {
-        producto = productoRepository.findById(dto.getId())
-                .orElseThrow(() -> new RuntimeException("El producto que intenta editar no existe."));
-    }
-
-    producto.setNombre(dto.getNombre().trim());
-    producto.setDescripcion(dto.getDescripcion() != null ? dto.getDescripcion().trim() : null);
-    producto.setPrecio(dto.getPrecio());
-    
-    if (dto.getCategoriaId() != null) {
-        producto.setCategoria(categoriaRepository.findById(dto.getCategoriaId())
-                .orElseThrow(() -> new RuntimeException("La categoría especificada no existe.")));
-    }
-
-    if (dto.getArchivoImagen() != null && !dto.getArchivoImagen().isEmpty()) {
-        validarArchivoImagen(dto.getArchivoImagen());
-        try {
-            String urlSeguraNube = cloudinaryService.subirImagen(dto.getArchivoImagen());
-            producto.setImagen(urlSeguraNube);
-        } catch (IOException e) {
-            throw new RuntimeException("Error crítico al subir la imagen a Cloudinary.", e);
+        Producto producto = new Producto();
+        if (dto.getId() != null) {
+            producto = productoRepository.findById(dto.getId())
+                    .orElseThrow(() -> new RuntimeException("El producto que intenta editar no existe."));
         }
-    }
 
-    if (producto.getEstado() == null) {
-        producto.setEstado(1); 
-    }
+        producto.setNombre(dto.getNombre().trim());
+        producto.setDescripcion(dto.getDescripcion() != null ? dto.getDescripcion().trim() : null);
+        producto.setPrecio(dto.getPrecio());
 
-    return productoRepository.save(producto);
+        if (producto.getPrecioDelivery() == null) producto.setPrecioDelivery(producto.getPrecio());
+
+        if (dto.getCategoriaId() != null) {
+            producto.setCategoria(categoriaRepository.findById(dto.getCategoriaId())
+                    .orElseThrow(() -> new RuntimeException("La categoría especificada no existe.")));
+        }
+
+        if (dto.getArchivoImagen() != null && !dto.getArchivoImagen().isEmpty()) {
+            validarArchivoImagen(dto.getArchivoImagen());
+            try {
+                String urlSeguraNube = cloudinaryService.subirImagen(dto.getArchivoImagen());
+                producto.setImagen(urlSeguraNube);
+            } catch (IOException e) {
+                throw new RuntimeException("Error crítico al subir la imagen a Cloudinary.", e);
+            }
+        }
+
+        if (producto.getEstado() == null) {
+            producto.setEstado(1);
+        }
+
+        return productoRepository.save(producto);
     }
 
 
