@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.5</version>
+        <version>3.2.5</version>
         <relativePath/> 
     </parent>
 
@@ -14,7 +14,7 @@
     <artifactId>restaurante</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>restaurante</name>
-    <description>Proyecto Restaurante - API REST para La Jama</description>
+    <description>Proyecto Restaurante - API REST para Sra. Millones</description>
 
     <properties>
         <java.version>17</java.version>
@@ -35,7 +35,12 @@
             <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
         </dependency>
-
+        <!-- TESTING -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- WEB Y REST -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -108,13 +113,6 @@
             <version>1.5.5.Final</version>
             <scope>provided</scope>
         </dependency>
-
-        <!-- PRUEBAS -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-security-test</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>
@@ -135,11 +133,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
                 <configuration>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
                         </path>
                         <path>
                             <groupId>org.mapstruct</groupId>
@@ -150,15 +150,5 @@
                 </configuration>
             </plugin>
         </plugins>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>false</filtering>
-                <includes>
-                    <include>application*.properties</include>
-                    <include>**/*</include>
-                </includes>
-            </resource>
-        </resources>
     </build>
 </project>
