@@ -1,10 +1,10 @@
+
 package com.web.restaurante.service;
 
 import com.web.restaurante.dto.productoprecio.ActualizacionPrecioDTO;
 import com.web.restaurante.dto.productoprecio.InsumoRefDTO;
 import com.web.restaurante.dto.productoprecio.ProductoPrecioDTO;
 import com.web.restaurante.mapper.ProductoPrecioMapper;
-import com.web.restaurante.model.Insumo;
 import com.web.restaurante.model.InsumoProducto;
 import com.web.restaurante.model.Producto;
 import com.web.restaurante.repository.ProductoPrecioRepository;
@@ -25,47 +25,30 @@ public class ProductoPrecioService {
     private final ProductoRepository productoRepository;
     private final ProductoPrecioMapper productoPrecioMapper;
 
-//    @Transactional(readOnly = true)
-//    public List<ProductoPrecioDTO> listarActivos() {
-//        List<InsumoProducto> insumoProductos = productoPrecioRepository.listarActivos();
-//
-//        return insumoProductos.stream()
-//                .collect(Collectors.groupingBy(InsumoProducto::getProducto))
-//                .entrySet()
-//                .stream()
-//                .map(entry -> {
-//                    Producto producto = entry.getKey();
-//
-//                    List<InsumoRefDTO> insumos = entry.getValue().stream()
-//                            .map(productoPrecioMapper::toDTORef)
-//                            .toList();
-//
-//                    return new ProductoPrecioDTO(
-//                            producto.getId(),
-//                            producto.getImagen(),
-//                            producto.getNombre(),
-//                            producto.getPrecio(),
-//                            insumos
-//                    );
-//                }).toList();
-//    }
-
+    // Listar productos activos con sus insumos
     @Transactional(readOnly = true)
     public List<ProductoPrecioDTO> listarActivos() {
-        List<Producto> productos = productoRepository.findByEstado(1);
-        List<InsumoProducto> insumoProductos = productoPrecioRepository.listarActivos();
 
-        Map<Long, List<InsumoProducto>> insumosPorProducto = insumoProductos
-                .stream()
-                .collect(Collectors.groupingBy(ip -> ip.getProducto().getId()));
+        List<Producto> productos = productoRepository.findByEstado(1);
+
+        List<InsumoProducto> insumoProductos =
+                productoPrecioRepository.listarActivos();
+
+        Map<Long, List<InsumoProducto>> insumosPorProducto =
+                insumoProductos.stream()
+                        .collect(Collectors.groupingBy(
+                                ip -> ip.getProducto().getId()
+                        ));
 
         return productos.stream()
                 .map(producto -> {
-                    List<InsumoRefDTO> insumos = insumosPorProducto
-                            .getOrDefault(producto.getId(), List.of())
-                            .stream()
-                            .map(productoPrecioMapper::toDTORef)
-                            .toList();
+
+                    List<InsumoRefDTO> insumos =
+                            insumosPorProducto
+                                    .getOrDefault(producto.getId(), List.of())
+                                    .stream()
+                                    .map(productoPrecioMapper::toDTORef)
+                                    .toList();
 
                     return new ProductoPrecioDTO(
                             producto.getId(),
@@ -74,18 +57,29 @@ public class ProductoPrecioService {
                             producto.getPrecio(),
                             insumos
                     );
-                }).toList();
+                })
+                .toList();
     }
 
+    // Actualizar precios masivamente
+   
     @Transactional
     public void actualizarPrecios(List<ActualizacionPrecioDTO> actualizaciones) {
-        if (actualizaciones == null) return;
+        if (actualizaciones == null) {
+            throw new IllegalArgumentException("La lista de actualizaciones no puede ser nula.");
+        }
 
         for (ActualizacionPrecioDTO actualizacion : actualizaciones) {
-            if (actualizacion.idProducto() != null && actualizacion.nuevoPrecio() != null) {
-                productoRepository.findById(actualizacion.idProducto())
-                        .ifPresent(p -> p.setPrecio(actualizacion.nuevoPrecio()));
+            if (actualizacion == null
+                    || actualizacion.idProducto() == null
+                    || actualizacion.nuevoPrecio() == null) {
+                throw new IllegalArgumentException("Los datos de actualización son obligatorios.");
             }
+
+            productoRepository.findById(actualizacion.idProducto())
+                    .ifPresent(producto ->
+                            producto.setPrecio(actualizacion.nuevoPrecio())
+                    );
         }
     }
-}
+ }

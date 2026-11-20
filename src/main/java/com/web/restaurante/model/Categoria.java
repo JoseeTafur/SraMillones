@@ -4,12 +4,14 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @Entity
 @Table(name = "categoria")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Categoria {
 
     @Id
