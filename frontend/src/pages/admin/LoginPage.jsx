@@ -184,7 +184,7 @@ export const LoginPage = () => {
 
         <div className="login-branding-container">
           <img 
-  src="/logo2.png" 
+  src="https://res.cloudinary.com/dyjnbddit/image/upload/v1795230533/logo_yvny5z.jpg" 
   alt="SRA MILLONES Restaurante Criollo" 
   className="login-brand-asset-full"
 />
