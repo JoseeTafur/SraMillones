@@ -33,6 +33,8 @@ public class Cliente {
     @Column(unique = true)
     private String correo;
 
+    private String direccion;
+
     @Column(nullable = false)
     private Integer estado = 1;
 }

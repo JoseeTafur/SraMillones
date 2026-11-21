@@ -12,7 +12,8 @@ const FORM_VACIO = {
   apellido: '',
   dni: '',
   telefono: '',
-  correo: ''
+  correo: '',
+  direccion: ''
 };
 
 const extraerLista = (res) => res?.data?.content ?? res?.data ?? [];
@@ -49,6 +50,7 @@ export const ClientesPage = () => {
     { header: 'DNI', width: '120px' },
     { header: 'TELÉFONO', width: '130px' },
     { header: 'CORREO' },
+    { header: 'DIRECCIÓN' },
     { header: 'ESTADO', width: '120px' },
     { header: 'ACCIONES', width: '160px', align: 'center' }
   ];
@@ -87,7 +89,8 @@ export const ClientesPage = () => {
       apellido: cli.apellido || '',
       dni: cli.dni || '',
       telefono: cli.telefono || '',
-      correo: cli.correo || ''
+      correo: cli.correo || '',
+      direccion: cli.direccion || '',
     });
     setShowModal(true);
   };
@@ -138,7 +141,8 @@ export const ClientesPage = () => {
       apellido: formData.apellido.trim(),
       dni: formData.dni.trim(),
       telefono: formData.telefono.trim(),
-      correo: formData.correo.trim()
+      correo: formData.correo.trim(),
+      direccion: formData.direccion.trim(),
     };
 
     try {
@@ -203,6 +207,7 @@ export const ClientesPage = () => {
             <td><span className="cli-dni">{cli.dni}</span></td>
             <td><span className="cli-telefono">{cli.telefono || '—'}</span></td>
             <td><span className="cli-correo">{cli.correo || 'Sin correo'}</span></td>
+            <td><span className="cli-correo">{cli.direccion || 'Sin dirección'}</span></td>
             <td>
               <span className={`badge-estado-pill ${cli.estado === 1 ? 'activo' : 'inactivo'}`}>
                 {cli.estado === 1 ? 'Activo' : 'Inactivo'}

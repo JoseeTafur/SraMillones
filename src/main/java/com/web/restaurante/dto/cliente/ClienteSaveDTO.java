@@ -5,6 +5,7 @@ public record ClienteSaveDTO(
         String apellido,
         String dni,
         String telefono,
+        String direccion,
         String correo
 ) {
 }

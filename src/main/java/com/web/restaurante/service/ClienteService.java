@@ -82,6 +82,7 @@ public class ClienteService {
         existente.setDni(dto.dni());
         existente.setTelefono(dto.telefono());
         existente.setCorreo(dto.correo());
+        existente.setDireccion(dto.direccion());
 
         return clienteMapper.toDTO(clienteRepository.save(existente));
     }
