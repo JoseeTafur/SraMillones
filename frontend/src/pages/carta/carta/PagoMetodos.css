@@ -1,0 +1,44 @@
+/* ═══════════ QR DEL MÉTODO DE PAGO ═══════════ */
+.metodo-qr-frame {
+  width: fit-content;
+  min-width: 9rem;
+  margin: 0 auto;
+  padding: 0.7rem;
+  background: #FFFFFF;
+  border: 1px solid var(--metodo-borde);
+  border-radius: var(--radio-md);
+  box-shadow: 0 10px 24px -14px var(--metodo-color);
+  animation: qr-entra 0.45s var(--ease) both;
+  transition: transform var(--t-media) var(--ease),
+              box-shadow var(--t-media) var(--ease),
+              border-color var(--t-lenta) var(--ease-suave);
+}
+
+@media (hover: hover) {
+  .metodo-qr-frame:hover {
+    transform: scale(1.03);
+    box-shadow: 0 16px 30px -14px var(--metodo-color);
+  }
+}
+
+.metodo-qr {
+  display: block;
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+  border-radius: var(--radio-sm);
+}
+
+.metodo-qr-error {
+  max-width: 200px;
+  padding: 2rem 0.75rem;
+  text-align: center;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--tinta-suave);
+}
+
+@keyframes qr-entra {
+  from { opacity: 0; transform: scale(0.94) translateY(6px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}

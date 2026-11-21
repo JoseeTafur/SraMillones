@@ -1,15 +1,13 @@
-
 package com.web.restaurante.dto.productoprecio;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record ActualizacionPrecioDTO(
-        @JsonProperty("idProducto")
         Long idProducto,
-
-        @JsonProperty("nuevoPrecio")
         Double nuevoPrecio
 ) {
+    @JsonCreator
     public ActualizacionPrecioDTO(
             @JsonProperty("id") Long id,
             @JsonProperty("idProducto") Long idProducto,

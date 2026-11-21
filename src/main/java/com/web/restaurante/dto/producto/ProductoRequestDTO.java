@@ -9,6 +9,8 @@ public class ProductoRequestDTO {
     private String nombre;
     private String descripcion;
     private Double precio;
-    private Long categoriaId; // Solo pasamos el ID de la categoría desde React
+    private Long categoriaId;
     private MultipartFile archivoImagen;
+    private String imagen;
+    private Boolean eliminarImagen;
 }

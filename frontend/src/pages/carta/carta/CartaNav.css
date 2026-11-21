@@ -1,0 +1,159 @@
+/* ═══════════ BARRA STICKY (búsqueda + categorías) ═══════════ */
+.carta-nav {
+  position: sticky;
+  top: 0.75rem;
+  z-index: 60;
+  width: calc(100% - 3rem);
+  max-width: 1200px;
+  margin: -2rem auto 2.5rem;
+  padding: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(255, 253, 249, 0.88);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio-lg);
+  box-shadow: var(--sombra-sm), 0 14px 30px -18px rgba(59, 4, 11, 0.3);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  animation: subir 0.7s var(--ease) 0.3s both;
+}
+
+/* ───────── Buscador ───────── */
+.carta-search {
+  position: relative;
+  flex: 0 0 auto;
+  width: 260px;
+}
+
+.carta-search-icon {
+  position: absolute;
+  left: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--tinta-tenue);
+  display: flex;
+  pointer-events: none;
+  transition: color var(--t-rapida) var(--ease-suave);
+}
+
+.carta-search:focus-within .carta-search-icon {
+  color: var(--vino-700);
+}
+
+.carta-search-input {
+  width: 100%;
+  height: 2.6rem;
+  padding: 0 2.4rem 0 2.6rem;
+  font: inherit;
+  font-size: 0.92rem;
+  color: var(--tinta);
+  background: #FFFFFF;
+  border: 1px solid var(--linea);
+  border-radius: 50rem;
+  transition: border-color var(--t-rapida) var(--ease-suave),
+              box-shadow var(--t-media) var(--ease-suave);
+}
+
+.carta-search-input::placeholder {
+  color: var(--tinta-tenue);
+}
+
+.carta-search-input:hover {
+  border-color: #E2D6C6;
+}
+
+.carta-search-input:focus {
+  outline: none;
+  border-color: var(--vino-600);
+  box-shadow: 0 0 0 4px rgba(122, 15, 30, 0.12);
+}
+
+.carta-search-clear {
+  position: absolute;
+  right: 0.45rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.7rem;
+  height: 1.7rem;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--tinta-suave);
+  cursor: pointer;
+  animation: aparecer var(--t-rapida) var(--ease-suave) both;
+  transition: background var(--t-rapida) var(--ease-suave), color var(--t-rapida) var(--ease-suave);
+}
+
+.carta-search-clear:hover {
+  background: var(--vino-tinte);
+  color: var(--vino-700);
+}
+
+/* ───────── Chips de categorías ───────── */
+.carta-chips {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 2px;
+}
+
+.carta-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.carta-chip {
+  flex: 0 0 auto;
+  padding: 0.55rem 1.1rem;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--vino-700);
+  background: #FFFFFF;
+  border: 1px solid var(--linea);
+  border-radius: 50rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--t-media) var(--ease-suave),
+              color var(--t-media) var(--ease-suave),
+              border-color var(--t-media) var(--ease-suave),
+              box-shadow var(--t-media) var(--ease-suave),
+              transform var(--t-rapida) var(--ease);
+}
+
+.carta-chip:hover {
+  background: var(--crema-2);
+  border-color: rgba(92, 6, 18, 0.25);
+}
+
+.carta-chip:active {
+  transform: scale(0.96);
+}
+
+.carta-chip.is-active {
+  background: var(--vino-700);
+  border-color: var(--vino-700);
+  color: #FFFFFF;
+  box-shadow: 0 6px 14px -6px rgba(92, 6, 18, 0.6);
+}
+
+@media (max-width: 760px) {
+  .carta-nav {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.6rem;
+    width: calc(100% - 2rem);
+    top: 0.5rem;
+  }
+
+  .carta-search {
+    width: 100%;
+  }
+}

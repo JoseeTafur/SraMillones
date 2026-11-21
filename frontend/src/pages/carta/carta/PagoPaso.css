@@ -1,0 +1,66 @@
+/* ═══════════ PASO DE PAGO (contenedor) ═══════════ */
+.pago-paso {
+  margin-top: 1.25rem;
+  padding: 1.1rem;
+  background: var(--crema-2);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio-md);
+}
+
+.pago-paso-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  margin-bottom: 0.9rem;
+}
+
+.pago-paso-num {
+  flex: 0 0 auto;
+  width: 1.8rem;
+  height: 1.8rem;
+  display: grid;
+  place-items: center;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  background: var(--vino-700);
+  border-radius: 50%;
+  box-shadow: 0 4px 10px -3px rgba(92, 6, 18, 0.5);
+  transition: background var(--t-media) var(--ease-suave);
+}
+
+.pago-paso-titulo {
+  margin: 0;
+  font-size: 0.97rem;
+  font-weight: 700;
+  color: var(--vino-700);
+  transition: color var(--t-media) var(--ease-suave);
+}
+
+.pago-paso-desc {
+  margin: 0.2rem 0 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--tinta-suave);
+}
+
+.pago-paso-desc strong {
+  color: var(--vino-700);
+}
+
+/* Variante que toma el color del método de pago elegido (Yape, Plin...)
+   mediante las variables --metodo-color, --metodo-fondo y --metodo-borde */
+.pago-paso--metodo {
+  background: var(--metodo-fondo);
+  border-color: var(--metodo-borde);
+  transition: background var(--t-lenta) var(--ease-suave),
+              border-color var(--t-lenta) var(--ease-suave);
+}
+
+.pago-paso--metodo .pago-paso-num {
+  background: var(--metodo-color);
+}
+
+.pago-paso--metodo .pago-paso-titulo {
+  color: var(--metodo-color);
+}

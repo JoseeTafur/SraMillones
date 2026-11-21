@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:8080/api/caja';
+const API_BASE = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/caja`;
 
 export const cajaService = {
 
@@ -52,13 +52,13 @@ export const cajaService = {
   },
 
   obtenerComandasPorCobrar: async () => {
-  const res = await axios.get('http://localhost:8080/api/comandas/por-cobrar', { withCredentials: true });
+  const res = await axios.get(`${BASE_URL}/api/comandas/por-cobrar`, { withCredentials: true });
   return res.data;
 },
 
 cobrarComanda: async (comandaId, datosPago) => {
   const res = await axios.post(
-    `http://localhost:8080/api/caja/turno/cobrar/${comandaId}`,
+    `${BASE_URL}/api/caja/turno/cobrar/${comandaId}`,
     datosPago,
     { withCredentials: true }
   );
@@ -66,7 +66,7 @@ cobrarComanda: async (comandaId, datosPago) => {
 },
 
 obtenerDetalleVenta: async (movimientoId) => {
-    const res = await axios.get(`http://localhost:8080/api/caja/auditoria/venta-detalle/${movimientoId}`, {
+    const res = await axios.get(`${BASE_URL}/api/caja/auditoria/venta-detalle/${movimientoId}`, {
       withCredentials: true
     });
     return res.data;

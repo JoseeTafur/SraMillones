@@ -1,0 +1,331 @@
+/* ===================================================
+   VALIDACIÓN DE PAGOS DIGITALES - ESTILOS OFICIALES
+   =================================================== */
+
+.pagos-digitales-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Barra superior de filtros por estado */
+.pagos-tabs-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  background-color: #ffffff;
+  padding: 0.85rem 1.1rem;
+  border-radius: 14px;
+  border: 1.5px solid #e2e8f0;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
+}
+
+.pago-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.5rem 0.95rem;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  background-color: #f8fafc;
+  color: #475569;
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pago-tab-btn:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+.pago-tab-btn.active {
+  background-color: #4a0811;
+  border-color: #4a0811;
+  color: #ffffff;
+}
+
+.pago-tab-count {
+  padding: 0.1rem 0.5rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.pago-tab-btn.active .pago-tab-count {
+  background-color: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+
+.pago-tab-btn:not(.active) .pago-tab-count.pendiente {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.pago-tab-btn:not(.active) .pago-tab-count.aprobado {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.pago-tab-btn:not(.active) .pago-tab-count.anulado {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.pago-tab-btn:not(.active) .pago-tab-count.todos {
+  background-color: #e2e8f0;
+  color: #334155;
+}
+
+/* Celdas de tabla */
+.pago-id-bold {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #475569;
+}
+
+.pago-venta-sub {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+/* Miniatura del Voucher */
+.voucher-thumb-btn {
+  position: relative;
+  width: 52px;
+  height: 62px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1.5px solid #cbd5e1;
+  background-color: #f1f5f9;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+
+.voucher-thumb-btn:hover {
+  transform: scale(1.06);
+  border-color: #4a0811;
+}
+
+.voucher-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.voucher-thumb-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.voucher-thumb-btn:hover .voucher-thumb-overlay {
+  opacity: 1;
+}
+
+.voucher-sin-foto {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+/* Cliente y Operación */
+.pago-cliente-nombre {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.pago-operacion-tag {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.pago-operacion-tag span {
+  font-family: monospace;
+  font-weight: 800;
+  color: #334155;
+}
+
+.pago-nota-tag {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+  background-color: #dcfce7;
+  color: #15803d;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+/* Método y Monto */
+.metodo-pill {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  background-color: #f3e8ff;
+  color: #6b21a8;
+  margin-bottom: 3px;
+}
+
+.metodo-pill.plin {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+
+.pago-monto-text {
+  font-size: 0.96rem;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+/* Estado Pendiente */
+.badge-estado-pill.pago-pendiente {
+  background-color: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.pago-obs-text {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+/* Botones de Aprobar / Denegar en tabla */
+.btn-pago-aprobar,
+.btn-pago-denegar {
+  padding: 0.42rem 0.75rem;
+  border-radius: 9px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.btn-pago-aprobar {
+  background-color: #dcfce7;
+  color: #15803d;
+  border-color: #bbf7d0;
+}
+
+.btn-pago-aprobar:hover {
+  background-color: #16a34a;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.btn-pago-denegar {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.btn-pago-denegar:hover {
+  background-color: #dc2626;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.pago-procesado-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* Modal Visor de Voucher */
+.voucher-inspector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.65rem 0.9rem;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  margin-bottom: 0.85rem;
+  font-size: 0.86rem;
+}
+
+.monto-guinda {
+  color: #4a0811;
+  font-weight: 900;
+  font-size: 0.95rem;
+}
+
+.voucher-full-frame {
+  background-color: #0f172a;
+  border-radius: 12px;
+  padding: 0.75rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-height: 65vh;
+  overflow: auto;
+}
+
+.voucher-full-img {
+  max-width: 100%;
+  max-height: 60vh;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+/* Alerta roja para Denegar en Modal */
+.denegar-warning-box {
+  background-color: #fef2f2;
+  border: 1.5px solid #fecaca;
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.denegar-alert-icon {
+  color: #dc2626;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.btn-danger-senior {
+  background-color: #dc2626;
+  color: #ffffff;
+  border: none;
+  padding: 0.65rem 1.25rem;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-danger-senior:hover:not(:disabled) {
+  background-color: #b91c1c;
+  transform: translateY(-1px);
+}
+
+.btn-danger-senior:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

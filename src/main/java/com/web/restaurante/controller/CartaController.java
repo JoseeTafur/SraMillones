@@ -1,7 +1,11 @@
 package com.web.restaurante.controller;
 
-import com.web.restaurante.model.*;
-import com.web.restaurante.service.*;
+import com.web.restaurante.model.Producto;
+import com.web.restaurante.model.Venta;
+import com.web.restaurante.service.CajaOperativaService;
+import com.web.restaurante.service.CartaService;
+import com.web.restaurante.service.CloudinaryService;
+import com.web.restaurante.service.GroqService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -9,9 +13,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -22,7 +30,7 @@ public class CartaController {
     private final CloudinaryService cloudinaryService;
     private final GroqService groqService;
     private final CartaService cartaService;
-    private final CajaOperativaService cajaOperativaService; // <-- Reemplaza a PedidoService
+    private final CajaOperativaService cajaOperativaService;
 
     @GetMapping("/carta")
     public String verCarta(Model model) {
@@ -37,10 +45,12 @@ public class CartaController {
 
     @PostMapping(value = "/carta/pedido", consumes = {"multipart/form-data"})
     @Transactional
-    public ResponseEntity<?> recibirPedidoCarta(@RequestPart("pedido") Pedido pedido) {
+    public ResponseEntity<?> recibirPedidoCarta(
+            @RequestPart("venta") Venta venta,
+            @RequestParam(value = "imgUrl", required = false) String imgUrl) {
         try {
-            Long idPedido = cartaService.recibirPedidoCarta(pedido);
-            return ResponseEntity.ok(Map.of("success", true, "id", idPedido));
+            Long idVenta = cartaService.recibirPedidoCarta(venta, imgUrl);
+            return ResponseEntity.ok(Map.of("success", true, "id", idVenta));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("success", false, "message", e.getMessage()));
         }
@@ -79,7 +89,7 @@ public class CartaController {
                 return ResponseEntity.badRequest().body(Map.of("success", false, "reason", "METODO_EQUIVOCADO", "message", "El comprobante no corresponde al método de pago seleccionado."));
             }
 
-            java.time.LocalDateTime ahora = java.time.LocalDateTime.now();
+            LocalDateTime ahora = LocalDateTime.now();
             int diaHoy = ahora.getDayOfMonth();
             int anioHoyFull = ahora.getYear();
             int anioHoyShort = anioHoyFull % 100;
@@ -93,9 +103,9 @@ public class CartaController {
             int diaIA = diaNum != null ? diaNum.intValue() : 0;
             int anioIA = anioNum != null ? anioNum.intValue() : 0;
 
-            boolean añoEsCorrecto = (anioIA == anioHoyFull || anioIA == anioHoyShort);
+            boolean anioEsCorrecto = (anioIA == anioHoyFull || anioIA == anioHoyShort);
 
-            if (diaHoy != diaIA || mesIA == null || !mesHoy.equalsIgnoreCase(mesIA.trim()) || !añoEsCorrecto) {
+            if (diaHoy != diaIA || mesIA == null || !mesHoy.equalsIgnoreCase(mesIA.trim()) || !anioEsCorrecto) {
                 return ResponseEntity.badRequest().body(Map.of(
                         "success", false,
                         "message", "El comprobante detectado es del año/fecha incorrecta (" + diaIA + " de " + (mesIA != null ? mesIA : "null") + " del " + anioIA + "). La compra requiere obligatoriamente la fecha de hoy: " + diaHoy + " de " + mesHoy + " del " + anioHoyFull + "."
@@ -110,7 +120,6 @@ public class CartaController {
                 return ResponseEntity.badRequest().body(Map.of("success", false, "message", "La IA no pudo leer con nitidez el número de operación. Intente con otra captura clara."));
             }
 
-            // Usamos CajaOperativaService para validar el número de operación del voucher
             if (cajaOperativaService.existeNumeroOperationHoy(nroOperacion.trim())) {
                 return ResponseEntity.badRequest().body(Map.of("success", false, "message", "🚨 Intento de Estafa: Este número de operación (" + nroOperacion.trim() + ") ya fue registrado y aprobado el día de hoy en La Jama."));
             }
@@ -124,6 +133,41 @@ public class CartaController {
         } catch (Exception e) {
             System.err.println("💥 Error en validador de voucher: " + e.getMessage());
             return ResponseEntity.internalServerError().body(Map.of("success", false, "message", "Error interno al procesar con la IA: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/carta/pedido-digital")
+    @ResponseBody
+    public ResponseEntity<?> registrarPedidoDigital(@RequestBody Map<String, Object> payload) {
+        try {
+            String clienteNombre = (String) payload.get("clienteNombre");
+            String metodoPago = (String) payload.get("metodoPago");
+            String tipoAtencion = (String) payload.get("tipoAtencion");
+            String numeroOperacion = (String) payload.get("numeroOperacion");
+            String imgUrl = (String) payload.get("imgUrl");
+
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> items = (List<Map<String, Object>>) payload.get("items");
+
+            Long idPagoDigital = cartaService.registrarSolicitudPagoDigital(
+                    clienteNombre,
+                    metodoPago,
+                    tipoAtencion,
+                    numeroOperacion,
+                    imgUrl,
+                    items,
+                    new com.fasterxml.jackson.databind.ObjectMapper()
+            );
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "idPagoDigital", idPagoDigital,
+                    "message", "Comprobante enviado a validación de caja."
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("success", false, "message", "Error al registrar solicitud: " + e.getMessage()));
         }
     }
 }

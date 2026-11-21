@@ -6,72 +6,72 @@ import com.web.restaurante.repository.NotificacionRepository;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
-@Controller
+@RestController
 @RequestMapping("/admin/notificaciones")
 @RequiredArgsConstructor
 public class NotificacionController {
 
     private final NotificacionRepository notificacionRepository;
 
+    private List<Notificacion> obtenerPendientesPorUsuario(Usuario user) {
+        String perfil = user.getPerfil().getNombre().toUpperCase();
+        if (perfil.contains("ADMIN") || perfil.contains("SUPER")) {
+            return notificacionRepository.findByLeidoFalseOrderByFechaCreacionDesc();
+        }
+        if (perfil.contains("CAJERO") || perfil.contains("CAJA")) {
+            return notificacionRepository.findByLeidoFalseAndDestinoPerfilInOrderByFechaCreacionDesc(
+                    Arrays.asList("TODOS", "CAJERO", "CAJA")
+            );
+        }
+        return notificacionRepository.findByLeidoFalseAndDestinoPerfilInOrderByFechaCreacionDesc(
+                Arrays.asList("TODOS", perfil)
+        );
+    }
+
     @GetMapping("/api/listar-no-leidas")
-    @ResponseBody
     public ResponseEntity<?> obtenerAlertasActivasApi(HttpSession session) {
         Usuario user = (Usuario) session.getAttribute("usuarioLogueado");
         if (user == null) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "Sesión inválida"));
         }
 
-        String perfil = user.getPerfil().getNombre().toUpperCase();
-        List<Notificacion> lista;
-
-        if (perfil.contains("ADMIN") || perfil.contains("SUPER")) {
-            lista = notificacionRepository.findAllByOrderByFechaCreacionDesc();
-        } else {
-            lista = notificacionRepository.findByDestinoPerfilInOrderByFechaCreacionDesc(Arrays.asList("TODOS", "MESERO"));
-        }
-
-        List<Notificacion> noLeidas = lista.stream()
-                .filter(n -> !n.isLeido())
-                .toList();
-
+        List<Notificacion> noLeidas = obtenerPendientesPorUsuario(user);
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "data", noLeidas,
-                "perfilActual", perfil
+                "total", noLeidas.size(),
+                "perfilActual", user.getPerfil().getNombre().toUpperCase()
         ));
     }
 
     @PostMapping("/api/marcar-leido-individual/{id}")
-    @ResponseBody
     public ResponseEntity<?> marcarLeidoIndividual(@PathVariable Long id) {
-        Optional<Notificacion> opt = notificacionRepository.findById(id);
-        if (opt.isPresent()) {
-            Notificacion n = opt.get();
-            n.setLeido(true);
-            notificacionRepository.save(n);
-            return ResponseEntity.ok(Map.of("success", true, "message", "Notificación archivada"));
-        }
-        return ResponseEntity.status(404).body(Map.of("success", false, "message", "No encontrada"));
+        return notificacionRepository.findById(id)
+                .map(n -> {
+                    n.setLeido(true);
+                    notificacionRepository.save(n);
+                    return ResponseEntity.ok(Map.of("success", true, "message", "Notificación archivada"));
+                })
+                .orElseGet(() -> ResponseEntity.status(404).body(Map.of("success", false, "message", "No encontrada")));
     }
 
-    /**
-     * 🧹 DESPEJAR TODO: Cambia a leídas las de la lista actual
-     */
     @PostMapping("/api/marcar-leido")
-    @ResponseBody
-    public ResponseEntity<?> marcarTodoComoLeido() {
-        List<Notificacion> pendientes = notificacionRepository.findAll();
-        List<Notificacion> modificar = pendientes.stream().filter(n -> !n.isLeido()).toList();
+    public ResponseEntity<?> marcarTodoComoLeido(HttpSession session) {
+        Usuario user = (Usuario) session.getAttribute("usuarioLogueado");
+        if (user == null) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "Sesión inválida"));
+        }
+
+        List<Notificacion> modificar = obtenerPendientesPorUsuario(user);
         modificar.forEach(n -> n.setLeido(true));
         notificacionRepository.saveAll(modificar);
-        return ResponseEntity.ok(Map.of("success", true, "message", "🧹 Panel despejado"));
+
+        return ResponseEntity.ok(Map.of("success", true, "message", "Panel despejado"));
     }
 }

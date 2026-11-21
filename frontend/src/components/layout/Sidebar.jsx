@@ -46,7 +46,7 @@ export const Sidebar = ({ isCollapsed }) => {
         { title: 'Reservas', path: '/admin/reservas' }
       ]
     },
-    {
+      {
       title: 'Caja & Ventas',
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -57,7 +57,8 @@ export const Sidebar = ({ isCollapsed }) => {
       key: 'caja',
       submenu: [
         { title: 'Control de Caja (POS)', path: '/admin/caja' },
-        { title: 'Caja General', path: '/admin/caja-general' }
+        { title: 'Caja General', path: '/admin/caja-general' },
+        { title: 'Pagos Digitales', path: '/admin/pagos-digitales' }
       ]
     },
     {

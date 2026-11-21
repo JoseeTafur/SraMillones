@@ -254,3 +254,45 @@
 .btn-save-senior:active {
   transform: translateY(0);
 }
+
+/* ===================================================
+   ESTADO DE CARGA EN BOTONES (ANTI DOBLE-CLIC)
+   =================================================== */
+
+.btn-save-senior:disabled,
+.btn-save-senior.is-loading {
+  opacity: 0.78;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none;
+}
+
+.btn-cancel-senior:disabled,
+.btn-close-global-modal:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Oculta el ícono original (ej. el check) mientras gira el spinner */
+.btn-save-senior.is-loading svg {
+  display: none;
+}
+
+/* Espiral de carga CSS puro */
+.btn-save-senior.is-loading::before {
+  content: "";
+  width: 17px;
+  height: 17px;
+  border: 2.5px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fbbf24;
+  border-radius: 50%;
+  animation: modalBtnSpin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes modalBtnSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}

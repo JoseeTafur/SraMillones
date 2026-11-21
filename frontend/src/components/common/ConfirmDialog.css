@@ -197,3 +197,45 @@
     transform: scale(0.92) translateY(10px);
   }
 }
+
+/* ===================================================
+   ESTADO DE CARGA EN BOTONES (ANTI DOBLE-CLIC)
+   =================================================== */
+
+.btn-confirm-accept {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+}
+
+.btn-confirm-accept:disabled,
+.btn-confirm-accept.is-loading {
+  opacity: 0.78;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none;
+}
+
+.btn-confirm-cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn-confirm-accept.is-loading::before {
+  content: "";
+  width: 17px;
+  height: 17px;
+  border: 2.5px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: confirmBtnSpin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes confirmBtnSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}

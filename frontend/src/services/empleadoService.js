@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Instancia configurada para enviar la cookie JSESSIONID automáticamente
 const api = axios.create({
-  baseURL: 'http://localhost:8080/api/empleados',
+  baseURL: `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/empleados`,
   withCredentials: true
 });
 

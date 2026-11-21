@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/api/mesero';
+const API_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/mesero`;
 
 export const meseroService = {
   // Cargar productos de la carta y mapa de agotados para una mesa

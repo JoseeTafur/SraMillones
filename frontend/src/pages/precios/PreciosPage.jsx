@@ -9,6 +9,11 @@ import './PreciosPage.css';
 import imgNotFound from '../../assets/not-found.png';
 
 export const PreciosPage = () => {
+
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
+  const IMAGEN_SIN_FOTO = 'https://res.cloudinary.com/dyjnbddit/image/upload/v1795203522/Sin_Imagen_umsnif.png';
+
   const [searchTerm, setSearchTerm] = useState('');
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -71,10 +76,10 @@ export const PreciosPage = () => {
           if (rawImagen.startsWith('http') || rawImagen.startsWith('blob:')) {
             urlFinal = rawImagen;
           } else if (rawImagen.startsWith('/')) {
-            urlFinal = `http://localhost:8080${rawImagen}`;
-          } else {
-            urlFinal = `http://localhost:8080/imagenes/${rawImagen}`;
-          }
+    urlFinal = `${BASE_URL}${rawImagen}`;
+  } else {
+    urlFinal = `${BASE_URL}/imagenes/${rawImagen}`;
+  }
         }
 
         return {
@@ -295,10 +300,10 @@ export const PreciosPage = () => {
           <tr key={prod.id} className={!prod.disponible ? 'tr-disabled' : ''}>
             <td>
               <img
-                src={prod.imagen || imgNotFound}
+                src={prod.imagen || IMAGEN_SIN_FOTO}
                 alt={prod.nombre}
                 className="precio-img-thumb"
-                onError={(e) => { e.target.src = imgNotFound; }}
+                onError={(e) => { e.target.onerror = null; e.target.src = IMAGEN_SIN_FOTO; }}
               />
             </td>
             <td><span className="precio-producto-nombre">{prod.nombre}</span></td>
@@ -556,11 +561,11 @@ export const PreciosPage = () => {
                         </div>
 
                         <img
-                          src={p.imagen || imgNotFound}
-                          alt={p.nombre}
-                          className="grid-card-thumb"
-                          onError={(e) => { e.target.src = imgNotFound; }}
-                        />
+  src={p.imagen || IMAGEN_SIN_FOTO}
+  alt={p.nombre}
+  className="grid-card-thumb"
+  onError={(e) => { e.target.onerror = null; e.target.src = IMAGEN_SIN_FOTO; }}
+/>  
 
                         <div className="grid-card-info">
                           <span className="grid-card-title">{p.nombre}</span>

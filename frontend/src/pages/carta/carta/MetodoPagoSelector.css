@@ -1,0 +1,78 @@
+/* ═══════════ SELECTOR DE MÉTODO DE PAGO ═══════════ */
+.metodo-selector {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--n, 2), 1fr);
+  padding: 4px;
+  margin-bottom: 1rem;
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 50rem;
+}
+
+/* Pastilla blanca que se desliza bajo la opción activa */
+.metodo-selector-pastilla {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc((100% - 8px) / var(--n, 2));
+  background: #FFFFFF;
+  border-radius: 50rem;
+  box-shadow: 0 2px 8px rgba(24, 2, 5, 0.12);
+  transition: transform 0.4s var(--ease);
+}
+
+.metodo-opcion {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--tinta-suave);
+  background: transparent;
+  border: none;
+  border-radius: 50rem;
+  cursor: pointer;
+  transition: color var(--t-media) var(--ease-suave),
+              transform var(--t-rapida) var(--ease);
+}
+
+.metodo-opcion:hover {
+  color: var(--tinta);
+}
+
+.metodo-opcion:active {
+  transform: scale(0.96);
+}
+
+.metodo-opcion.is-active {
+  color: var(--opcion-color);
+  font-weight: 800;
+}
+
+/* Insignia circular con la inicial del método */
+.metodo-opcion-punto {
+  width: 1.4rem;
+  height: 1.4rem;
+  display: grid;
+  place-items: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  background: var(--opcion-color);
+  border-radius: 50%;
+  opacity: 0.55;
+  transition: opacity var(--t-media) var(--ease-suave),
+              transform var(--t-media) var(--ease);
+}
+
+.metodo-opcion.is-active .metodo-opcion-punto {
+  opacity: 1;
+  transform: scale(1.1);
+}

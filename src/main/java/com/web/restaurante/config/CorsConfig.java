@@ -1,4 +1,4 @@
-package com.web.restaurante.config;
+/*package com.web.restaurante.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,4 +21,4 @@ public class CorsConfig {
             }
         };
     }
-}
+}*/
