@@ -7,6 +7,7 @@ import DataTable from '../../components/common/DataTable';
 import ImageUploader from '../../components/common/ImageUploader';
 import { EditIcon, HideIcon } from '../../components/common/Icons';
 import './ProductosPage.css';
+import imgNotFound from '../../assets/not-found.png';
 
 export const ProductosPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -224,10 +225,10 @@ export const ProductosPage = () => {
             <tr key={prod.id} className={!isVisible ? 'tr-disabled' : ''}>
               <td>
                 <img
-                  src={prod.imagen || 'https://placeholder.com'}
+                  src={prod.imagen || imgNotFound}
                   alt={prod.nombre}
                   className="producto-img-thumb"
-                  onError={(e) => { e.target.src = 'https://placeholder.com'; }}
+                  onError={(e) => { e.target.src = imgNotFound; }}
                 />
               </td>
               <td>

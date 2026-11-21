@@ -1,3 +1,4 @@
+
 package com.web.restaurante.controller;
 
 import com.web.restaurante.dto.productoprecio.ActualizacionPrecioDTO;
@@ -10,31 +11,34 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@RestController 
-@RequestMapping("/api/admin/productos-precios") 
+@RestController
+@RequestMapping("/api/admin/productos-precios")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173") 
+@CrossOrigin(origins = "http://localhost:5173")
 public class ProductoPrecioController {
 
     private final ProductoPrecioService productoPrecioService;
 
-    /** 📊 GET: Lista todos los productos activos con sus precios */
     @GetMapping("/listar")
     public ResponseEntity<?> listar() {
-        return ResponseUtil.ok("Precios de productos encontrados", productoPrecioService.listarActivos());
+        return ResponseUtil.ok(
+                "Precios de productos encontrados",
+                productoPrecioService.listarActivos()
+        );
     }
 
-    /** 💾 POST: Recibe la lista masiva de cambios desde React y los procesa en lote */
     @PostMapping("/actualizar-precios")
-    public ResponseEntity<?> guardar(@RequestBody List<ActualizacionPrecioDTO> actualizaciones) {
+    public ResponseEntity<?> guardar(
+            @RequestBody List<ActualizacionPrecioDTO> actualizaciones) {
         try {
-            // ↵ CORREGIDO: Cambiado 'updates' por 'actualizaciones'
-            productoPrecioService.actualizarPrecios(actualizaciones); 
+            productoPrecioService.actualizarPrecios(actualizaciones);
             return ResponseUtil.ok("Datos actualizados correctamente");
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
+            return ResponseEntity.badRequest()
+                    .body(Map.of("mensaje", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(Map.of("mensaje", "Error al actualizar el lote de precios."));
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("mensaje", "Error al actualizar el lote de precios."));
         }
     }
 }
