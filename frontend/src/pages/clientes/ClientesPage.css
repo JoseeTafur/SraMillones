@@ -1,0 +1,83 @@
+/* ===================================================
+   GESTIÓN DE CLIENTES - ESTILOS OFICIALES
+   =================================================== */
+
+.clientes-page-container {
+  width: 100%;
+}
+
+.cli-id-bold {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #475569;
+}
+
+.cli-nombre {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.cli-dni {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.cli-telefono {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.cli-correo {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #475569;
+  word-break: break-word;
+}
+
+/* Selector de Estado en la Cabecera de la Tabla */
+.selector-estado-header {
+  margin-right: 0.5rem;
+}
+
+.select-estado-pill {
+  background-color: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  color: #334155;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.45rem 0.85rem;
+  border-radius: 10px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.select-estado-pill:hover,
+.select-estado-pill:focus-visible {
+  border-color: #d97706;
+}
+
+/* Grid del Formulario a 2 Columnas */
+.clientes-form-body {
+  padding: 1.2rem;
+}
+
+.clientes-grid-2col {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.2rem;
+}
+
+/* Campo que ocupa las dos columnas (correo) */
+.clientes-grid-2col .campo-completo {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 640px) {
+  .clientes-grid-2col {
+    grid-template-columns: 1fr;
+  }
+}
