@@ -22,8 +22,15 @@ const productoService = {
     formData.append('precio', productoData.precio);
     formData.append('categoriaId', productoData.categoriaId);
 
-    if (archivoImagen) {
+    if (archivoImagen instanceof File) {
       formData.append('archivoImagen', archivoImagen);
+    } else {
+      // Si no hay archivo nuevo, mandamos la URL (si no es un blob temporal) o vacío si la quitó
+      const urlLimpia = (productoData.imagen && !productoData.imagen.startsWith('blob:'))
+        ? productoData.imagen
+        : '';
+      formData.append('imagen', urlLimpia);
+      formData.append('eliminarImagen', urlLimpia === '');
     }
 
     const response = await axios.post(`${API_BASE_URL}/guardar`, formData, {
@@ -44,9 +51,9 @@ const productoService = {
     return response.data;
   },
 
-  // 🟢 NUEVO MÉTODO PÚBLICO AGREGADO AQUÍ
   obtenerCartaPublica: async () => {
-    const response = await axios.get('http://localhost:8080/api/public/carta');
+    const base = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+    const response = await axios.get(`${base}/api/public/carta`);
     return response.data;
   }
 };

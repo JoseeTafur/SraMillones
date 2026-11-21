@@ -1,0 +1,216 @@
+/* ═══════════ PANEL LATERAL DEL CARRITO (DRAWER) ═══════════ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(24, 2, 5, 0.55);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--t-media) var(--ease-suave),
+              visibility 0s linear var(--t-media);
+}
+
+.modal-overlay.is-open {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 440px;
+  height: 100%;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: #FFFFFF;
+  box-shadow: -12px 0 40px rgba(24, 2, 5, 0.25);
+  transform: translateX(100%);
+  transition: transform 0.45s var(--ease);
+  will-change: transform;
+}
+
+.modal-overlay.is-open .modal-content {
+  transform: translateX(0);
+}
+
+/* ───────── Cabecera ───────── */
+.modal-header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.4rem 1.5rem 1.1rem;
+  border-bottom: 1px solid var(--linea);
+  background: linear-gradient(180deg, var(--crema-2), #FFFFFF);
+}
+
+.modal-title {
+  margin: 0;
+  font-family: var(--fuente-titulo);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--vino-700);
+}
+
+.modal-subtitle {
+  margin: 0.15rem 0 0;
+  font-size: 0.82rem;
+  color: var(--tinta-suave);
+}
+
+.modal-close-btn {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: grid;
+  place-items: center;
+  color: var(--tinta-suave);
+  background: transparent;
+  border: 1px solid var(--linea);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background var(--t-rapida) var(--ease-suave),
+              color var(--t-rapida) var(--ease-suave),
+              transform var(--t-media) var(--ease);
+}
+
+.modal-close-btn:hover {
+  background: var(--vino-tinte);
+  color: var(--vino-700);
+  transform: rotate(90deg);
+}
+
+.modal-close-btn:active {
+  transform: rotate(90deg) scale(0.92);
+}
+
+/* ───────── Cuerpo con scroll ───────── */
+.modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1.25rem 1.5rem;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #E2D6C6 transparent;
+}
+
+/* ───────── Carrito vacío ───────── */
+.carrito-vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 3.5rem 1rem;
+  animation: subir 0.5s var(--ease) both;
+}
+
+.carrito-vacio-icono {
+  width: 4.5rem;
+  height: 4.5rem;
+  display: grid;
+  place-items: center;
+  margin-bottom: 1.1rem;
+  color: var(--vino-600);
+  background: var(--vino-tinte);
+  border-radius: 50%;
+}
+
+.carrito-vacio h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.1rem;
+  color: var(--tinta);
+}
+
+.carrito-vacio p {
+  margin: 0 0 1.25rem;
+  font-size: 0.9rem;
+  color: var(--tinta-suave);
+}
+
+/* ───────── Footer: total y botón de WhatsApp ───────── */
+.carrito-footer {
+  flex: 0 0 auto;
+  padding: 1.1rem 1.5rem calc(1.25rem + env(safe-area-inset-bottom));
+  background: #FFFFFF;
+  border-top: 1px solid var(--linea);
+  box-shadow: 0 -12px 24px -18px rgba(59, 4, 11, 0.25);
+}
+
+.carrito-total-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.carrito-total-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--tinta-suave);
+}
+
+.carrito-total-valor {
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--vino-700);
+  animation: tick 0.3s var(--ease);
+}
+
+.btn-enviar-wsp {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 1rem;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  background: var(--wsp);
+  border: none;
+  border-radius: var(--radio-md);
+  cursor: pointer;
+  box-shadow: 0 10px 22px -8px rgba(37, 211, 102, 0.65);
+  transition: transform var(--t-rapida) var(--ease),
+              box-shadow var(--t-media) var(--ease),
+              background var(--t-media) var(--ease-suave);
+}
+
+.btn-enviar-wsp:hover:not(:disabled) {
+  background: var(--wsp-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 28px -10px rgba(37, 211, 102, 0.7);
+}
+
+.btn-enviar-wsp:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn-enviar-wsp:disabled {
+  color: #FFFFFF;
+  background: #CFC6BA;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.carrito-hint {
+  margin: 0.65rem 0 0;
+  text-align: center;
+  font-size: 0.76rem;
+  line-height: 1.4;
+  color: var(--tinta-suave);
+}
+
+@media (max-width: 560px) {
+  .modal-content {
+    max-width: 100%;
+  }
+}

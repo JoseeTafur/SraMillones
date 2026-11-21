@@ -1,0 +1,243 @@
+/* ═══════════ TARJETA DE PRODUCTO ═══════════ */
+.producto-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #FFFFFF;
+  border: 1px solid var(--linea);
+  border-radius: var(--radio-lg);
+  box-shadow: var(--sombra-sm);
+  transition: transform var(--t-media) var(--ease),
+              box-shadow var(--t-media) var(--ease),
+              border-color var(--t-media) var(--ease-suave);
+}
+
+/* Entrada al hacer scroll (la clase is-visible la pone IntersectionObserver) */
+.producto-card:not(.is-visible) {
+  opacity: 0;
+}
+
+.producto-card.is-visible {
+  animation: tarjeta-entra 0.65s var(--ease) var(--delay, 0ms) backwards;
+}
+
+@media (hover: hover) {
+  .producto-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--sombra-md);
+    border-color: rgba(92, 6, 18, 0.2);
+  }
+
+  .producto-card:hover .producto-img {
+    transform: scale(1.07);
+  }
+
+  .producto-card:hover .producto-img-container::after {
+    opacity: 1;
+  }
+}
+
+/* ───────── Imagen ───────── */
+.producto-img-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 11;
+  overflow: hidden;
+  background: var(--crema-2);
+}
+
+/* Degradado inferior que aparece en hover */
+.producto-img-container::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(59, 4, 11, 0.28), transparent 55%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--t-media) var(--ease-suave);
+}
+
+/* Shimmer mientras carga la imagen */
+.producto-img-container.is-loading::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.75) 50%, transparent 80%);
+  background-size: 200% 100%;
+  animation: brillo 1.4s linear infinite;
+}
+
+.producto-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity var(--t-lenta) var(--ease-suave),
+              transform 0.7s var(--ease);
+}
+
+.producto-img.is-loaded {
+  opacity: 1;
+}
+
+.producto-img-placeholder {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: var(--tinta-tenue);
+  font-size: 0.82rem;
+  font-weight: 500;
+  background:
+    repeating-linear-gradient(45deg, transparent 0 10px, rgba(92, 6, 18, 0.025) 10px 20px),
+    var(--crema-2);
+}
+
+/* ───────── Información ───────── */
+.producto-info {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.35rem 1.35rem;
+}
+
+.producto-nombre {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #111827;
+  letter-spacing: -0.1px;
+}
+
+.producto-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+.producto-precio-valor {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--vino-700);
+  letter-spacing: -0.5px;
+}
+
+.producto-precio-moneda {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--vino-500);
+  letter-spacing: 0;
+}
+
+.producto-badge-disponible {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #03543F;
+  background: #DEF7EC;
+  border-radius: 50rem;
+}
+
+.producto-badge-disponible::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #0E9F6E;
+  animation: latido 2s ease-in-out infinite;
+}
+
+/* ───────── Botón agregar ───────── */
+.btn-agregar {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1rem;
+  font: inherit;
+  font-size: 0.93rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, var(--vino-600), var(--vino-700));
+  border: none;
+  border-radius: var(--radio-md);
+  cursor: pointer;
+  box-shadow: 0 6px 14px -6px rgba(92, 6, 18, 0.55);
+  transition: transform var(--t-rapida) var(--ease),
+              box-shadow var(--t-media) var(--ease),
+              background var(--t-media) var(--ease-suave);
+}
+
+.btn-agregar-icono {
+  display: inline-flex;
+  transition: transform var(--t-media) var(--ease);
+}
+
+.btn-agregar:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, var(--vino-500), var(--vino-600));
+  box-shadow: 0 12px 22px -8px rgba(92, 6, 18, 0.65);
+}
+
+.btn-agregar:hover .btn-agregar-icono {
+  transform: rotate(90deg);
+}
+
+.btn-agregar:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 3px 8px -4px rgba(92, 6, 18, 0.6);
+}
+
+/* Feedback "Agregado" */
+.btn-agregar.is-added {
+  background: linear-gradient(135deg, #16A34A, var(--ok));
+  box-shadow: 0 6px 14px -6px rgba(21, 128, 61, 0.6);
+}
+
+.btn-agregar.is-added:hover .btn-agregar-icono {
+  transform: none;
+}
+
+.btn-agregar.is-added .btn-agregar-icono {
+  animation: icono-pop 0.45s var(--ease);
+}
+
+/* ───────── Animaciones propias ───────── */
+@keyframes tarjeta-entra {
+  from { opacity: 0; transform: translateY(22px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes latido {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(14, 159, 110, 0.45); }
+  50%      { box-shadow: 0 0 0 5px rgba(14, 159, 110, 0); }
+}
+
+@keyframes icono-pop {
+  0%   { transform: scale(0.4) rotate(-20deg); opacity: 0; }
+  60%  { transform: scale(1.25) rotate(4deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); }
+}
+
+/* Con movimiento reducido las tarjetas se muestran sin esperar la animación */
+@media (prefers-reduced-motion: reduce) {
+  .producto-card:not(.is-visible) {
+    opacity: 1;
+  }
+}

@@ -11,6 +11,8 @@ export const PreciosPage = () => {
 
   const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
+  const IMAGEN_SIN_FOTO = 'https://res.cloudinary.com/dyjnbddit/image/upload/v1795203522/Sin_Imagen_umsnif.png';
+
   const [searchTerm, setSearchTerm] = useState('');
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -297,10 +299,10 @@ export const PreciosPage = () => {
           <tr key={prod.id} className={!prod.disponible ? 'tr-disabled' : ''}>
             <td>
               <img
-                src={prod.imagen || 'https://placeholder.com'}
+                src={prod.imagen || IMAGEN_SIN_FOTO}
                 alt={prod.nombre}
                 className="precio-img-thumb"
-                onError={(e) => { e.target.src = 'https://placeholder.com'; }}
+                onError={(e) => { e.target.onerror = null; e.target.src = IMAGEN_SIN_FOTO; }}
               />
             </td>
             <td><span className="precio-producto-nombre">{prod.nombre}</span></td>
@@ -558,11 +560,11 @@ export const PreciosPage = () => {
                         </div>
 
                         <img
-                          src={p.imagen || 'https://placeholder.com'}
-                          alt={p.nombre}
-                          className="grid-card-thumb"
-                          onError={(e) => { e.target.src = 'https://placeholder.com'; }}
-                        />
+  src={p.imagen || IMAGEN_SIN_FOTO}
+  alt={p.nombre}
+  className="grid-card-thumb"
+  onError={(e) => { e.target.onerror = null; e.target.src = IMAGEN_SIN_FOTO; }}
+/>  
 
                         <div className="grid-card-info">
                           <span className="grid-card-title">{p.nombre}</span>

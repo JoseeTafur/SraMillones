@@ -9,12 +9,13 @@ export const MainLayout = () => {
   const location = useLocation();
 
   // Diccionario para asignar el título según la ruta actual
-  const titulosRutas = {
+const titulosRutas = {
     '/admin/dashboard': 'PANEL DE CONTROL',
     '/admin/productos': 'CATÁLOGO DE PRODUCTOS Y PLATOS',
     '/admin/perfil': 'MI PERFIL',
     '/admin/mesas': 'MAPA DE MESAS',
     '/admin/caja': 'GESTIÓN DE CAJA',
+    '/admin/pagos-digitales': 'VALIDACIÓN DE PAGOS DIGITALES',
   };
 
   const pageTitle = titulosRutas[location.pathname] || 'SISTEMA ADMINISTRATIVO';

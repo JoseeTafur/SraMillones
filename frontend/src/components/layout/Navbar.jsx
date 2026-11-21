@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
+import NotificacionesBell from './NotificacionesBell';
 import './Navbar.css';
 
 export const Navbar = ({ toggleSidebar, pageTitle = 'PANEL DE CONTROL' }) => {
@@ -37,13 +38,7 @@ export const Navbar = ({ toggleSidebar, pageTitle = 'PANEL DE CONTROL' }) => {
         </div>
 
         {/* Notificaciones */}
-        <button className="btn-icon-nav" title="Notificaciones">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-          </svg>
-          <span className="badge-dot"></span>
-        </button>
+        <NotificacionesBell />
 
         {/* Perfil Usuario */}
         <div className="navbar-user-card">

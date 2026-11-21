@@ -9,6 +9,9 @@ import { EditIcon, HideIcon } from '../../components/common/Icons';
 import './ProductosPage.css';
 
 export const ProductosPage = () => {
+
+const IMAGEN_SIN_FOTO = 'https://res.cloudinary.com/dyjnbddit/image/upload/v1795203522/Sin_Imagen_umsnif.png';
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategoria, setSelectedCategoria] = useState('TODAS');
   const [toast, setToast] = useState(null);
@@ -224,11 +227,14 @@ export const ProductosPage = () => {
             <tr key={prod.id} className={!isVisible ? 'tr-disabled' : ''}>
               <td>
                 <img
-                  src={prod.imagen || 'https://placeholder.com'}
-                  alt={prod.nombre}
-                  className="producto-img-thumb"
-                  onError={(e) => { e.target.src = 'https://placeholder.com'; }}
-                />
+  src={prod.imagen || IMAGEN_SIN_FOTO}
+  alt={prod.nombre}
+  className="producto-img-thumb"
+  onError={(e) => {
+    e.target.onerror = null;
+    e.target.src = IMAGEN_SIN_FOTO;
+  }}
+/>
               </td>
               <td>
                 <div className="producto-info">
@@ -348,10 +354,19 @@ export const ProductosPage = () => {
             <ImageUploader
               label="5. Foto / Imagen del Plato (Opcional)"
               value={formData.imagen}
-              onChange={(archivoBinario) => {
-                setArchivoImagen(archivoBinario);
-                if (archivoBinario) {
-                  setFormData({ ...formData, imagen: URL.createObjectURL(archivoBinario) });
+              onChange={(valor) => {
+                if (valor instanceof File) {
+                  // Subió un archivo desde su PC
+                  setArchivoImagen(valor);
+                  setFormData(prev => ({ ...prev, imagen: URL.createObjectURL(valor) }));
+                } else if (typeof valor === 'string' && valor.trim() !== '') {
+                  // Pegó una URL externa
+                  setArchivoImagen(null);
+                  setFormData(prev => ({ ...prev, imagen: valor }));
+                } else {
+                  // Presionó "Quitar Foto" (valor es null o '')
+                  setArchivoImagen(null);
+                  setFormData(prev => ({ ...prev, imagen: '' }));
                 }
               }}
             />

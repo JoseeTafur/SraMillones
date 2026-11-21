@@ -1,0 +1,107 @@
+/* ═══════════ BOTÓN FLOTANTE DEL CARRITO ═══════════ */
+.carrito-flotante-container {
+  position: fixed;
+  right: 1.75rem;
+  bottom: calc(1.75rem + env(safe-area-inset-bottom));
+  z-index: 1000;
+  animation: flotante-entra 0.55s var(--ease) both;
+}
+
+.btn-flotante-carrito {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.7rem 1.4rem 0.7rem 0.8rem;
+  font: inherit;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, var(--vino-600), var(--vino-800));
+  border: 1px solid rgba(255, 179, 138, 0.25);
+  border-radius: 50rem;
+  cursor: pointer;
+  box-shadow: 0 16px 32px -10px rgba(59, 4, 11, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition: transform var(--t-media) var(--ease),
+              box-shadow var(--t-media) var(--ease);
+}
+
+.btn-flotante-carrito:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 22px 38px -10px rgba(59, 4, 11, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.btn-flotante-carrito:active {
+  transform: scale(0.97);
+}
+
+.carrito-flotante-icono {
+  position: relative;
+  width: 2.7rem;
+  height: 2.7rem;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 50%;
+}
+
+.carrito-badge-count {
+  position: absolute;
+  top: -0.35rem;
+  right: -0.35rem;
+  min-width: 1.45rem;
+  height: 1.45rem;
+  padding: 0 0.35rem;
+  display: grid;
+  place-items: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--vino-800);
+  background: var(--dorado);
+  border: 2px solid var(--vino-700);
+  border-radius: 50rem;
+  animation: rebote 0.5s var(--ease);
+}
+
+.carrito-flotante-texto {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.2;
+}
+
+.carrito-flotante-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.carrito-flotante-total {
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+}
+
+/* ───────── Animaciones propias ───────── */
+@keyframes flotante-entra {
+  from { opacity: 0; transform: translateY(24px) scale(0.9); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes rebote {
+  0%   { transform: scale(0.5); }
+  55%  { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+
+@media (max-width: 560px) {
+  .carrito-flotante-container {
+    left: 1rem;
+    right: 1rem;
+    bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+
+  .btn-flotante-carrito {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

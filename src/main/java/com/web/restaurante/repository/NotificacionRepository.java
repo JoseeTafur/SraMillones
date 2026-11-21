@@ -7,6 +7,7 @@ import java.util.List;
 
 @Repository
 public interface NotificacionRepository extends JpaRepository<Notificacion, Long> {
-    List<Notificacion> findAllByOrderByFechaCreacionDesc();
-    List<Notificacion> findByDestinoPerfilInOrderByFechaCreacionDesc(List<String> perfiles);
+    List<Notificacion> findByLeidoFalseOrderByFechaCreacionDesc();
+    List<Notificacion> findByLeidoFalseAndDestinoPerfilInOrderByFechaCreacionDesc(List<String> perfiles);
+    List<Notificacion> findByTipoAndIdReferenciaAndLeidoFalse(String tipo, Long idReferencia);
 }

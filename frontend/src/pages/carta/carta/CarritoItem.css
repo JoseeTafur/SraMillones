@@ -1,0 +1,106 @@
+/* ═══════════ ITEM DEL CARRITO ═══════════ */
+.carrito-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-height: 8rem;
+  margin-bottom: 0.9rem;
+  padding-bottom: 0.9rem;
+  overflow: hidden;
+  border-bottom: 1px solid var(--linea);
+  animation: item-entra 0.4s var(--ease) both;
+}
+
+.carrito-item.is-saliendo {
+  animation: item-sale 0.24s var(--ease-suave) forwards;
+}
+
+.carrito-item-info {
+  min-width: 0;
+}
+
+.carrito-item-nombre {
+  margin: 0 0 0.2rem;
+  font-size: 0.98rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #111827;
+}
+
+.carrito-item-precio {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--vino-700);
+}
+
+.carrito-item-unitario {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 0.74rem;
+  color: var(--tinta-tenue);
+}
+
+/* ───────── Controles de cantidad ───────── */
+.carrito-controls {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.2rem;
+  background: var(--crema-2);
+  border: 1px solid var(--linea);
+  border-radius: 50rem;
+}
+
+.carrito-ctrl-btn {
+  width: 1.9rem;
+  height: 1.9rem;
+  display: grid;
+  place-items: center;
+  color: var(--vino-700);
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background var(--t-rapida) var(--ease-suave),
+              color var(--t-rapida) var(--ease-suave),
+              transform var(--t-rapida) var(--ease);
+}
+
+.carrito-ctrl-btn:hover {
+  background: #FFFFFF;
+  box-shadow: 0 1px 4px rgba(59, 4, 11, 0.15);
+}
+
+.carrito-ctrl-btn:active {
+  transform: scale(0.88);
+}
+
+.carrito-ctrl-btn.is-danger {
+  color: var(--error);
+}
+
+.carrito-ctrl-btn.is-danger:hover {
+  background: var(--error-fondo);
+}
+
+.carrito-cantidad {
+  min-width: 1.6rem;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  animation: tick 0.25s var(--ease);
+}
+
+/* ───────── Animaciones propias ───────── */
+@keyframes item-entra {
+  from { opacity: 0; transform: translateX(18px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes item-sale {
+  from { opacity: 1; max-height: 8rem; transform: translateX(0); }
+  to   { opacity: 0; max-height: 0; margin-bottom: 0; padding-bottom: 0; transform: translateX(26px); }
+}

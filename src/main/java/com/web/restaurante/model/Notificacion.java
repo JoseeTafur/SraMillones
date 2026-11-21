@@ -17,10 +17,15 @@ public class Notificacion {
     private String mensaje;
 
     @Column(nullable = false, length = 30)
-    private String tipo;
+    private String tipo; // PAGO_DIGITAL, CAJA, STOCK, SISTEMA
 
-    @Column(nullable = false, length = 30)
-    private String destinoPerfil;
+    @Column(nullable = false, length = 40)
+    private String destinoPerfil; // ADMIN, CAJERO, COCINA, MESERO, TODOS
+
+    @Column(length = 120)
+    private String rutaDestino; // Ej: "/admin/pagos-digitales"
+
+    private Long idReferencia; // Ej: id del PagoDigital para auto-marcar leído al aprobar/denegar
 
     private boolean leido = false;
     private LocalDateTime fechaCreacion = LocalDateTime.now();

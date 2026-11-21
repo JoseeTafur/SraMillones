@@ -1,0 +1,152 @@
+/* ═══════════ CONTENIDO DE LA CARTA ═══════════ */
+.carta-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.carta-section {
+  margin-bottom: 3.5rem;
+  scroll-margin-top: 6.5rem;
+}
+
+/* ───────── Título de categoría ───────── */
+.carta-category-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+.carta-category-name {
+  position: relative;
+  margin: 0;
+  padding-left: 1rem;
+  font-family: var(--fuente-titulo);
+  font-size: clamp(1.5rem, 3.5vw, 2rem);
+  font-weight: 700;
+  color: var(--vino-700);
+  letter-spacing: -0.2px;
+}
+
+/* Barra de acento vino → durazno */
+.carta-category-name::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 12%;
+  bottom: 12%;
+  width: 4px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--vino-600), var(--durazno));
+}
+
+.carta-category-count {
+  flex: 0 0 auto;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--tinta-suave);
+  background: var(--crema-2);
+  border: 1px solid var(--linea);
+  border-radius: 50rem;
+}
+
+.carta-category-title-wrapper::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--linea), transparent);
+}
+
+/* ───────── Grid ───────── */
+.carta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.75rem;
+}
+
+/* ───────── Estados vacíos ───────── */
+.carta-vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 4rem 1.5rem;
+  background: #FFFFFF;
+  border: 1px dashed #DCCFBE;
+  border-radius: var(--radio-lg);
+  animation: subir 0.5s var(--ease) both;
+}
+
+.carta-vacio-icono {
+  width: 4.5rem;
+  height: 4.5rem;
+  display: grid;
+  place-items: center;
+  margin-bottom: 1rem;
+  color: var(--vino-600);
+  background: var(--vino-tinte);
+  border-radius: 50%;
+}
+
+.carta-vacio h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.15rem;
+  color: var(--tinta);
+}
+
+.carta-vacio p {
+  margin: 0 0 1.25rem;
+  color: var(--tinta-suave);
+  font-size: 0.95rem;
+}
+
+/* ───────── Skeletons de carga ───────── */
+.shimmer {
+  background: linear-gradient(100deg, #F3ECE1 30%, #FBF7F0 50%, #F3ECE1 70%);
+  background-size: 200% 100%;
+  animation: brillo 1.4s linear infinite;
+}
+
+.skeleton-img {
+  aspect-ratio: 16 / 11;
+}
+
+.skeleton-line {
+  height: 0.9rem;
+  border-radius: 50rem;
+}
+
+.skeleton-line.w-70 { width: 70%; }
+.skeleton-line.w-40 { width: 40%; height: 1.3rem; }
+
+.skeleton-btn {
+  height: 2.8rem;
+  border-radius: var(--radio-md);
+}
+
+.producto-card--skeleton {
+  animation: none;
+  box-shadow: none;
+}
+
+.producto-card--skeleton .producto-info {
+  justify-content: flex-start;
+}
+
+@media (max-width: 760px) {
+  .carta-section {
+    scroll-margin-top: 9rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .carta-main {
+    padding: 0 1rem;
+  }
+
+  .carta-grid {
+    gap: 1.25rem;
+  }
+}

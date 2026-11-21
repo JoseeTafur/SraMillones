@@ -57,6 +57,7 @@ public class ProductoService {
     }
 
     if (dto.getArchivoImagen() != null && !dto.getArchivoImagen().isEmpty()) {
+        // Caso 1: Subida de archivo binario a Cloudinary
         validarArchivoImagen(dto.getArchivoImagen());
         try {
             String urlSeguraNube = cloudinaryService.subirImagen(dto.getArchivoImagen());
@@ -64,6 +65,12 @@ public class ProductoService {
         } catch (IOException e) {
             throw new RuntimeException("Error crítico al subir la imagen a Cloudinary.", e);
         }
+    } else if (Boolean.TRUE.equals(dto.getEliminarImagen())) {
+        // Caso 2: El usuario presionó "Quitar Foto"
+        producto.setImagen(null);
+    } else if (dto.getImagen() != null && !dto.getImagen().isBlank() && !dto.getImagen().startsWith("blob:")) {
+        // Caso 3: El usuario pegó una URL externa válida
+        producto.setImagen(dto.getImagen().trim());
     }
 
     if (producto.getEstado() == null) {
@@ -79,6 +86,14 @@ public class ProductoService {
         Producto p = obtenerPorId(id);
         p.setEstado(estado);
         productoRepository.save(p);
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Object> obtenerCatalogoPublico() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("productos", productoRepository.findByEstado(1));
+        response.put("categorias", categoriaRepository.findAll());
+        return response;
     }
 
     @Transactional

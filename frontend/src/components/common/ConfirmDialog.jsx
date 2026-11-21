@@ -13,18 +13,21 @@ export const ConfirmDialog = ({
 }) => {
   const [shouldRender, setShouldRender] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Maneja la entrada y salida suave
   useEffect(() => {
     if (isOpen) {
       setShouldRender(true);
       setIsClosing(false);
+      setIsSubmitting(false);
     } else if (shouldRender) {
       setIsClosing(true);
       const timer = setTimeout(() => {
         setShouldRender(false);
         setIsClosing(false);
-      }, 250); // Tiempo exacto que dura la animación CSS (250ms)
+        setIsSubmitting(false);
+      }, 250);
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
@@ -32,10 +35,24 @@ export const ConfirmDialog = ({
   if (!shouldRender) return null;
 
   const handleClose = (callback) => {
+    if (isSubmitting) return;
     setIsClosing(true);
     setTimeout(() => {
       if (callback) callback();
     }, 250);
+  };
+
+  const handleAccept = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      if (onConfirm) {
+        await onConfirm();
+      }
+      setIsClosing(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderIcon = () => {
@@ -85,17 +102,19 @@ export const ConfirmDialog = ({
         <p className="confirm-message">{message}</p>
 
         <div className="confirm-actions">
-          <button 
-            type="button" 
-            className="btn-confirm-cancel" 
+          <button
+            type="button"
+            className="btn-confirm-cancel"
+            disabled={isSubmitting}
             onClick={() => handleClose(onCancel)}
           >
             {cancelText}
           </button>
-          <button 
-            type="button" 
-            className={`btn-confirm-accept ${type}`} 
-            onClick={() => handleClose(onConfirm)}
+          <button
+            type="button"
+            className={`btn-confirm-accept ${type} ${isSubmitting ? 'is-loading' : ''}`}
+            disabled={isSubmitting}
+            onClick={handleAccept}
           >
             {confirmText}
           </button>

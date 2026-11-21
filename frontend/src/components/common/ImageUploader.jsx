@@ -13,13 +13,12 @@ export const ImageUploader = ({
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file && file.type.startsWith('image/')) {
-      const imageUrl = URL.createObjectURL(file);
-      onChange(imageUrl);
+      onChange(file);
     }
   };
 
   const handleRemove = () => {
-    onChange('');
+    onChange(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -80,7 +79,7 @@ export const ImageUploader = ({
               type="url"
               className="input-senior url-input"
               placeholder={placeholderUrl}
-              value={value}
+              value={value || ''}
               onChange={(e) => onChange(e.target.value)}
             />
           </div>
