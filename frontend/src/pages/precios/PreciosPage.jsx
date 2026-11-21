@@ -6,6 +6,7 @@ import Toast from '../../components/common/Toast';
 import { EditIcon, HideIcon, SearchIcon, ClearIcon } from '../../components/common/Icons';
 import productoPrecioService from '../../services/productoPrecioService';
 import './PreciosPage.css';
+import imgNotFound from '../../assets/not-found.png';
 
 export const PreciosPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -294,10 +295,10 @@ export const PreciosPage = () => {
           <tr key={prod.id} className={!prod.disponible ? 'tr-disabled' : ''}>
             <td>
               <img
-                src={prod.imagen || 'https://placeholder.com'}
+                src={prod.imagen || imgNotFound}
                 alt={prod.nombre}
                 className="precio-img-thumb"
-                onError={(e) => { e.target.src = 'https://placeholder.com'; }}
+                onError={(e) => { e.target.src = imgNotFound; }}
               />
             </td>
             <td><span className="precio-producto-nombre">{prod.nombre}</span></td>
@@ -555,10 +556,10 @@ export const PreciosPage = () => {
                         </div>
 
                         <img
-                          src={p.imagen || 'https://placeholder.com'}
+                          src={p.imagen || imgNotFound}
                           alt={p.nombre}
                           className="grid-card-thumb"
-                          onError={(e) => { e.target.src = 'https://placeholder.com'; }}
+                          onError={(e) => { e.target.src = imgNotFound; }}
                         />
 
                         <div className="grid-card-info">
