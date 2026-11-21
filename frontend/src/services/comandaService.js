@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/api/comandas';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+const API_URL = `${BASE_URL}/api/comandas`;
 
 export const comandaService = {
   // Obtener la comanda activa de una mesa
@@ -37,6 +38,14 @@ export const comandaService = {
     const params = { mesaOrigen, mesaDestino };
     const res = await axios.post(`${API_URL}/dividir`, idsDetalles, {
       params,
+      withCredentials: true
+    });
+    return res.data;
+  },
+
+  // Eliminar detalle de comanda
+  eliminarDetalleComanda: async (detalleId) => {
+    const res = await axios.delete(`${API_URL}/detalle/${detalleId}`, {
       withCredentials: true
     });
     return res.data;

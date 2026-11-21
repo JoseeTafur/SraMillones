@@ -90,6 +90,7 @@ export const Sidebar = ({ isCollapsed }) => {
         { title: 'Roles y Permisos', path: '/admin/perfiles' },
         { title: 'Gestión de Empleados', path: '/admin/empleados' },
         { title: 'Gestión de Clientes', path: '/admin/clientes' },
+        { title: 'Auditoría', path: '/admin/auditoria' },
       ]
     },
     {

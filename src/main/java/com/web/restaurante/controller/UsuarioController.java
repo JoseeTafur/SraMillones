@@ -1,5 +1,6 @@
 package com.web.restaurante.controller;
 
+import com.web.restaurante.dto.login.LoginResponseDTO;
 import com.web.restaurante.model.Usuario;
 import com.web.restaurante.service.PerfilService;
 import com.web.restaurante.service.UsuarioService;
@@ -7,7 +8,6 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -18,12 +18,21 @@ import java.util.Map;
 import java.util.Objects;
 
 @RequiredArgsConstructor
-@RestController 
-@CrossOrigin(origins = "http://localhost:5173") 
+@RestController
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 @RequestMapping("/usuarios")
 public class UsuarioController {
     private final UsuarioService usuarioService;
     private final PerfilService perfilService;
+
+    private Long obtenerUsuarioIdSesion(HttpSession session) {
+        if (session == null) return null;
+        if (session.getAttribute("datosSesion") instanceof LoginResponseDTO dto) {
+            return dto.getUsuarioId();
+        }
+        Object idAttr = session.getAttribute("usuarioId");
+        return idAttr != null ? Long.valueOf(idAttr.toString()) : null;
+    }
 
     @GetMapping
     public String mostrarPagina(Model model) {
@@ -67,7 +76,7 @@ public class UsuarioController {
         return ResponseEntity.ok(response);
     }
 
-   @PostMapping("/api/guardar") // 🟢 Agregamos /api/ para que la URL completa sea /usuarios/api/guardar
+    @PostMapping("/api/guardar")
     public ResponseEntity<?> guardarUsuarioAjax(@RequestBody Usuario usuario, BindingResult bindingResult, HttpSession session) {
         Map<String, Object> response = new HashMap<>();
 
@@ -76,13 +85,12 @@ public class UsuarioController {
         }
 
         try {
-            String rolSesion = session.getAttribute("rol") != null 
-                    ? session.getAttribute("rol").toString().trim().toUpperCase() 
+            String rolSesion = session.getAttribute("rol") != null
+                    ? session.getAttribute("rol").toString().trim().toUpperCase()
                     : "";
 
             if (rolSesion.isEmpty() && session.getAttribute("datosSesion") != null) {
-                com.web.restaurante.dto.login.LoginResponseDTO dto = 
-                    (com.web.restaurante.dto.login.LoginResponseDTO) session.getAttribute("datosSesion");
+                LoginResponseDTO dto = (LoginResponseDTO) session.getAttribute("datosSesion");
                 if (dto != null && dto.getRol() != null) {
                     rolSesion = dto.getRol().trim().toUpperCase();
                 }
@@ -146,11 +154,11 @@ public class UsuarioController {
     public ResponseEntity<?> cambiarEstadoUsuarioAjax(@PathVariable Long id, HttpSession session) {
         Map<String, Object> response = new HashMap<>();
         try {
-            Usuario usuarioLogueado = (Usuario) session.getAttribute("usuarioLogueado");
+            Long idSesion = obtenerUsuarioIdSesion(session);
             String rolSesion = session.getAttribute("rol") != null
                     ? session.getAttribute("rol").toString().trim().toUpperCase() : "";
 
-            if (Objects.equals(usuarioLogueado.getId(), id)) {
+            if (Objects.equals(idSesion, id)) {
                 response.put("success", false);
                 response.put("message", "Operación no permitida: No puedes desactivar tu propia cuenta.");
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
@@ -192,7 +200,7 @@ public class UsuarioController {
     public ResponseEntity<?> eliminarUsuarioAjax(@PathVariable Long id, HttpSession session) {
         Map<String, Object> response = new HashMap<>();
         try {
-            Usuario usuarioLogueado = (Usuario) session.getAttribute("usuarioLogueado");
+            Long idSesion = obtenerUsuarioIdSesion(session);
             String rolSesion = session.getAttribute("rol") != null
                     ? session.getAttribute("rol").toString().trim().toUpperCase() : "";
 
@@ -203,7 +211,7 @@ public class UsuarioController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
 
-            if (Objects.equals(usuarioLogueado.getId(), id)) {
+            if (Objects.equals(idSesion, id)) {
                 response.put("success", false);
                 response.put("message", "Operación inválida: No puedes eliminar la cuenta con la que estás firmado.");
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);

@@ -4,7 +4,6 @@ import com.web.restaurante.dto.producto.ProductoRequestDTO;
 import com.web.restaurante.model.Producto;
 import com.web.restaurante.repository.CategoriaRepository;
 import com.web.restaurante.repository.ProductoRepository;
-import com.web.restaurante.service.CloudinaryService;
 import com.web.restaurante.util.ValidationUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +21,7 @@ public class ProductoService {
     private final ProductoRepository productoRepository;
     private final CategoriaRepository categoriaRepository;
     private final CloudinaryService cloudinaryService;
+    private final AuditoriaService auditoriaService;
 
     @Transactional(readOnly = true)
     public Map<String, Object> obtenerCatalogoInicial() {
@@ -38,60 +38,86 @@ public class ProductoService {
     }
 
     @Transactional
-        public Producto guardarOEditar(ProductoRequestDTO dto) {
-    validarCamposNegocio(dto);
+    public Producto guardarOEditar(ProductoRequestDTO dto) {
+        validarCamposNegocio(dto);
 
-    Producto producto = new Producto();
-    if (dto.getId() != null) {
-        producto = productoRepository.findById(dto.getId())
-                .orElseThrow(() -> new RuntimeException("El producto que intenta editar no existe."));
-    }
+        boolean esEdicion = dto.getId() != null;
+        String estadoAntes = null;
 
-    producto.setNombre(dto.getNombre().trim());
-    producto.setDescripcion(dto.getDescripcion() != null ? dto.getDescripcion().trim() : null);
-    producto.setPrecio(dto.getPrecio());
-    
-    if (dto.getCategoriaId() != null) {
-        producto.setCategoria(categoriaRepository.findById(dto.getCategoriaId())
-                .orElseThrow(() -> new RuntimeException("La categoría especificada no existe.")));
-    }
-
-    if (dto.getArchivoImagen() != null && !dto.getArchivoImagen().isEmpty()) {
-        // Caso 1: Subida de archivo binario a Cloudinary
-        validarArchivoImagen(dto.getArchivoImagen());
-        try {
-            String urlSeguraNube = cloudinaryService.subirImagen(dto.getArchivoImagen());
-            producto.setImagen(urlSeguraNube);
-        } catch (IOException e) {
-            throw new RuntimeException("Error crítico al subir la imagen a Cloudinary.", e);
+        Producto producto = new Producto();
+        if (esEdicion) {
+            producto = productoRepository.findById(dto.getId())
+                    .orElseThrow(() -> new RuntimeException("El producto que intenta editar no existe."));
+            estadoAntes = "Nombre: " + producto.getNombre() + " | Precio: S/ " + producto.getPrecio();
         }
-    } else if (Boolean.TRUE.equals(dto.getEliminarImagen())) {
-        // Caso 2: El usuario presionó "Quitar Foto"
-        producto.setImagen(null);
-    } else if (dto.getImagen() != null && !dto.getImagen().isBlank() && !dto.getImagen().startsWith("blob:")) {
-        // Caso 3: El usuario pegó una URL externa válida
-        producto.setImagen(dto.getImagen().trim());
-    }
 
-    if (producto.getEstado() == null) {
-        producto.setEstado(1); 
-    }
+        producto.setNombre(dto.getNombre().trim());
+        producto.setDescripcion(dto.getDescripcion() != null ? dto.getDescripcion().trim() : null);
+        producto.setPrecio(dto.getPrecio());
 
-    return productoRepository.save(producto);
-    }
+        if (dto.getCategoriaId() != null) {
+            producto.setCategoria(categoriaRepository.findById(dto.getCategoriaId())
+                    .orElseThrow(() -> new RuntimeException("La categoría especificada no existe.")));
+        }
 
+        if (dto.getArchivoImagen() != null && !dto.getArchivoImagen().isEmpty()) {
+            // Caso 1: Subida de archivo binario a Cloudinary
+            validarArchivoImagen(dto.getArchivoImagen());
+            try {
+                String urlSeguraNube = cloudinaryService.subirImagen(dto.getArchivoImagen());
+                producto.setImagen(urlSeguraNube);
+            } catch (IOException e) {
+                throw new RuntimeException("Error crítico al subir la imagen a Cloudinary.", e);
+            }
+        } else if (Boolean.TRUE.equals(dto.getEliminarImagen())) {
+            // Caso 2: El usuario presionó "Quitar Foto"
+            producto.setImagen(null);
+        } else if (dto.getImagen() != null && !dto.getImagen().isBlank() && !dto.getImagen().startsWith("blob:")) {
+            // Caso 3: El usuario pegó una URL externa válida
+            producto.setImagen(dto.getImagen().trim());
+        }
+
+        if (producto.getEstado() == null) {
+            producto.setEstado(1);
+        }
+
+        Producto guardado = productoRepository.save(producto);
+
+        auditoriaService.registrar(
+                "PRODUCTOS",
+                esEdicion ? "EDITAR_PRODUCTO" : "CREAR_PRODUCTO",
+                "Producto",
+                guardado.getId(),
+                (esEdicion ? "Producto editado: " : "Nuevo producto creado: ") + guardado.getNombre() + " (S/ " + guardado.getPrecio() + ")",
+                estadoAntes,
+                "Nombre: " + guardado.getNombre() + " | Precio: S/ " + guardado.getPrecio() + " | Categoría: " + (guardado.getCategoria() != null ? guardado.getCategoria().getNombre() : "Sin categoría")
+        );
+
+        return guardado;
+    }
 
     @Transactional
     public void cambiarEstado(Long id, Integer estado) {
         Producto p = obtenerPorId(id);
+        Integer estadoAnterior = p.getEstado();
         p.setEstado(estado);
         productoRepository.save(p);
+
+        auditoriaService.registrar(
+                "PRODUCTOS",
+                "CAMBIAR_ESTADO_PRODUCTO",
+                "Producto",
+                p.getId(),
+                "Cambio de estado en producto '" + p.getNombre() + "' -> " + (estado != null && estado == 1 ? "ACTIVO" : "INACTIVO"),
+                "Estado: " + (estadoAnterior != null && estadoAnterior == 1 ? "ACTIVO" : "INACTIVO"),
+                "Estado: " + (estado != null && estado == 1 ? "ACTIVO" : "INACTIVO")
+        );
     }
 
     @Transactional(readOnly = true)
     public Map<String, Object> obtenerCatalogoPublico() {
         Map<String, Object> response = new HashMap<>();
-        response.put("productos", productoRepository.findByEstado(1));
+        response.put("productos", productoRepository.findByEstado(1)); // Solo productos activos
         response.put("categorias", categoriaRepository.findAll());
         return response;
     }
@@ -101,12 +127,22 @@ public class ProductoService {
         Producto p = obtenerPorId(id);
         p.setEstado(0); // Desactivación
         productoRepository.save(p);
+
+        auditoriaService.registrar(
+                "PRODUCTOS",
+                "ELIMINAR_PRODUCTO",
+                "Producto",
+                p.getId(),
+                "Producto desactivado de la carta: '" + p.getNombre() + "'",
+                "Estado: ACTIVO",
+                "Estado: INACTIVO (Eliminado lógico)"
+        );
     }
 
     public Map<String, String> validarDatosReactivos(Map<String, Object> datos) {
         Map<String, String> errores = new HashMap<>();
         String nombre = datos.get("nombre") != null ? datos.get("nombre").toString().trim() : "";
-        
+
         if (nombre.isEmpty()) {
             errores.put("nombre", "El nombre es obligatorio.");
         } else if (!ValidationUtil.soloLetras(nombre)) {

@@ -4,7 +4,9 @@ const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8
 
 const productoPrecioService = {
   listarPrecios: async () => {
-    const response = await axios.get(`${API_BASE_URL}/listar`);
+    const response = await axios.get(`${API_BASE_URL}/listar`, {
+      withCredentials: true
+    });
     return response.data;
   },
 

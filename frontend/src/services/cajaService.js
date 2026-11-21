@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_BASE = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/caja`;
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+const API_BASE = `${BASE_URL}/api/caja`;
 
 export const cajaService = {
 
@@ -13,9 +14,9 @@ export const cajaService = {
   abrirCaja: async (montoApertura, aperturaForzada = false) => {
     const res = await axios.post(
       `${API_BASE}/turno/abrir`,
-      { 
-        montoApertura: Number(montoApertura), 
-        aperturaForzada: Boolean(aperturaForzada) 
+      {
+        montoApertura: Number(montoApertura),
+        aperturaForzada: Boolean(aperturaForzada)
       },
       { withCredentials: true }
     );
@@ -52,20 +53,20 @@ export const cajaService = {
   },
 
   obtenerComandasPorCobrar: async () => {
-  const res = await axios.get(`${BASE_URL}/api/comandas/por-cobrar`, { withCredentials: true });
-  return res.data;
-},
+    const res = await axios.get(`${BASE_URL}/api/comandas/por-cobrar`, { withCredentials: true });
+    return res.data;
+  },
 
-cobrarComanda: async (comandaId, datosPago) => {
-  const res = await axios.post(
-    `${BASE_URL}/api/caja/turno/cobrar/${comandaId}`,
-    datosPago,
-    { withCredentials: true }
-  );
-  return res.data;
-},
+  cobrarComanda: async (comandaId, datosPago) => {
+    const res = await axios.post(
+      `${BASE_URL}/api/caja/turno/cobrar/${comandaId}`,
+      datosPago,
+      { withCredentials: true }
+    );
+    return res.data;
+  },
 
-obtenerDetalleVenta: async (movimientoId) => {
+  obtenerDetalleVenta: async (movimientoId) => {
     const res = await axios.get(`${BASE_URL}/api/caja/auditoria/venta-detalle/${movimientoId}`, {
       withCredentials: true
     });
@@ -88,7 +89,5 @@ obtenerDetalleVenta: async (movimientoId) => {
     return res.data;
   },
 };
-
-
 
 export default cajaService;

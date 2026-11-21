@@ -2,7 +2,6 @@ import axios from 'axios';
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/usuarios/api`;
 
-// Configuración global de axios o pasar explicitamente { withCredentials: true }
 export const usuarioService = {
   // Obtener rol y datos de la sesión activa
   getRolSesion: async () => {

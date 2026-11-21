@@ -22,6 +22,7 @@ import CocinaPage from '../pages/cocina/CocinaPage';
 import ReservasPage from '../pages/reservas/ReservasPage';
 import PagosDigitalesPage from '../pages/digitales/PagosDigitalesPage';
 import ClientesPage from '../pages/clientes/ClientesPage';
+import { AuditoriaPage } from '../pages/auditoria/AuditoriaPage';
 
 export const AppRouter = () => {
   return (
@@ -52,10 +53,12 @@ export const AppRouter = () => {
             <Route path="/admin/cocina" element={<CocinaPage />} />
             <Route path="/admin/reservas" element={<ReservasPage />} />
             <Route path="/admin/pagos-digitales" element={<PagosDigitalesPage />} />
+            <Route path="/admin/auditoria" element={<AuditoriaPage />} />
             {/* Cajas y fondos */}
             <Route path="/admin/caja" element={<CajaPage tabInicial="TURNO" />} />
             <Route path="/admin/caja-chica" element={<CajaPage tabInicial="CHICA" />} />
             <Route path="/admin/caja-general" element={<CajaPage tabInicial="GENERAL" />} />
+            
           </Route>
 
           {/* Redirecciones por defecto */}

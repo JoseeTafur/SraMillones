@@ -13,6 +13,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/comandas")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class ComandaController {
 
     private final ComandaService comandaService;

@@ -7,6 +7,7 @@ import com.web.restaurante.model.enums.TipoMovimientoCaja;
 import com.web.restaurante.repository.MovimientoCajaRepository;
 import com.web.restaurante.repository.PedidoRepository;
 import com.web.restaurante.repository.TurnoCajaRepository;
+import com.web.restaurante.service.AuditoriaService;
 import com.web.restaurante.service.CierreCajaSequenceService;
 import com.web.restaurante.service.MovimientoSequenceService;
 
@@ -30,6 +31,7 @@ public class TurnoCajaService {
     private final MovimientoSequenceService movimientoSequenceService;
     private final CierreCajaSequenceService cierreCajaSequenceService;
     private final PedidoRepository pedidoRepository;
+    private final AuditoriaService auditoriaService;
 
     public Optional<TurnoCaja> obtenerTurnoActivo() {
         return turnoCajaRepository.findByActivoTrue();
@@ -69,6 +71,17 @@ public class TurnoCajaService {
 
         String serieApertura = turnoSequenceService.generarSiguienteTurno();
         registrarMovimiento(turno, TipoMovimientoCaja.APERTURA, "Fondo inicial", montoApertura, serieApertura);
+
+        auditoriaService.registrar(
+                "CAJA",
+                "APERTURA_CAJA",
+                "TurnoCaja",
+                turno.getId(),
+                "Apertura de turno de caja #" + turno.getId() + " (" + serieApertura + ") con fondo S/ " + String.format("%.2f", montoApertura),
+                "Caja: CERRADA",
+                "Turno #" + turno.getId() + " ACTIVO | Fondo: S/ " + String.format("%.2f", montoApertura)
+        );
+
         return turno;
     }
 
@@ -85,6 +98,16 @@ public class TurnoCajaService {
                 .orElseThrow(() -> new IllegalStateException("No hay turno activo."));
         String serieMovimiento = movimientoSequenceService.generarSiguienteMovimiento();
         registrarMovimiento(turno, TipoMovimientoCaja.EGRESO_MANUAL, concepto, -Math.abs(monto), serieMovimiento);
+
+        auditoriaService.registrar(
+                "CAJA",
+                "EGRESO_MANUAL_CAJA",
+                "MovimientoCaja",
+                turno.getId(),
+                "Egreso manual en caja (" + serieMovimiento + "): -S/ " + String.format("%.2f", Math.abs(monto)) + " - " + concepto,
+                null,
+                "Monto: -S/ " + String.format("%.2f", Math.abs(monto)) + " | Concepto: " + concepto
+        );
     }
 
     @Transactional
@@ -93,6 +116,16 @@ public class TurnoCajaService {
                 .orElseThrow(() -> new IllegalStateException("No hay turno activo."));
         String serieMovimiento = movimientoSequenceService.generarSiguienteMovimiento();
         registrarMovimiento(turno, TipoMovimientoCaja.INGRESO_MANUAL, concepto, Math.abs(monto), serieMovimiento);
+
+        auditoriaService.registrar(
+                "CAJA",
+                "INGRESO_MANUAL_CAJA",
+                "MovimientoCaja",
+                turno.getId(),
+                "Ingreso manual en caja (" + serieMovimiento + "): +S/ " + String.format("%.2f", Math.abs(monto)) + " - " + concepto,
+                null,
+                "Monto: +S/ " + String.format("%.2f", Math.abs(monto)) + " | Concepto: " + concepto
+        );
     }
 
     @Transactional
@@ -108,46 +141,25 @@ public class TurnoCajaService {
                 .filter(p -> p.getComprobanteNotaNumero() != null && !p.getComprobanteNotaNumero().trim().isEmpty())
                 .collect(Collectors.toList());
 
-        System.out.println("\n🛒 --- COMANDAS / NOTAS DE VENTA LIQUIDADAS DETECTADAS ---");
         double totalVendido = 0.0;
-        if (pedidosTurno.isEmpty()) {
-            System.out.println("   (Ninguna comanda pagada detectada para este turno)");
-        } else {
-            for (Pedido p : pedidosTurno) {
-                double monto = p.getMontoTotal() != null ? p.getMontoTotal() : 0.0;
-                totalVendido += monto;
-                System.out.println(String.format("   👉 Pedido ID: #%-4d | Comprobante: %-10s | Monto: S/. %.2f",
-                        p.getId(),
-                        p.getComprobanteNotaNumero() != null ? p.getComprobanteNotaNumero() : "SIN COMPR.",
-                        monto));
-            }
+        for (Pedido p : pedidosTurno) {
+            double monto = p.getMontoTotal() != null ? p.getMontoTotal() : 0.0;
+            totalVendido += monto;
         }
-        System.out.println(String.format("💰 Subtotal Ventas del Turno : S/. %.2f", totalVendido));
 
-        System.out.println("\n📊 --- MOVIMIENTOS MANUALES REGISTRADOS EN BITÁCORA ---");
         double totalIngresosManuales = 0.0;
         double totalEgresosManuales = 0.0;
 
         for (MovimientoCaja m : movimientos) {
             if (m.getTipo() == TipoMovimientoCaja.INGRESO_MANUAL) {
                 totalIngresosManuales += m.getMonto();
-                System.out.println(String.format("   🟩 [INGRESO MANUAL] ID: #%-4d | Concepto: %-30s | Monto: +S/. %.2f", m.getId(), m.getConcepto(), m.getMonto()));
             } else if (m.getTipo() != null && m.getTipo().getGrupoMacro().equals("EGRESO") && m.getTipo() != TipoMovimientoCaja.CIERRE) {
                 totalEgresosManuales += m.getMonto();
-                System.out.println(String.format("   🟥 [EGRESO MANUAL]  ID: #%-4d | Concepto: %-30s | Monto: S/. %.2f", m.getId(), m.getConcepto(), m.getMonto()));
             }
         }
 
         double saldoTeorico = turno.getMontoApertura() + totalVendido + totalIngresosManuales + totalEgresosManuales;
         double diferencia = montoCierre - saldoTeorico;
-
-        System.out.println("\n🧮 --- FORMULACIÓN MATEMÁTICA DEL ARQUEO ---");
-        System.out.println(String.format("   Apertura(%.2f) + Ventas(%.2f) + IngresosMan(%.2f) + EgresosMan(%.2f)",
-                turno.getMontoApertura(), totalVendido, totalIngresosManuales, totalEgresosManuales));
-        System.out.println(String.format("   👉 Saldo Teórico Esperado en Sistema   : S/. %.2f", saldoTeorico));
-        System.out.println(String.format("   👉 Arqueo Físico Digitado por Cajero   : S/. %.2f", montoCierre));
-        System.out.println(String.format("   🚨 DESCUADRE FINAL REGISTRADO         : S/. %.2f", diferencia));
-        System.out.println("==================================================================\n");
 
         String serieCierre = cierreCajaSequenceService.generarSiguienteCierreCaja();
         registrarMovimiento(turno, TipoMovimientoCaja.CIERRE, "Cierre estricto de caja por el operador", montoCierre, serieCierre);
@@ -159,7 +171,19 @@ public class TurnoCajaService {
         turno.setFechaCierre(LocalDateTime.now());
         turno.setActivo(false);
 
-        return turnoCajaRepository.save(turno);
+        TurnoCaja cerrado = turnoCajaRepository.save(turno);
+
+        auditoriaService.registrar(
+                "CAJA",
+                "CIERRE_CAJA",
+                "TurnoCaja",
+                cerrado.getId(),
+                "Cierre de turno #" + cerrado.getId() + " (" + serieCierre + ") | Declarado: S/ " + String.format("%.2f", montoCierre) + " | Diferencia: S/ " + String.format("%.2f", diferencia),
+                "Saldo teórico: S/ " + String.format("%.2f", saldoTeorico),
+                "Monto cierre: S/ " + String.format("%.2f", montoCierre) + " | Diferencia: S/ " + String.format("%.2f", diferencia)
+        );
+
+        return cerrado;
     }
 
     private void registrarMovimiento(TurnoCaja turno, TipoMovimientoCaja tipo,

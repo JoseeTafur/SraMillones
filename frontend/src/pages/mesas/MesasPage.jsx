@@ -5,6 +5,7 @@ import MesaGestionModal from './components/MesaGestionModal';
 import MesaPagoModal from './components/MesaPagoModal';
 import ComanderaPage from './ComanderaPage';
 import mesaService from '../../services/mesaService';
+import { BuildingIcon, MapPinIcon, LayoutGridIcon, DotIcon } from '../../components/common/Icons';
 import './MesasPage.css';
 
 export const MesasPage = () => {
@@ -182,8 +183,16 @@ export const MesasPage = () => {
         </div>
 
         <div className="mesas-legend-bar">
-          <span className="legend-badge libre">● Libre (Verde)</span>
-          <span className="legend-badge ocupada">🔴 Ocupado (Rojo)</span>
+          <span className="legend-badge libre">
+            <DotIcon width={9} height={9} />
+            Libre (Verde)
+          </span>
+          <span className="legend-badge ocupada">
+            <span className="legend-dot-pulse">
+              <DotIcon width={9} height={9} color="#ef4444" />
+            </span>
+            Ocupado (Rojo)
+          </span>
         </div>
       </div>
 
@@ -194,19 +203,22 @@ export const MesasPage = () => {
             className={`tab-pill-btn ${pisoActivo === 'PISO_1' ? 'active' : ''}`} 
             onClick={() => setPisoActivo('PISO_1')}
           >
-            🏢 Primer Piso (Mesas 1 - 4)
+            <BuildingIcon width={16} height={16} />
+            Primer Piso (Mesas 1 - 4)
           </button>
           <button 
             className={`tab-pill-btn ${pisoActivo === 'PISO_2' ? 'active' : ''}`} 
             onClick={() => setPisoActivo('PISO_2')}
           >
-            🏢 Segundo Piso (Mesas 5 - 13)
+            <BuildingIcon width={16} height={16} />
+            Segundo Piso (Mesas 5 - 13)
           </button>
           <button 
             className={`tab-pill-btn ${pisoActivo === 'TODOS' ? 'active' : ''}`} 
             onClick={() => setPisoActivo('TODOS')}
           >
-            ⠿ Ver Salón Completo (13 Mesas)
+            <LayoutGridIcon width={16} height={16} />
+            Ver Salón Completo (13 Mesas)
           </button>
         </div>
       </div>
@@ -216,7 +228,8 @@ export const MesasPage = () => {
         <div className="mesas-grid-card-wrapper">
           <div className="mesas-grid-top-row">
             <div className="mesas-grid-title">
-              <h3>📍 PRIMER PISO — 4 Mesas</h3>
+              <MapPinIcon width={19} height={19} />
+              <h3>PRIMER PISO — 4 Mesas</h3>
             </div>
           </div>
 
@@ -252,7 +265,8 @@ export const MesasPage = () => {
         <div className="mesas-grid-card-wrapper" style={{ marginTop: '1.5rem' }}>
           <div className="mesas-grid-top-row">
             <div className="mesas-grid-title">
-              <h3>📍 SEGUNDO PISO — 9 Mesas</h3>
+              <MapPinIcon width={19} height={19} />
+              <h3>SEGUNDO PISO — 9 Mesas</h3>
             </div>
           </div>
 

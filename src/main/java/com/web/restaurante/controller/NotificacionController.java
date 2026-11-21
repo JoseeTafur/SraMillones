@@ -13,45 +13,76 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/admin/notificaciones")
+@RequestMapping("/api/admin/notificaciones")
 @RequiredArgsConstructor
 public class NotificacionController {
 
     private final NotificacionRepository notificacionRepository;
 
-    private List<Notificacion> obtenerPendientesPorUsuario(Usuario user) {
-        String perfil = user.getPerfil().getNombre().toUpperCase();
-        if (perfil.contains("ADMIN") || perfil.contains("SUPER")) {
+    private boolean tieneSesionActiva(HttpSession session) {
+        if (session == null) return false;
+        return session.getAttribute("usuarioLogueado") != null
+                || session.getAttribute("datosSesion") != null
+                || session.getAttribute("usuarioId") != null;
+    }
+
+    private String resolverPerfilSesion(HttpSession session) {
+        if (session == null) return "TODOS";
+        if (session.getAttribute("usuarioLogueado") instanceof Usuario u && u.getPerfil() != null) {
+            return u.getPerfil().getNombre().toUpperCase();
+        }
+        Object datos = session.getAttribute("datosSesion");
+        if (datos != null) {
+            try {
+                var m = datos.getClass().getMethod("getRol");
+                Object rol = m.invoke(datos);
+                if (rol != null && !rol.toString().isBlank()) {
+                    return rol.toString().toUpperCase();
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        return "TODOS";
+    }
+
+    private List<Notificacion> obtenerPendientesPorPerfil(String perfil) {
+        String p = perfil != null ? perfil.toUpperCase() : "TODOS";
+        if (p.contains("ADMIN") || p.contains("SUPER")) {
             return notificacionRepository.findByLeidoFalseOrderByFechaCreacionDesc();
         }
-        if (perfil.contains("CAJERO") || perfil.contains("CAJA")) {
+        if (p.contains("CAJERO") || p.contains("CAJA")) {
             return notificacionRepository.findByLeidoFalseAndDestinoPerfilInOrderByFechaCreacionDesc(
                     Arrays.asList("TODOS", "CAJERO", "CAJA")
             );
         }
         return notificacionRepository.findByLeidoFalseAndDestinoPerfilInOrderByFechaCreacionDesc(
-                Arrays.asList("TODOS", perfil)
+                Arrays.asList("TODOS", p)
         );
     }
 
     @GetMapping("/api/listar-no-leidas")
     public ResponseEntity<?> obtenerAlertasActivasApi(HttpSession session) {
-        Usuario user = (Usuario) session.getAttribute("usuarioLogueado");
-        if (user == null) {
+        if (!tieneSesionActiva(session)) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "Sesión inválida"));
         }
 
-        List<Notificacion> noLeidas = obtenerPendientesPorUsuario(user);
+        String perfil = resolverPerfilSesion(session);
+        List<Notificacion> noLeidas = obtenerPendientesPorPerfil(perfil);
+
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "data", noLeidas,
                 "total", noLeidas.size(),
-                "perfilActual", user.getPerfil().getNombre().toUpperCase()
+                "perfilActual", perfil
         ));
     }
 
     @PostMapping("/api/marcar-leido-individual/{id}")
-    public ResponseEntity<?> marcarLeidoIndividual(@PathVariable Long id) {
+    public ResponseEntity<?> marcarLeidoIndividual(@PathVariable Long id, HttpSession session) {
+        if (!tieneSesionActiva(session)) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "Sesión inválida"));
+        }
+
         return notificacionRepository.findById(id)
                 .map(n -> {
                     n.setLeido(true);
@@ -63,12 +94,12 @@ public class NotificacionController {
 
     @PostMapping("/api/marcar-leido")
     public ResponseEntity<?> marcarTodoComoLeido(HttpSession session) {
-        Usuario user = (Usuario) session.getAttribute("usuarioLogueado");
-        if (user == null) {
+        if (!tieneSesionActiva(session)) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "Sesión inválida"));
         }
 
-        List<Notificacion> modificar = obtenerPendientesPorUsuario(user);
+        String perfil = resolverPerfilSesion(session);
+        List<Notificacion> modificar = obtenerPendientesPorPerfil(perfil);
         modificar.forEach(n -> n.setLeido(true));
         notificacionRepository.saveAll(modificar);
 

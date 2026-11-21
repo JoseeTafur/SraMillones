@@ -214,3 +214,94 @@
   color: #64748b;
   font-weight: 600;
 }
+
+/* ===================================================
+   ÍCONOS SVG Y MICROANIMACIONES
+   (solo agregados: no modifican colores, medidas ni
+   espacios de las reglas de arriba)
+   =================================================== */
+
+/* Los SVG reemplazan a los emojis y se alinean con el texto */
+.tab-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.tab-pill-btn svg,
+.mesas-grid-title svg,
+.legend-badge svg {
+  flex-shrink: 0;
+}
+
+/* Punto rojo de la leyenda: usa el mismo pulso que la etiqueta "Ocupado" */
+.legend-dot-pulse {
+  display: inline-flex;
+  border-radius: 50%;
+  animation: pulseRed 2s infinite;
+}
+
+/* Pestañas de piso: respuesta suave al pasar y al presionar */
+.tab-pill-btn svg {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.tab-pill-btn:hover:not(.active) {
+  transform: translateY(-1px);
+}
+
+.tab-pill-btn:hover svg {
+  transform: scale(1.12);
+}
+
+.tab-pill-btn:active {
+  transform: scale(0.97);
+}
+
+.tab-pill-btn:focus-visible {
+  outline: 2px solid #4a0811;
+  outline-offset: 2px;
+}
+
+/* Entrada suave al cambiar de piso */
+@keyframes mesasEntrada {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes mesaCardEntra {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.mesas-grid-card-wrapper {
+  animation: mesasEntrada 0.4s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+/* Las mesas aparecen una tras otra */
+.mesa-card-relative-wrapper {
+  animation: mesaCardEntra 0.45s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.mesa-card-relative-wrapper:nth-child(2) { animation-delay: 30ms; }
+.mesa-card-relative-wrapper:nth-child(3) { animation-delay: 60ms; }
+.mesa-card-relative-wrapper:nth-child(4) { animation-delay: 90ms; }
+.mesa-card-relative-wrapper:nth-child(5) { animation-delay: 120ms; }
+.mesa-card-relative-wrapper:nth-child(6) { animation-delay: 150ms; }
+.mesa-card-relative-wrapper:nth-child(7) { animation-delay: 180ms; }
+.mesa-card-relative-wrapper:nth-child(8) { animation-delay: 210ms; }
+.mesa-card-relative-wrapper:nth-child(9) { animation-delay: 240ms; }
+
+/* Movimiento reducido: sin animaciones nuevas */
+@media (prefers-reduced-motion: reduce) {
+  .mesas-grid-card-wrapper,
+  .mesa-card-relative-wrapper,
+  .legend-dot-pulse {
+    animation: none;
+  }
+
+  .tab-pill-btn,
+  .tab-pill-btn svg {
+    transition: none;
+  }
+}

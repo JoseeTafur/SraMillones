@@ -59,22 +59,59 @@ public class PagoDigitalService {
                 .imgUrl(dto.imgUrl())
                 .situacion(SituacionPagoDigital.PENDIENTE)
                 .build();
-        return pagoDigitalMapper.toDTO(pagoDigitalRepository.save(pagoDigital));
+        PagoDigital guardado = pagoDigitalRepository.save(pagoDigital);
+
+        auditoriaService.registrar(
+                "PAGOS_DIGITALES",
+                "CREAR_PAGO_DIGITAL",
+                "PagoDigital",
+                guardado.getId(),
+                "Nuevo registro de pago digital #" + guardado.getId(),
+                null,
+                "Situación: PENDIENTE | Obs: " + dto.observacion()
+        );
+
+        return pagoDigitalMapper.toDTO(guardado);
     }
 
     @Transactional
     public PagoDigitalDTO actualizar(PagoDigitalSaveDTO dto, Long id) {
         PagoDigital pago = requerirPagoPorId(id);
+        String obsAntes = pago.getObservacion();
         pago.setObservacion(dto.observacion());
         pago.setImgUrl(dto.imgUrl());
-        return pagoDigitalMapper.toDTO(pagoDigitalRepository.save(pago));
+        PagoDigital guardado = pagoDigitalRepository.save(pago);
+
+        auditoriaService.registrar(
+                "PAGOS_DIGITALES",
+                "ACTUALIZAR_PAGO_DIGITAL",
+                "PagoDigital",
+                guardado.getId(),
+                "Actualizó datos del pago digital #" + guardado.getId(),
+                "Obs: " + obsAntes,
+                "Obs: " + dto.observacion()
+        );
+
+        return pagoDigitalMapper.toDTO(guardado);
     }
 
     @Transactional
     public PagoDigitalDTO actualizarImagen(PagoImagenSaveDTO dto, Long id) {
         PagoDigital pago = requerirPagoPorId(id);
         pago.setImgUrl(dto.imgUrl());
-        return pagoDigitalMapper.toDTO(pagoDigitalRepository.save(pago));
+        PagoDigital guardado = pagoDigitalRepository.save(pago);
+
+        auditoriaService.registrar(
+                "PAGOS_DIGITALES",
+                "ACTUALIZAR_IMAGEN_PAGO",
+                "PagoDigital",
+                guardado.getId(),
+                "Actualizó imagen del comprobante en pago digital #" + guardado.getId(),
+                null,
+                "Nueva imagen registrada"
+        );
+
+        return pagoDigitalMapper.toDTO(guardado);
     }
 
     @Transactional

@@ -115,7 +115,9 @@ public class SessionInterceptor implements HandlerInterceptor {
         }
 
         // Rutas generales permitidas a cualquier empleado autenticado
-        if (apiPath.startsWith("/api/mi-perfil") || apiPath.startsWith("/api/dashboard")) {
+        if (apiPath.startsWith("/api/mi-perfil")
+                || apiPath.startsWith("/api/dashboard")
+                || apiPath.startsWith("/api/admin/notificaciones")) {
             return true;
         }
 
@@ -153,6 +155,9 @@ public class SessionInterceptor implements HandlerInterceptor {
         }
         if (apiPath.startsWith("/api/caja") || apiPath.startsWith("/admin/pagos-digitales")) {
             return tieneAlguna(rutasPermitidas, "/admin/caja", "/admin/caja-general", "/caja", "/admin/pagos-digitales");
+        }
+        if (apiPath.startsWith("/api/admin/auditoria")) {
+            return tieneAlguna(rutasPermitidas, "/admin/auditoria");
         }
 
         return false; // Denegar por defecto cualquier ruta API no mapeada

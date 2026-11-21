@@ -18,25 +18,22 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final PerfilRepository perfilRepository;
+    private final AuditoriaService auditoriaService;
 
-    
     @Transactional(readOnly = true)
     public List<Usuario> listar() {
         return usuarioRepository.findAllByEstadoNot(2);
     }
 
-    
-    @Transactional (readOnly = true)
+    @Transactional(readOnly = true)
     public Optional<Usuario> obtenerPorId(Long id) {
         return usuarioRepository.findById(id);
     }
 
-    
     @Transactional(readOnly = true)
     public Optional<Usuario> encontrarPorUsuario(String usuario) {
         return usuarioRepository.findByUsuarioAndEstadoNot(usuario, 2);
     }
-
 
     @Transactional
     public Usuario guardar(Usuario usuario) {
@@ -54,6 +51,8 @@ public class UsuarioService {
             String perfilActualNombre = existente.getPerfil() != null
                     ? existente.getPerfil().getNombre().toUpperCase() : "";
 
+            String estadoAntes = "Usuario: " + existente.getUsuario() + " | Correo: " + existente.getCorreo() + " | Perfil: " + (existente.getPerfil() != null ? existente.getPerfil().getNombre() : "Sin perfil");
+
             if (perfilNuevoNombre.contains("ADMINISTRADOR") && !perfilActualNombre.contains("ADMINISTRADOR")) {
                 long totalAdmins = usuarioRepository.countByPerfil_NombreIgnoreCaseAndEstadoNot("Administrador", 2);
                 if (totalAdmins >= 3) {
@@ -67,15 +66,33 @@ public class UsuarioService {
             existente.setCorreo(usuario.getCorreo().trim());
             existente.setPerfil(usuario.getPerfil());
 
-            if (!esClaveVacia(usuario.getClave())) {
+            boolean cambioClave = !esClaveVacia(usuario.getClave());
+            if (cambioClave) {
                 existente.setClave(passwordEncoder.encode(usuario.getClave().trim()));
             }
 
-            return usuarioRepository.save(existente);
+            Usuario guardado = usuarioRepository.save(existente);
+            String perfilFinalNombre = perfilRepository.findById(guardado.getPerfil().getId())
+                    .map(p -> p.getNombre()).orElse(perfilNuevoNombre);
+
+            auditoriaService.registrar(
+                    "USUARIOS",
+                    "EDITAR_USUARIO",
+                    "Usuario",
+                    guardado.getId(),
+                    "Usuario actualizado: '" + guardado.getUsuario() + "'" + (cambioClave ? " (incluyó cambio de contraseña)" : ""),
+                    estadoAntes,
+                    "Usuario: " + guardado.getUsuario() + " | Correo: " + guardado.getCorreo() + " | Perfil: " + perfilFinalNombre + (cambioClave ? " | Clave: [ACTUALIZADA]" : "")
+            );
+
+            return guardado;
         }
 
         validarDuplicados(usuario);
         validarClave(usuario.getClave());
+
+        String perfilAsignado = perfilRepository.findById(usuario.getPerfil().getId())
+                .map(p -> p.getNombre()).orElse("Sin perfil");
 
         perfilRepository.findById(usuario.getPerfil().getId()).ifPresent(perfil -> {
             if ("Administrador".equalsIgnoreCase(perfil.getNombre())) {
@@ -87,10 +104,21 @@ public class UsuarioService {
         });
 
         usuario.setClave(passwordEncoder.encode(usuario.getClave().trim()));
-        return usuarioRepository.save(usuario);
+        Usuario guardado = usuarioRepository.save(usuario);
+
+        auditoriaService.registrar(
+                "USUARIOS",
+                "CREAR_USUARIO",
+                "Usuario",
+                guardado.getId(),
+                "Nuevo usuario creado: '" + guardado.getUsuario() + "' (" + perfilAsignado + ")",
+                null,
+                "Usuario: " + guardado.getUsuario() + " | Correo: " + guardado.getCorreo() + " | Perfil: " + perfilAsignado
+        );
+
+        return guardado;
     }
 
-    
     @Transactional
     public Usuario alternarEstado(Long id) {
         validarId(id);
@@ -98,10 +126,23 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
 
-        usuario.setEstado(usuario.getEstado() == 1 ? 0 : 1);
-        return usuarioRepository.save(usuario);
-    }
+        int estadoAnterior = usuario.getEstado();
+        int estadoNuevo = estadoAnterior == 1 ? 0 : 1;
+        usuario.setEstado(estadoNuevo);
+        Usuario guardado = usuarioRepository.save(usuario);
 
+        auditoriaService.registrar(
+                "USUARIOS",
+                "CAMBIAR_ESTADO_USUARIO",
+                "Usuario",
+                guardado.getId(),
+                "Estado de usuario '" + guardado.getUsuario() + "' cambiado a " + (estadoNuevo == 1 ? "ACTIVO" : "INACTIVO"),
+                "Estado: " + (estadoAnterior == 1 ? "ACTIVO" : "INACTIVO"),
+                "Estado: " + (estadoNuevo == 1 ? "ACTIVO" : "INACTIVO")
+        );
+
+        return guardado;
+    }
 
     @Transactional
     public void eliminar(Long id) {
@@ -109,6 +150,10 @@ public class UsuarioService {
 
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+
+        String usuarioOriginal = usuario.getUsuario();
+        String correoOriginal = usuario.getCorreo();
+        String perfilOriginal = usuario.getPerfil() != null ? usuario.getPerfil().getNombre() : "Sin perfil";
 
         usuario.setUsuario(usuario.getUsuario() + "_DELETED_" + usuario.getId());
 
@@ -119,16 +164,25 @@ public class UsuarioService {
         usuario.setEstado(2);
 
         usuarioRepository.save(usuario);
+
+        auditoriaService.registrar(
+                "USUARIOS",
+                "ELIMINAR_USUARIO",
+                "Usuario",
+                usuario.getId(),
+                "Usuario eliminado/purgado: '" + usuarioOriginal + "'",
+                "Usuario: " + usuarioOriginal + " | Correo: " + correoOriginal + " | Perfil: " + perfilOriginal,
+                "Estado: ELIMINADO (credenciales liberadas)"
+        );
+
         System.out.println("🧹 [La Jama Security] Cuenta ID #" + id + " purgada y credenciales originales liberadas.");
     }
 
-    
     @Transactional(readOnly = true)
     public long contar() {
         return usuarioRepository.countByEstadoNot(2);
     }
 
-    
     public boolean verificarClave(String claveTextoPlano, String claveEncriptada) {
         return passwordEncoder.matches(claveTextoPlano, claveEncriptada);
     }

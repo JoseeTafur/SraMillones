@@ -5,15 +5,17 @@ import com.web.restaurante.model.Reserva;
 import com.web.restaurante.repository.MesaRepository;
 import com.web.restaurante.repository.ReservaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import com.web.restaurante.repository.NotificacionRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +26,8 @@ public class ReservaService {
     private final MesaService mesaService;
     private static final int CAPACIDAD_POR_MESA = 4;
     private final SimpMessagingTemplate messagingTemplate;
-    private final NotificacionRepository notificacionRepository;
+    private final NotificacionService notificacionService;
+    private final AuditoriaService auditoriaService;
 
     public List<Reserva> listarTodas() {
         return reservaRepository.findAllByOrderByFechaHoraReservaDesc();
@@ -51,7 +54,32 @@ public class ReservaService {
         reserva.setNumeroMesa(mesasDisponibles.get(0).getNumero());
         reserva.setEstado(Reserva.EstadoReserva.CONFIRMADA);
         reserva.setCantidadPersonas(reserva.getNumeroPersonas());
-        return reservaRepository.save(reserva);
+
+        Reserva guardada = reservaRepository.save(reserva);
+
+        if (guardada.getFechaHoraReserva() != null
+                && guardada.getFechaHoraReserva().toLocalDate().equals(LocalDate.now())) {
+            String horaStr = guardada.getFechaHoraReserva().format(DateTimeFormatter.ofPattern("hh:mm a"));
+            notificacionService.crear(
+                    "RESERVA",
+                    "📅 Nueva reserva para HOY (" + horaStr + "): " + guardada.getNombreCliente() + " (" + guardada.getNumeroPersonas() + " pers.) - " + mesasStr,
+                    "TODOS",
+                    "/admin/reservas",
+                    guardada.getId()
+            );
+        }
+
+        auditoriaService.registrar(
+                "RESERVAS",
+                "CREAR_RESERVA",
+                "Reserva",
+                guardada.getId(),
+                "Reserva creada para " + guardada.getNombreCliente() + " (" + guardada.getNumeroPersonas() + " pers.) - " + mesasStr,
+                null,
+                "Cliente: " + guardada.getNombreCliente() + " | Fecha: " + guardada.getFechaHoraReserva() + " | Mesas: " + mesasStr
+        );
+
+        return guardada;
     }
 
     @Transactional
@@ -76,7 +104,21 @@ public class ReservaService {
             }
         }
         reserva.setEstado(Reserva.EstadoReserva.COMPLETADA);
-        return reservaRepository.save(reserva);
+        Reserva guardada = reservaRepository.save(reserva);
+
+        notificacionService.resolverPorReferencia("RESERVA", guardada.getId());
+
+        auditoriaService.registrar(
+                "RESERVAS",
+                "CONFIRMAR_LLEGADA",
+                "Reserva",
+                guardada.getId(),
+                "Llegada confirmada de " + guardada.getNombreCliente() + " (" + guardada.getMesasAsignadas() + ")",
+                "Estado: CONFIRMADA/PENDIENTE",
+                "Estado: COMPLETADA"
+        );
+
+        return guardada;
     }
 
     @Transactional
@@ -92,7 +134,21 @@ public class ReservaService {
                     });
         }
         reserva.setEstado(Reserva.EstadoReserva.CANCELADA);
-        return reservaRepository.save(reserva);
+        Reserva guardada = reservaRepository.save(reserva);
+
+        notificacionService.resolverPorReferencia("RESERVA", guardada.getId());
+
+        auditoriaService.registrar(
+                "RESERVAS",
+                "CANCELAR_RESERVA",
+                "Reserva",
+                guardada.getId(),
+                "Reserva cancelada de " + guardada.getNombreCliente() + " (mesas liberadas: " + guardada.getMesasAsignadas() + ")",
+                "Estado anterior: ACTIVA",
+                "Estado nuevo: CANCELADA"
+        );
+
+        return guardada;
     }
 
     @Scheduled(fixedRate = 10000)
@@ -112,27 +168,24 @@ public class ReservaService {
                     && ahora.isAfter(horaPactada.minusMinutes(5)) && ahora.isBefore(horaPactada)) {
 
                 long mins = java.time.Duration.between(ahora, horaPactada).toMinutes() + 1;
-                String msg = "⏳ La reserva de " + r.getNombreCliente() + " está por empezar en " + mins + " minutos. Coordinar espacios.";
+                String msg = "⏳ La reserva de " + r.getNombreCliente() + " está por empezar en " + mins + " minutos (" + r.getMesasAsignadas() + ").";
 
                 r.setEstado(Reserva.EstadoReserva.PENDIENTE);
                 reservaRepository.save(r);
 
-                registrarAlertaFisica(msg, "INFO", "MESERO");
-            }
-            else if (r.getEstado() == Reserva.EstadoReserva.PENDIENTE
+                registrarAlertaFisica(msg, "RESERVA", "MESERO", r.getId());
+            } else if (r.getEstado() == Reserva.EstadoReserva.PENDIENTE
                     && !ahora.isBefore(horaPactada)
                     && ahora.isBefore(horaPactada.plusMinutes(2))) {
 
                 int mesasEstimadas = (int) Math.ceil((double) r.getNumeroPersonas() / CAPACIDAD_POR_MESA);
-                String msg = "🚨 ¡La reserva de " + r.getNombreCliente() + " ya empezó! Se requieren " + mesasEstimadas + " mesas libres. Comunícate con caja.";
+                String msg = "🚨 ¡La reserva de " + r.getNombreCliente() + " ya empezó! Se requieren " + mesasEstimadas + " mesa(s).";
 
                 r.setEstado(Reserva.EstadoReserva.COMPLETADA);
                 reservaRepository.save(r);
 
-                registrarAlertaFisica(msg, "RESERVA", "MESERO");
-            }
-
-            else if (r.getEstado() == Reserva.EstadoReserva.PENDIENTE && ahora.isAfter(horaPactada.plusMinutes(2))) {
+                registrarAlertaFisica(msg, "RESERVA", "MESERO", r.getId());
+            } else if (r.getEstado() == Reserva.EstadoReserva.PENDIENTE && ahora.isAfter(horaPactada.plusMinutes(2))) {
                 r.setEstado(Reserva.EstadoReserva.EXPIRADA);
                 reservaRepository.save(r);
 
@@ -145,8 +198,8 @@ public class ReservaService {
                             });
                 }
 
-                String msg = "⚠️ RESERVA VENCIDA: Se agotó el tiempo de gracia de 2 min para " + r.getNombreCliente() + ". Mesas liberadas.";
-                registrarAlertaFisica(msg, "ALERTA", "TODOS");
+                String msg = "⚠️ RESERVA VENCIDA: Se agotó el tiempo de gracia para " + r.getNombreCliente() + ". Mesas liberadas.";
+                registrarAlertaFisica(msg, "RESERVA", "TODOS", r.getId());
             }
         }
     }
@@ -166,7 +219,20 @@ public class ReservaService {
         reserva.setFechaHoraLiberacion(fechaHoraReserva.plusMinutes(
                 reserva.getDuracionEstimadaMinutos() != null ? reserva.getDuracionEstimadaMinutos() : 90));
         reserva.setObservacion(observacion == null || observacion.isBlank() ? null : observacion);
-        return reservaRepository.save(reserva);
+
+        Reserva guardada = reservaRepository.save(reserva);
+
+        auditoriaService.registrar(
+                "RESERVAS",
+                "EDITAR_RESERVA",
+                "Reserva",
+                guardada.getId(),
+                "Reserva #" + guardada.getId() + " editada (" + guardada.getNombreCliente() + ")",
+                null,
+                "Cliente: " + guardada.getNombreCliente() + " | Personas: " + guardada.getNumeroPersonas() + " | Fecha: " + guardada.getFechaHoraReserva()
+        );
+
+        return guardada;
     }
 
     @Transactional
@@ -183,6 +249,19 @@ public class ReservaService {
                         }
                     });
         }
+
+        notificacionService.resolverPorReferencia("RESERVA", reserva.getId());
+
+        auditoriaService.registrar(
+                "RESERVAS",
+                "ELIMINAR_RESERVA",
+                "Reserva",
+                reserva.getId(),
+                "Reserva eliminada de " + reserva.getNombreCliente() + " (Fecha pactada: " + reserva.getFechaHoraReserva() + ")",
+                "Reserva #" + reserva.getId() + " | Cliente: " + reserva.getNombreCliente(),
+                "ELIMINADA"
+        );
+
         reservaRepository.deleteById(id);
     }
 
@@ -191,14 +270,8 @@ public class ReservaService {
     }
 
     @Transactional
-    public void registrarAlertaFisica(String mensaje, String tipo, String perfil) {
-        com.web.restaurante.model.Notificacion n = new com.web.restaurante.model.Notificacion();
-        n.setMensaje(mensaje);
-        n.setTipo(tipo);
-        n.setDestinoPerfil(perfil);
-        n.setLeido(false);
-        notificacionRepository.save(n);
-
+    public void registrarAlertaFisica(String mensaje, String tipo, String perfil, Long idReserva) {
+        notificacionService.crear(tipo, mensaje, perfil, "/admin/reservas", idReserva);
         messagingTemplate.convertAndSend("/topic/notificaciones/mozos", mensaje);
     }
 }

@@ -19,6 +19,7 @@ public class EmpleadoService {
 
     private final EmpleadoRepository empleadoRepository;
     private final CargoRepository cargoRepository;
+    private final AuditoriaService auditoriaService;
 
     @Transactional(readOnly = true)
     public List<Empleado> listar() {
@@ -75,6 +76,14 @@ public class EmpleadoService {
                 }
             }
 
+            String cargoAntes = existente.getCargo() != null ? existente.getCargo().getNombre() : "Sin cargo";
+            String usuarioAntes = existente.getUsuario() != null ? existente.getUsuario().getUsuario() : "Sin usuario";
+            String estadoAntes = "Empleado: " + existente.getNombre() + " " + existente.getApellido() +
+                    " | DNI: " + existente.getDni() +
+                    " | Cargo: " + cargoAntes +
+                    " | Turno: " + existente.getTurno() +
+                    " | Usuario: " + usuarioAntes;
+
             existente.setNombre(empleado.getNombre().trim());
             existente.setApellido(empleado.getApellido().trim());
             existente.setDni(empleado.getDni());
@@ -84,7 +93,30 @@ public class EmpleadoService {
             existente.setCargo(empleado.getCargo());
             existente.setUsuario(empleado.getUsuario());
 
-            return empleadoRepository.save(existente);
+            Empleado guardado = empleadoRepository.save(existente);
+
+            String cargoDespues = (guardado.getCargo() != null && guardado.getCargo().getId() != null)
+                    ? cargoRepository.findById(guardado.getCargo().getId()).map(Cargo::getNombre).orElse(cargoAntes)
+                    : "Sin cargo";
+            String usuarioDespues = (guardado.getUsuario() != null && guardado.getUsuario().getUsuario() != null)
+                    ? guardado.getUsuario().getUsuario()
+                    : (guardado.getUsuario() != null && guardado.getUsuario().getId() != null ? "ID #" + guardado.getUsuario().getId() : "Sin usuario");
+
+            auditoriaService.registrar(
+                    "EMPLEADOS",
+                    "EDITAR_EMPLEADO",
+                    "Empleado",
+                    guardado.getId(),
+                    "Datos de empleado actualizados: " + guardado.getNombre() + " " + guardado.getApellido(),
+                    estadoAntes,
+                    "Empleado: " + guardado.getNombre() + " " + guardado.getApellido() +
+                            " | DNI: " + guardado.getDni() +
+                            " | Cargo: " + cargoDespues +
+                            " | Turno: " + guardado.getTurno() +
+                            " | Usuario: " + usuarioDespues
+            );
+
+            return guardado;
         }
 
         validarDuplicados(empleado);
@@ -96,7 +128,26 @@ public class EmpleadoService {
         }
 
         empleado.setEstado(1);
-        return empleadoRepository.save(empleado);
+        Empleado guardado = empleadoRepository.save(empleado);
+
+        String cargoAsignado = (guardado.getCargo() != null && guardado.getCargo().getId() != null)
+                ? cargoRepository.findById(guardado.getCargo().getId()).map(Cargo::getNombre).orElse("Cargo #" + guardado.getCargo().getId())
+                : "Sin cargo";
+
+        auditoriaService.registrar(
+                "EMPLEADOS",
+                "CREAR_EMPLEADO",
+                "Empleado",
+                guardado.getId(),
+                "Nuevo empleado registrado: " + guardado.getNombre() + " " + guardado.getApellido() + " (" + cargoAsignado + ")",
+                null,
+                "Empleado: " + guardado.getNombre() + " " + guardado.getApellido() +
+                        " | DNI: " + guardado.getDni() +
+                        " | Cargo: " + cargoAsignado +
+                        " | Turno: " + guardado.getTurno()
+        );
+
+        return guardado;
     }
 
     @Transactional
@@ -104,9 +155,21 @@ public class EmpleadoService {
         validarId(id);
         Empleado empleado = empleadoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Empleado no encontrado"));
-        int nuevoEstado = empleado.getEstado() == 1 ? 0 : 1;
+        int estadoAnterior = empleado.getEstado() != null ? empleado.getEstado() : 1;
+        int nuevoEstado = estadoAnterior == 1 ? 0 : 1;
         empleadoRepository.actualizarEstado(id, nuevoEstado);
         empleado.setEstado(nuevoEstado);
+
+        auditoriaService.registrar(
+                "EMPLEADOS",
+                "CAMBIAR_ESTADO_EMPLEADO",
+                "Empleado",
+                empleado.getId(),
+                "Estado de empleado '" + empleado.getNombre() + " " + empleado.getApellido() + "' cambiado a " + (nuevoEstado == 1 ? "ACTIVO" : "INACTIVO"),
+                "Estado: " + (estadoAnterior == 1 ? "ACTIVO" : "INACTIVO"),
+                "Estado: " + (nuevoEstado == 1 ? "ACTIVO" : "INACTIVO")
+        );
+
         return empleado;
     }
 
@@ -115,7 +178,22 @@ public class EmpleadoService {
         validarId(id);
         Empleado empleado = empleadoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Empleado no encontrado"));
+
+        String nombreCompleto = empleado.getNombre() + " " + empleado.getApellido();
+        String dni = empleado.getDni();
+        String cargo = empleado.getCargo() != null ? empleado.getCargo().getNombre() : "Sin cargo";
+
         empleadoRepository.actualizarEstado(id, 2);
+
+        auditoriaService.registrar(
+                "EMPLEADOS",
+                "ELIMINAR_EMPLEADO",
+                "Empleado",
+                empleado.getId(),
+                "Empleado dado de baja: " + nombreCompleto + " (DNI: " + dni + ")",
+                "Empleado: " + nombreCompleto + " | DNI: " + dni + " | Cargo: " + cargo,
+                "Estado: BAJA / ELIMINADO"
+        );
     }
 
     @Transactional(readOnly = true)

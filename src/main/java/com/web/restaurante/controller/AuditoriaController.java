@@ -1,6 +1,5 @@
 package com.web.restaurante.controller;
 
-import com.web.restaurante.model.Usuario;
 import com.web.restaurante.service.AuditoriaService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -10,22 +9,23 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/admin/auditoria")
+@RequestMapping("/api/admin/auditoria")
 @RequiredArgsConstructor
 public class AuditoriaController {
 
     private final AuditoriaService auditoriaService;
 
+    private boolean tieneSesionActiva(HttpSession session) {
+        if (session == null) return false;
+        return session.getAttribute("usuarioLogueado") != null
+                || session.getAttribute("datosSesion") != null
+                || session.getAttribute("usuarioId") != null;
+    }
+
     @GetMapping("/api/listar")
     public ResponseEntity<?> listarAuditoria(HttpSession session) {
-        Usuario user = (Usuario) session.getAttribute("usuarioLogueado");
-        if (user == null) {
+        if (!tieneSesionActiva(session)) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "Sesión inválida"));
-        }
-
-        String perfil = user.getPerfil().getNombre().toUpperCase();
-        if (!perfil.contains("ADMIN") && !perfil.contains("SUPER")) {
-            return ResponseEntity.status(403).body(Map.of("success", false, "message", "Acceso restringido a administradores"));
         }
 
         return ResponseEntity.ok(Map.of(

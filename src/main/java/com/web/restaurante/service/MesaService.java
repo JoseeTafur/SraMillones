@@ -40,6 +40,8 @@ public class MesaService {
     private final VentaRepository ventaRepository;
     private final TurnoCoreService turnoCoreService;
     private final CajaMovimientoService cajaMovimientoService;
+    private final AuditoriaService auditoriaService;
+    private final NotificacionService notificacionService;
 
     public List<MesaDTO> obtenerMesasParaSalon() {
         List<Mesa> mesasEntidad = mesaRepository.findAll();
@@ -152,6 +154,16 @@ public class MesaService {
             mesaPrincipal.getMesasHijas().clear();
             mesaRepository.save(mesaPrincipal);
         }
+
+        auditoriaService.registrar(
+                "MESAS",
+                "LIBERAR_Y_FACTURAR",
+                "Mesa",
+                mesaPrincipal.getId(),
+                "Liberación y facturación de Mesa N° " + mesaPrincipal.getNumero() + " (" + pedidosActivos.size() + " pedido(s) cerrado(s)).",
+                "Mesa #" + mesaPrincipal.getNumero() + " con pedidos activos",
+                "Mesa #" + mesaPrincipal.getNumero() + " -> DISPONIBLE"
+        );
     }
 
     @Transactional
@@ -175,7 +187,17 @@ public class MesaService {
             emitirCambioEstadoReactivo(mesaPrincipal.getNumero(), "disponible", null, "NINGUNO");
         });
 
-        System.out.println("🔓 [La Jama] Mesa N° " + numeroMesa + " liberada manualmente.");
+        auditoriaService.registrar(
+                "MESAS",
+                "LIBERACION_MANUAL",
+                "Mesa",
+                null,
+                "Liberación manual de la Mesa N° " + numeroMesa + " (se eliminó comanda activa y cerraron pedidos).",
+                "Mesa #" + numeroMesa + " con comanda/pedidos activos",
+                "Mesa #" + numeroMesa + " -> DISPONIBLE"
+        );
+
+        System.out.println("[La Jama] Mesa N° " + numeroMesa + " liberada manualmente.");
     }
 
     public Map<String, Object> generarPrecuenta(Integer numeroMesa) {
@@ -263,14 +285,14 @@ public class MesaService {
         if (!detallesACobrar.isEmpty()) {
             detallesACobrar.forEach(d -> d.setPagado(true));
 
-            String clienteFinal = (nombreCliente != null && !nombreCliente.trim().isEmpty()) 
-                    ? nombreCliente.trim().toUpperCase() 
+            String clienteFinal = (nombreCliente != null && !nombreCliente.trim().isEmpty())
+                    ? nombreCliente.trim().toUpperCase()
                     : "CLIENTE MESA #" + comanda.getNumeroMesa();
 
             Venta venta = new Venta();
             venta.setNumeroComprobante(notaVentaSequenceService.generarSiguienteNota());
             venta.setTipoComprobante("NOTA_VENTA");
-            venta.setClienteNombre(clienteFinal); // 🟢 Guarda el nombre digitado
+            venta.setClienteNombre(clienteFinal);
             venta.setNumeroMesa(comanda.getNumeroMesa());
             venta.setTipoAtencion(TipoPedido.SALON);
             venta.setEstadoPago(EstadoPago.PAGADO);
@@ -296,14 +318,23 @@ public class MesaService {
 
             ventaRepository.save(venta);
 
-            // 🟢 El concepto usará el Nombre del Cliente
             String concepto = venta.getClienteNombre() + " (Mesa #" + comanda.getNumeroMesa() + ")";
 
             cajaMovimientoService.registrarVentaAutomatica(
-                    concepto, 
-                    montoTotal, 
-                    venta.getMetodoPago(), 
+                    concepto,
+                    montoTotal,
+                    venta.getMetodoPago(),
                     venta.getNumeroComprobante()
+            );
+
+            auditoriaService.registrar(
+                    "VENTAS",
+                    "COBRO_MESA",
+                    "Venta",
+                    venta.getId(),
+                    "Cobro en Mesa #" + comanda.getNumeroMesa() + " - " + venta.getNumeroComprobante() + " por S/ " + String.format("%.2f", montoTotal),
+                    "Detalles pendientes de pago: " + detallesACobrar.size() + " ítem(s)",
+                    "Comprobante: " + venta.getNumeroComprobante() + " | Cliente: " + clienteFinal + " | Método: " + venta.getMetodoPago() + " | Total: S/ " + String.format("%.2f", montoTotal)
             );
         }
 
@@ -336,7 +367,6 @@ public class MesaService {
         }
     }
 
-    // Sobrecarga por compatibilidad si se llama sin nombre
     @Transactional
     public void procesarCobro(Long comandaId, Long mesaId, List<Long> idsDetallesPagados, MetodoPago metodoPago) {
         procesarCobro(comandaId, mesaId, idsDetallesPagados, metodoPago, null);
@@ -345,9 +375,20 @@ public class MesaService {
     @Transactional
     public void desvincularMesa(Long idMesa) {
         Mesa mesa = mesaRepository.findById(idMesa).orElseThrow(() -> new RuntimeException("Mesa no encontrada"));
+        String estadoAnterior = mesa.getEstado();
         mesa.setMesaPadre(null);
         mesa.setEstado("DISPONIBLE");
         mesaRepository.save(mesa);
+
+        auditoriaService.registrar(
+                "MESAS",
+                "DESVINCULAR_MESA",
+                "Mesa",
+                mesa.getId(),
+                "Mesa #" + mesa.getNumero() + " desvinculada de su grupo y liberada.",
+                "Estado anterior: " + estadoAnterior,
+                "Estado nuevo: DISPONIBLE"
+        );
     }
 
     @Transactional
@@ -382,6 +423,16 @@ public class MesaService {
             mesaRepository.save(padre);
             emitirCambioEstadoReactivo(padre.getNumero(), "disponible", null, "NINGUNO");
         }
+
+        auditoriaService.registrar(
+                "MESAS",
+                "DESAGRUPAR_MESAS",
+                "Mesa",
+                padre.getId(),
+                "Se desagrupó todo el bloque de la Mesa principal #" + padre.getNumero(),
+                "Grupo unificado activo",
+                "Mesa principal #" + padre.getNumero() + " en estado " + padre.getEstado()
+        );
     }
 
     @Transactional
@@ -403,6 +454,16 @@ public class MesaService {
         for (Long idHija : idsMesasHijas) {
             mesaRepository.findById(idHija).ifPresent(this::recalcularYNotificarEstadoCocinaMesa);
         }
+
+        auditoriaService.registrar(
+                "MESAS",
+                "UNIFICAR_MESAS",
+                "Mesa",
+                mesaPadre.getId(),
+                "Unificación de Mesa principal #" + mesaPadre.getNumero() + " con " + idsMesasHijas.size() + " mesa(s) hija(s).",
+                "Mesas individuales (IDs hijas: " + idsMesasHijas + ")",
+                "Mesa Padre #" + mesaPadre.getNumero() + " en estado UNIFICADA"
+        );
     }
 
     @Transactional
@@ -415,7 +476,12 @@ public class MesaService {
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("El producto no está en la comanda o ya fue cancelado"));
 
-        if (!detalle.isImpresoEnCocina()) {
+        String nombrePlatoAud = detalle.getProducto() != null ? detalle.getProducto().getNombre() : "Producto #" + detalleId;
+        int cantAud = detalle.getCantidad() != null ? detalle.getCantidad() : 1;
+        double totalAntes = pedido.getMontoTotal() != null ? pedido.getMontoTotal() : 0.0;
+        boolean yaEnCocina = detalle.isImpresoEnCocina();
+
+        if (!yaEnCocina) {
             pedido.getListaDetalles().remove(detalle);
             double nuevoTotal = pedido.getListaDetalles().stream()
                     .filter(d -> !d.isCanceladoPorCliente())
@@ -425,18 +491,40 @@ public class MesaService {
             detalle.setCanceladoPorCliente(true);
             String nombrePlato = detalle.getProducto().getNombre().toUpperCase();
             String mesaAviso = (pedido.getNumeroMesa() != null) ? "MESA " + pedido.getNumeroMesa() : "DELIVERY";
-            messagingTemplate.convertAndSend("/topic/notificaciones", "🚨 ALERTA DE MERMA: ¡DETENER " + nombrePlato + " DE LA " + mesaAviso + "!");
+            messagingTemplate.convertAndSend("/topic/notificaciones", "ALERTA DE MERMA: DETENER " + nombrePlato + " DE LA " + mesaAviso);
         }
         pedidoRepository.save(pedido);
+
+        auditoriaService.registrar(
+                "VENTAS",
+                yaEnCocina ? "CANCELAR_PLATO_COCINA" : "ELIMINAR_PLATO_PEDIDO",
+                "Pedido",
+                pedido.getId(),
+                (yaEnCocina ? "MERMA: Cancelado en cocina '" : "Eliminado del pedido '") + nombrePlatoAud + "' (x" + cantAud + ") en Pedido #" + pedido.getId(),
+                "Total pedido antes: S/ " + String.format("%.2f", totalAntes) + " | Impreso en cocina: " + (yaEnCocina ? "SI" : "NO"),
+                "Total pedido después: S/ " + String.format("%.2f", pedido.getMontoTotal())
+        );
     }
 
+    @Transactional
     public void liberarMesaForzado(Long idMesa) {
         Mesa mesaClickeada = mesaRepository.findById(idMesa)
                 .orElseThrow(() -> new RuntimeException("Mesa no encontrada"));
 
         Mesa mesaPrincipal = (mesaClickeada.getMesaPadre() != null) ? mesaClickeada.getMesaPadre() : mesaClickeada;
+        String estadoAnterior = mesaPrincipal.getEstado();
 
-        comandaRepository.findByNumeroMesa(mesaPrincipal.getNumero()).ifPresent(comandaRepository::delete);
+        comandaRepository.findByNumeroMesa(mesaPrincipal.getNumero()).ifPresent(c -> {
+    notificacionService.resolverPorReferencia("COMANDA", c.getId());
+    comandaRepository.delete(c);
+});
+notificacionService.crear(
+        "SISTEMA",
+        "🚨 Liberación forzada ejecutada en Mesa #" + mesaPrincipal.getNumero(),
+        "ADMIN",
+        "/admin/auditoria",
+        mesaPrincipal.getId()
+);
 
         mesaPrincipal.setEstado("DISPONIBLE");
         mesaRepository.save(mesaPrincipal);
@@ -450,6 +538,16 @@ public class MesaService {
             mesaPrincipal.getMesasHijas().clear();
             mesaRepository.save(mesaPrincipal);
         }
+
+        auditoriaService.registrar(
+                "MESAS",
+                "LIBERACION_FORZADA",
+                "Mesa",
+                mesaPrincipal.getId(),
+                "Liberación forzada de Mesa N° " + mesaPrincipal.getNumero() + " sin flujo normal de caja.",
+                "Estado anterior: " + estadoAnterior,
+                "Estado nuevo: DISPONIBLE (Comanda eliminada)"
+        );
     }
 
     @Transactional
@@ -472,6 +570,16 @@ public class MesaService {
 
         recalcularYNotificarEstadoCocinaMesa(origen);
         recalcularYNotificarEstadoCocinaMesa(destino);
+
+        auditoriaService.registrar(
+                "MESAS",
+                "TRASLADO_MESA",
+                "Mesa",
+                destino.getId(),
+                "Traslado de comanda de Mesa #" + origen.getNumero() + " hacia Mesa #" + destino.getNumero(),
+                "Mesa origen #" + origen.getNumero() + " (OCUPADA) -> Mesa destino #" + destino.getNumero() + " (DISPONIBLE)",
+                "Mesa origen #" + origen.getNumero() + " (DISPONIBLE) -> Mesa destino #" + destino.getNumero() + " (OCUPADA)"
+        );
     }
 
     @Transactional
@@ -495,6 +603,8 @@ public class MesaService {
                     .sum();
         }
 
+        double totalLiquidadoAud = 0.0;
+
         for (TicketDTO t : tickets) {
             Pedido pedidoComprobante = new Pedido();
             String siguienteNotaVenta = notaVentaSequenceService.generarSiguienteNota();
@@ -517,6 +627,7 @@ public class MesaService {
 
             double montoDeEsteTicket = t.getConsumoFinal() > 0 ? t.getConsumoFinal() : montoFinalFijoEInmutable;
             pedidoComprobante.setMontoTotal(montoDeEsteTicket);
+            totalLiquidadoAud += montoDeEsteTicket;
 
             turnoCoreService.obtenerTurnoActivo().ifPresent(pedidoComprobante::setTurnoCaja);
             pedidoRepository.saveAndFlush(pedidoComprobante);
@@ -530,6 +641,16 @@ public class MesaService {
         mesaPrincipal.setEstado("DISPONIBLE");
         mesaRepository.save(mesaPrincipal);
         emitirCambioEstadoReactivo(mesaPrincipal.getNumero(), "disponible", null, "NINGUNO");
+
+        auditoriaService.registrar(
+                "VENTAS",
+                "LIQUIDACION_MULTITICKET",
+                "Pedido",
+                pedidoPadre.getId(),
+                "Liquidación multiticket en Mesa #" + numeroMesaFijoEInmutable + " (" + tickets.size() + " tickets emitidos).",
+                "Pedido #" + pedidoPadre.getId() + " activo en mesa",
+                "Mesa #" + numeroMesaFijoEInmutable + " -> DISPONIBLE | Total liquidado: S/ " + String.format("%.2f", totalLiquidadoAud)
+        );
     }
 
     public void recalcularYNotificarEstadoCocinaMesa(Mesa mesa) {
@@ -568,7 +689,7 @@ public class MesaService {
             );
             messagingTemplate.convertAndSend("/topic/mesas/estados", jsonEvent);
         } catch (Exception e) {
-            System.err.println("⚠️ Canal WebSocket ocupado temporalmente.");
+            System.err.println("Canal WebSocket ocupado temporalmente.");
         }
     }
 
@@ -582,6 +703,17 @@ public class MesaService {
             emitirCambioEstadoReactivo(m.getNumero(), "reservada", null, "NINGUNO");
         }
         mesaRepository.flush();
+
+        String numsReserva = mesasTarget.stream().map(m -> "#" + m.getNumero()).toList().toString();
+        auditoriaService.registrar(
+                "MESAS",
+                "RESERVAR_BLOQUE",
+                "Mesa",
+                null,
+                "Mesas marcadas en reserva: " + numsReserva,
+                "enReserva: false",
+                "enReserva: true (" + numsReserva + ")"
+        );
     }
 
     @Transactional
@@ -594,6 +726,17 @@ public class MesaService {
             emitirCambioEstadoReactivo(m.getNumero(), "disponible", null, "NINGUNO");
         }
         mesaRepository.flush();
+
+        String numsLiberadas = mesasTarget.stream().map(m -> "#" + m.getNumero()).toList().toString();
+        auditoriaService.registrar(
+                "MESAS",
+                "LIBERAR_RESERVA_BLOQUE",
+                "Mesa",
+                null,
+                "Mesas liberadas de reserva: " + numsLiberadas,
+                "enReserva: true",
+                "enReserva: false (" + numsLiberadas + ")"
+        );
     }
 
     @Transactional
@@ -612,13 +755,13 @@ public class MesaService {
 
             if (ticketsData != null && !ticketsData.isEmpty()) {
                 for (Map<String, Object> ticketMap : ticketsData) {
-                    
+
                     Double montoBase = Double.valueOf(ticketMap.get("montoBase").toString());
                     Double propina = ticketMap.get("propina") != null ? Double.valueOf(ticketMap.get("propina").toString()) : 0.0;
                     Double montoFinal = montoBase + propina;
 
-                    String metodoPagoStr = ticketMap.get("metodoPago") != null 
-                        ? ticketMap.get("metodoPago").toString() 
+                    String metodoPagoStr = ticketMap.get("metodoPago") != null
+                        ? ticketMap.get("metodoPago").toString()
                         : "EFECTIVO";
                     MetodoPago metodoPago = MetodoPago.valueOf(metodoPagoStr.toUpperCase());
 
@@ -651,14 +794,23 @@ public class MesaService {
 
                     ventaRepository.save(venta);
 
-                    // 🟢 Concepto estandarizado con el Nombre del Cliente
                     String concepto = clienteTicket + " (Mesa #" + comanda.getNumeroMesa() + ")";
 
                     cajaMovimientoService.registrarVentaAutomatica(
-                            concepto, 
-                            montoFinal, 
-                            metodoPago, 
+                            concepto,
+                            montoFinal,
+                            metodoPago,
                             venta.getNumeroComprobante()
+                    );
+
+                    auditoriaService.registrar(
+                            "VENTAS",
+                            "COBRO_MULTITICKET",
+                            "Venta",
+                            venta.getId(),
+                            "Cobro dividido en Mesa #" + comanda.getNumeroMesa() + " - " + venta.getNumeroComprobante() + " por S/ " + String.format("%.2f", montoFinal),
+                            "Ticket individual de cuenta dividida",
+                            "Comprobante: " + venta.getNumeroComprobante() + " | Cliente: " + clienteTicket + " | Método: " + metodoPago + " | Total: S/ " + String.format("%.2f", montoFinal)
                     );
                 }
             }
@@ -674,6 +826,7 @@ public class MesaService {
         }
 
         if (comanda.getDetalles().isEmpty()) {
+            notificacionService.resolverPorReferencia("COMANDA", comanda.getId());
             comandaRepository.delete(comanda);
 
             mesaPrincipal.setEstado("DISPONIBLE");

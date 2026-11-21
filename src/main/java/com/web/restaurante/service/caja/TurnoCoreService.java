@@ -13,6 +13,7 @@ import com.web.restaurante.repository.MovimientoCajaRepository;
 import com.web.restaurante.repository.TurnoCajaRepository;
 import com.web.restaurante.repository.ComandaRepository;
 import com.web.restaurante.repository.MesaRepository;
+import com.web.restaurante.service.AuditoriaService;
 import com.web.restaurante.service.CierreCajaSequenceService;
 
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,7 @@ public class TurnoCoreService {
     private final CajaMovimientoService cajaMovimientoService;
     private final ComandaRepository comandaRepository;
     private final MesaRepository mesaRepository;
+    private final AuditoriaService auditoriaService;
 
     @Value("${caja.horario.inicio:07:00}")
     private String horaInicioConfig;
@@ -71,18 +73,18 @@ public class TurnoCoreService {
         if (!dentroDeHorario) {
             boolean esAdmin = "ADMIN".equalsIgnoreCase(rolUsuario) || "SUPER_ADMIN".equalsIgnoreCase(rolUsuario);
             if (!esAdmin) {
-                throw new IllegalStateException("Horario no permitido. El turno regular de caja es de " 
+                throw new IllegalStateException("Horario no permitido. El turno regular de caja es de "
                         + horaInicioConfig + " a " + horaFinConfig + ".");
             }
             if (Boolean.FALSE.equals(request.getAperturaForzada())) {
-                throw new IllegalStateException("REQUIERE_CONFIRMACION_FORZADA: La hora actual (" 
-                        + horaActual.toString().substring(0, 5) 
+                throw new IllegalStateException("REQUIERE_CONFIRMACION_FORZADA: La hora actual ("
+                        + horaActual.toString().substring(0, 5)
                         + ") está fuera del turno regular. ¿Desea realizar una apertura forzada?");
             }
         }
 
-        Double montoInicial = (request.getMontoApertura() != null && request.getMontoApertura() >= 0) 
-                ? request.getMontoApertura() 
+        Double montoInicial = (request.getMontoApertura() != null && request.getMontoApertura() >= 0)
+                ? request.getMontoApertura()
                 : obtenerMontoAperturaSugerido();
 
         TurnoCaja turno = new TurnoCaja();
@@ -94,15 +96,24 @@ public class TurnoCoreService {
         turnoCajaRepository.save(turno);
 
         String serieApertura = turnoSequenceService.generarSiguienteTurno();
-        
-        // 🟢 Mapeo corregido pasando MetodoPago.EFECTIVO
+
         cajaMovimientoService.registrarMovimientoInterno(
-                turno, 
-                TipoMovimientoCaja.APERTURA, 
-                "Fondo inicial", 
-                montoInicial, 
+                turno,
+                TipoMovimientoCaja.APERTURA,
+                "Fondo inicial",
+                montoInicial,
                 serieApertura,
                 MetodoPago.EFECTIVO
+        );
+
+        auditoriaService.registrar(
+                "CAJA",
+                Boolean.TRUE.equals(request.getAperturaForzada()) ? "APERTURA_CAJA_FORZADA" : "APERTURA_CAJA",
+                "TurnoCaja",
+                turno.getId(),
+                "Apertura de turno de caja #" + turno.getId() + " (" + serieApertura + ") con fondo inicial S/ " + String.format("%.2f", montoInicial),
+                "Caja: CERRADA",
+                "Turno #" + turno.getId() + " ACTIVO | Fondo inicial: S/ " + String.format("%.2f", montoInicial)
         );
 
         return turno;
@@ -128,7 +139,7 @@ public class TurnoCoreService {
             if (m.getTipo() == TipoMovimientoCaja.INGRESO_VENTA) {
                 totalVentas += monto;
                 MetodoPago metodo = m.getMetodoPago() != null ? m.getMetodoPago() : MetodoPago.EFECTIVO;
-                
+
                 switch (metodo) {
                     case EFECTIVO -> ventasEfectivo += monto;
                     case YAPE -> ventasYape += monto;
@@ -175,27 +186,41 @@ public class TurnoCoreService {
 
         Map<String, Object> metricas = calcularMetricas(turno);
         double saldoTeorico = (Double) metricas.get("efectivoEsperadoGaveta");
+        double totalVentas = (Double) metricas.get("totalVentas");
         double montoCierre = request.getMontoCierre() != null ? request.getMontoCierre() : 0.0;
         double diferencia = montoCierre - saldoTeorico;
 
         String serieCierre = cierreCajaSequenceService.generarSiguienteCierreCaja();
         cajaMovimientoService.registrarMovimientoInterno(
-                turno, 
-                TipoMovimientoCaja.CIERRE, 
-                "Cierre estricto de caja", 
-                montoCierre, 
+                turno,
+                TipoMovimientoCaja.CIERRE,
+                "Cierre estricto de caja",
+                montoCierre,
                 serieCierre,
                 MetodoPago.EFECTIVO
         );
 
         turno.setMontoCierre(montoCierre);
-        turno.setTotalVendido((Double) metricas.get("totalVentas"));
+        turno.setTotalVendido(totalVentas);
         turno.setDiferencia(diferencia);
         turno.setObservaciones(request.getObservaciones());
         turno.setFechaCierre(LocalDateTime.now());
         turno.setActivo(false);
 
-        return turnoCajaRepository.save(turno);
+        TurnoCaja cerrado = turnoCajaRepository.save(turno);
+
+        auditoriaService.registrar(
+                "CAJA",
+                "CIERRE_CAJA",
+                "TurnoCaja",
+                cerrado.getId(),
+                "Cierre de turno #" + cerrado.getId() + " (" + serieCierre + ") | Declarado: S/ " + String.format("%.2f", montoCierre) + " | Diferencia: S/ " + String.format("%.2f", diferencia),
+                "Efectivo esperado en gaveta: S/ " + String.format("%.2f", saldoTeorico) + " | Total ventas: S/ " + String.format("%.2f", totalVentas),
+                "Arqueo físico: S/ " + String.format("%.2f", montoCierre) + " | Diferencia: S/ " + String.format("%.2f", diferencia) +
+                        (request.getObservaciones() != null && !request.getObservaciones().isBlank() ? " | Obs: " + request.getObservaciones() : "")
+        );
+
+        return cerrado;
     }
 
     @Transactional
@@ -207,7 +232,7 @@ public class TurnoCoreService {
                 .orElseThrow(() -> new RuntimeException("Comanda no encontrada con ID: " + comandaId));
 
         List<Long> idsDetalles = (List<Long>) payload.get("idsDetalles");
-        
+
         for (DetalleComanda detalle : comanda.getDetalles()) {
             if (idsDetalles == null || idsDetalles.isEmpty() || idsDetalles.contains(detalle.getId())) {
                 detalle.setPagado(true);
@@ -226,8 +251,8 @@ public class TurnoCoreService {
 
         comandaRepository.save(comanda);
 
-        Double montoTotalCobrado = payload.get("montoTotal") != null 
-                ? Double.parseDouble(payload.get("montoTotal").toString()) 
+        Double montoTotalCobrado = payload.get("montoTotal") != null
+                ? Double.parseDouble(payload.get("montoTotal").toString())
                 : comanda.getMontoTotal();
 
         MetodoPago metodoEnum = MetodoPago.EFECTIVO;
@@ -238,14 +263,24 @@ public class TurnoCoreService {
         }
 
         String concepto = "Venta Salón Mesa #" + comanda.getNumeroMesa();
-        
+
         cajaMovimientoService.registrarMovimientoInterno(
-                turnoActivo, 
-                TipoMovimientoCaja.INGRESO_VENTA, 
-                concepto, 
-                Math.abs(montoTotalCobrado), 
+                turnoActivo,
+                TipoMovimientoCaja.INGRESO_VENTA,
+                concepto,
+                Math.abs(montoTotalCobrado),
                 "TICKET-" + comanda.getId(),
                 metodoEnum
+        );
+
+        auditoriaService.registrar(
+                "CAJA",
+                "COBRAR_COMANDA",
+                "Comanda",
+                comanda.getId(),
+                "Cobro en caja de Mesa #" + comanda.getNumeroMesa() + " por S/ " + String.format("%.2f", montoTotalCobrado) + " (" + metodoEnum + ")",
+                "Comanda #" + comanda.getId() + " pendiente de pago",
+                "Cobrado: S/ " + String.format("%.2f", montoTotalCobrado) + " | Método: " + metodoEnum + (totalmentePagada ? " | Mesa liberada" : " | Pago parcial")
         );
     }
 }

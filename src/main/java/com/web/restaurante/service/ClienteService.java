@@ -19,6 +19,7 @@ public class ClienteService {
 
     private final ClienteRepository clienteRepository;
     private final ClienteMapper clienteMapper;
+    private final AuditoriaService auditoriaService;
 
     @Transactional(readOnly = true)
     public ClienteDTO obtener(Long id) {
@@ -66,7 +67,22 @@ public class ClienteService {
             throw new IllegalArgumentException("Ya existe un cliente con ese correo");
         nuevo.setCorreo(dto.correo());
 
-        return clienteMapper.toDTO(clienteRepository.save(nuevo));
+        Cliente guardado = clienteRepository.save(nuevo);
+
+        auditoriaService.registrar(
+                "CLIENTES",
+                "CREAR_CLIENTE",
+                "Cliente",
+                guardado.getId(),
+                "Nuevo cliente registrado: " + guardado.getNombre() + " " + guardado.getApellido() + " (DNI: " + guardado.getDni() + ")",
+                null,
+                "Cliente: " + guardado.getNombre() + " " + guardado.getApellido() +
+                        " | DNI: " + guardado.getDni() +
+                        " | Tel: " + guardado.getTelefono() +
+                        " | Correo: " + guardado.getCorreo()
+        );
+
+        return clienteMapper.toDTO(guardado);
     }
 
     @Transactional
@@ -77,6 +93,12 @@ public class ClienteService {
 
         Cliente existente = opt.get();
 
+        String estadoAntes = "Cliente: " + existente.getNombre() + " " + existente.getApellido() +
+                " | DNI: " + existente.getDni() +
+                " | Tel: " + existente.getTelefono() +
+                " | Correo: " + existente.getCorreo() +
+                " | Dir: " + existente.getDireccion();
+
         existente.setNombre(dto.nombre());
         existente.setApellido(dto.apellido());
         existente.setDni(dto.dni());
@@ -84,7 +106,23 @@ public class ClienteService {
         existente.setCorreo(dto.correo());
         existente.setDireccion(dto.direccion());
 
-        return clienteMapper.toDTO(clienteRepository.save(existente));
+        Cliente guardado = clienteRepository.save(existente);
+
+        auditoriaService.registrar(
+                "CLIENTES",
+                "EDITAR_CLIENTE",
+                "Cliente",
+                guardado.getId(),
+                "Datos de cliente actualizados: " + guardado.getNombre() + " " + guardado.getApellido(),
+                estadoAntes,
+                "Cliente: " + guardado.getNombre() + " " + guardado.getApellido() +
+                        " | DNI: " + guardado.getDni() +
+                        " | Tel: " + guardado.getTelefono() +
+                        " | Correo: " + guardado.getCorreo() +
+                        " | Dir: " + guardado.getDireccion()
+        );
+
+        return clienteMapper.toDTO(guardado);
     }
 
     @Transactional
@@ -93,9 +131,23 @@ public class ClienteService {
         if (opt.isEmpty()) throw new IllegalArgumentException("No existe un cliente con esa ID");
         Cliente existente = opt.get();
 
-        existente.setEstado(existente.getEstado() == 1 ? 0 : 1);
+        int estadoAnterior = existente.getEstado() != null ? existente.getEstado() : 1;
+        int estadoNuevo = estadoAnterior == 1 ? 0 : 1;
+        existente.setEstado(estadoNuevo);
 
-        return clienteMapper.toDTO(clienteRepository.save(existente));
+        Cliente guardado = clienteRepository.save(existente);
+
+        auditoriaService.registrar(
+                "CLIENTES",
+                "CAMBIAR_ESTADO_CLIENTE",
+                "Cliente",
+                guardado.getId(),
+                "Estado de cliente '" + guardado.getNombre() + " " + guardado.getApellido() + "' cambiado a " + (estadoNuevo == 1 ? "ACTIVO" : "INACTIVO"),
+                "Estado: " + (estadoAnterior == 1 ? "ACTIVO" : "INACTIVO"),
+                "Estado: " + (estadoNuevo == 1 ? "ACTIVO" : "INACTIVO")
+        );
+
+        return clienteMapper.toDTO(guardado);
     }
 
     @Transactional
@@ -104,7 +156,20 @@ public class ClienteService {
         if (opt.isEmpty()) throw new IllegalArgumentException("No existe un cliente con esa ID");
         Cliente existente = opt.get();
 
+        String nombreCompleto = existente.getNombre() + " " + existente.getApellido();
+        String dni = existente.getDni();
+
         existente.setEstado(2);
         clienteRepository.save(existente);
+
+        auditoriaService.registrar(
+                "CLIENTES",
+                "ELIMINAR_CLIENTE",
+                "Cliente",
+                existente.getId(),
+                "Cliente eliminado: " + nombreCompleto + " (DNI: " + dni + ")",
+                "Cliente: " + nombreCompleto + " | DNI: " + dni,
+                "Estado: ELIMINADO"
+        );
     }
 }
