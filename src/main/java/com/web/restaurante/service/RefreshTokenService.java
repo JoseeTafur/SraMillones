@@ -1,6 +1,9 @@
 package com.web.restaurante.service;
 
 import com.web.restaurante.dto.auth.RefreshTokenResultDTO;
+import com.web.restaurante.exception.RecursoNoEncontradoException;
+import com.web.restaurante.exception.SolicitudIncorrectaException;
+import com.web.restaurante.exception.TokenInvalidoException;
 import com.web.restaurante.model.Usuario;
 import com.web.restaurante.model.auth.RefreshToken;
 import com.web.restaurante.repository.RefreshTokenRepository;
@@ -66,22 +69,23 @@ public class RefreshTokenService {
         String hash = hashToken(refreshTokenString);
 
         RefreshToken refreshToken = refreshTokenRepository.findByTokenHash(hash)
-                .orElseThrow(() -> new RuntimeException("Refresh Token inválido"));
+                .orElseThrow(() -> new TokenInvalidoException("Refresh Token inválido"));
 
-        if (refreshToken.isRevocado()) throw new RuntimeException("Refresh Token revocado");
+        if (refreshToken.isRevocado()) throw new SolicitudIncorrectaException("Refresh Token revocado");
 
-        if (!refreshToken.getExpiracion().isAfter(Instant.now())) throw new RuntimeException("Refresh Token expirado");
+        if (!refreshToken.getExpiracion().isAfter(Instant.now())) throw new SolicitudIncorrectaException("Refresh Token expirado");
 
         return refreshToken;
     }
 
     @Transactional
     public void revocar(String refreshTokenString) {
-        refreshTokenRepository.findByTokenHash(hashToken(refreshTokenString))
-                .ifPresent(refreshToken -> {
-                    refreshToken.setRevocado(true);
-                    refreshTokenRepository.save(refreshToken);
-                });
+        RefreshToken refreshToken = refreshTokenRepository.findByTokenHash(refreshTokenString)
+                        .orElseThrow(() -> new RecursoNoEncontradoException("Token no encontrado en la base de datos"));
+
+        refreshToken.setRevocado(true);
+
+        refreshTokenRepository.save(refreshToken);
     }
 
     @Transactional
@@ -108,7 +112,7 @@ public class RefreshTokenService {
     @Transactional(readOnly = true)
     public Usuario obtenerUsuario(String refreshTokenString) {
         RefreshToken refreshToken = refreshTokenRepository.findByTokenHash(hashToken(refreshTokenString))
-                .orElseThrow(() -> new RuntimeException("Refresh Token inválido"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("No se encontró el token en BD"));
 
         return refreshToken.getUsuario();
     }

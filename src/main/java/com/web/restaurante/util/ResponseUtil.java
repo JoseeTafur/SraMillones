@@ -19,6 +19,21 @@ public final class ResponseUtil {
     }
 
     public static <T> ResponseEntity<ApiResponseDTO<T>> error(String msg) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ApiResponseDTO<>(false, msg, null));
+    }
+
+    public static <T> ResponseEntity<ApiResponseDTO<T>> noEncontrado(String msg) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponseDTO<>(false, msg, null));
+    }
+
+    public static <T> ResponseEntity<ApiResponseDTO<T>> noAutorizado(String msg) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ApiResponseDTO<>(false, msg, null));
+    }
+
+    public static <T> ResponseEntity<ApiResponseDTO<T>> solicitudIncorrecta(String msg) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new ApiResponseDTO<>(false, msg, null));
     }

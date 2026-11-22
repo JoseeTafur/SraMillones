@@ -1,6 +1,7 @@
 package com.web.restaurante.security;
 
 import com.web.restaurante.dto.usuario.TokenUsuarioDTO;
+import com.web.restaurante.exception.SolicitudIncorrectaException;
 import com.web.restaurante.model.Usuario;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -29,7 +30,7 @@ public class JwtService {
     }
 
     public String generateAccessToken(Usuario usuario) {
-        if (usuario.getPerfil() == null) throw new RuntimeException("El usuario no tiene perfil asignado");
+        if (usuario.getPerfil() == null) throw new SolicitudIncorrectaException("El usuario no tiene perfil asignado");
 
         Instant now = Instant.now();
 

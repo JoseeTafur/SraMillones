@@ -32,6 +32,8 @@ public class SecurityFilterChainConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login", "api/auth/refresh").permitAll()
                         .requestMatchers("/api/public/**", "/carta/**").permitAll()
+                        .requestMatchers("/api/v2/auth/login", "/api/v2/auth/refresh").permitAll()
+                        .requestMatchers("/api/v2/public/**", "/carta/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(

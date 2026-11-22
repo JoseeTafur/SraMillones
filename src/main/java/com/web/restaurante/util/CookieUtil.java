@@ -14,7 +14,7 @@ public class CookieUtil {
         return ResponseCookie.from(COOKIE_NAME, token)
                 .httpOnly(true)
                 .secure(secure)
-                .path("/api/auth")
+                .path("/api/v2/auth")
                 .sameSite("Lax")
                 .maxAge(maxAge)
                 .build();

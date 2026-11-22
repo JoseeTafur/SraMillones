@@ -1,6 +1,7 @@
 package com.web.restaurante.service;
 
 import com.web.restaurante.dto.usuario.TokenUsuarioDTO;
+import com.web.restaurante.exception.SolicitudIncorrectaException;
 import com.web.restaurante.mapper.UsuarioMapper;
 import com.web.restaurante.model.Usuario;
 import com.web.restaurante.repository.UsuarioRepository;
@@ -248,5 +249,19 @@ public class UsuarioService {
     private void validarClave(String clave) {
         if (clave == null) throw new IllegalArgumentException("La clave es null");
         if (clave.trim().isEmpty()) throw new IllegalArgumentException("La clave está vacía");
+    }
+
+    //V2
+
+    public Long obtenerIdDeSesion(TokenUsuarioDTO usuario) {
+        if (usuario.id() == null)
+            throw new SolicitudIncorrectaException("El ID de usuario de sesión no existe");
+        return usuario.id();
+    }
+
+    public String resolverRol(TokenUsuarioDTO usuario) {
+        String perfil = usuario.perfil();
+
+        return perfil == null ? "" : perfil.toUpperCase().trim();
     }
 }

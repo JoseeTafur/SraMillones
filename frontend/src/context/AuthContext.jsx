@@ -1,6 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 // import axios from 'axios';
-import api, { apiAuth, setAccessToken } from "../services/api";
+import api, {
+    apiAuth,
+    setAccessToken,
+    refreshAccessToken
+} from "../services/api";
 
 const AuthContext = createContext();
 
@@ -58,14 +62,7 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-        const refreshResponse = await apiAuth.post('/refresh');
-        const resultado = refreshResponse.data.body;
-
-        if (!resultado?.success) {
-            throw new Error('No se pudo renovar la sesión');
-        }
-
-        setAccessToken(resultado.data.accessToken);
+        await refreshAccessToken();
 
         const response = await api.get('/auth/me');
 
@@ -122,12 +119,13 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await apiAuth.post('/logout');
+        await apiAuth.post('/logout');
     } finally {
-      setUser(null);
-      setPermisos([]);
+        setAccessToken(null);
+        setUser(null);
+        setPermisos([]);
     }
-  };
+};
 
   return (
     <AuthContext.Provider value={{ user, permisos, loading, login, logout, checkAuth }}>
