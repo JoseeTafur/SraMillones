@@ -30,9 +30,9 @@ public class SecurityFilterChainConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login", "api/auth/refresh").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/public/**", "/carta/**").permitAll()
-                        .requestMatchers("/api/v2/auth/login", "/api/v2/auth/refresh").permitAll()
+                        .requestMatchers("/api/v2/auth/**").permitAll()
                         .requestMatchers("/api/v2/public/**", "/carta/**").permitAll()
                         .anyRequest().authenticated()
                 )

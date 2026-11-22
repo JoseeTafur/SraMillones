@@ -52,16 +52,24 @@ public class RefreshTokenService {
                 .withoutPadding()
                 .encodeToString(bytes);
 
+        Instant now = Instant.now();
+
         RefreshToken refreshToken = RefreshToken.builder()
                 .tokenHash(hashToken(token))
                 .usuario(usuario)
-                .expiracion(Instant.now().plusSeconds(refreshExpiration))
+                .creadoEn(now)
+                .expiracion(now.plusMillis(refreshExpiration))
                 .revocado(false)
                 .build();
 
-        refreshTokenRepository.save(refreshToken);
+//        refreshTokenRepository.save(refreshToken);
 
         return new RefreshTokenResultDTO(token, refreshToken);
+    }
+
+    @Transactional
+    public void guardar(RefreshToken refreshToken) {
+        refreshTokenRepository.save(refreshToken);
     }
 
     @Transactional(readOnly = true)
@@ -80,7 +88,7 @@ public class RefreshTokenService {
 
     @Transactional
     public void revocar(String refreshTokenString) {
-        RefreshToken refreshToken = refreshTokenRepository.findByTokenHash(refreshTokenString)
+        RefreshToken refreshToken = refreshTokenRepository.findByTokenHash(hashToken(refreshTokenString))
                         .orElseThrow(() -> new RecursoNoEncontradoException("Token no encontrado en la base de datos"));
 
         refreshToken.setRevocado(true);
@@ -91,10 +99,18 @@ public class RefreshTokenService {
     @Transactional
     public RefreshTokenResultDTO rotar(String refreshTokenString) {
         RefreshToken actual = validar(refreshTokenString);
-        actual.setRevocado(true);
+
+        RefreshTokenResultDTO creado = crear(actual.getUsuario());
+        RefreshToken nuevo = creado.entidad();
+
+        actual.setRevocado(false);
+        actual.setExpiracion(nuevo.getExpiracion());
+        actual.setTokenHash(nuevo.getTokenHash());
+        actual.setCreadoEn(nuevo.getCreadoEn());
+
         refreshTokenRepository.save(actual);
 
-        return crear(actual.getUsuario());
+        return creado;
     }
 
     @Transactional

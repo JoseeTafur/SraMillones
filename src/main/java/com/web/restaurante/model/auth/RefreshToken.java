@@ -31,9 +31,9 @@ public class RefreshToken extends BaseEntidad {
     @Column(nullable = false, updatable = false)
     private Instant creadoEn;
 
-    @PrePersist
-    protected void onCreate() {
-        creadoEn = Instant.now();
-    }
+//    @PrePersist
+//    protected void onCreate() {
+//        creadoEn = Instant.now();
+//    }
 
 }

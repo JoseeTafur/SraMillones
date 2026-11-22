@@ -33,6 +33,7 @@ public class AuthenticationService {
         refreshTokenService.revocarTodos(usuario);
 
         RefreshTokenResultDTO refreshTokenResultDTO = refreshTokenService.crear(usuario);
+        refreshTokenService.guardar(refreshTokenResultDTO.entidad());
 
         String refreshToken = refreshTokenResultDTO.token();
         String accessToken = jwtService.generateAccessToken(usuario);

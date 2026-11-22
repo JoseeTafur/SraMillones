@@ -26,19 +26,22 @@ export const setAccessToken = (token) => {
 };
 
 export const refreshAccessToken = async () => {
-    if (!refreshPromise) {
-        refreshPromise = apiAuth.post('/refresh')
-            .then(response => {
-                const token = response.data.body.data.accessToken;
-                setAccessToken(token);
-                return token;
-            })
-            .finally(() => {
-                refreshPromise = null;
-            });
-    }
+  if (accessToken && !isAccessTokenExpired()) return accessToken;
 
-    return refreshPromise;
+  if (!refreshPromise) {
+      refreshPromise = apiAuth.post('/refresh')
+          .then(response => {
+              const token = response.data.body.data.accessToken;
+              if (!token) throw new Error('No se recibió el token de acceso');
+              setAccessToken(token);
+              return token;
+          })
+          .finally(() => {
+              refreshPromise = null;
+          });
+  }
+
+  return refreshPromise;
 };
 
 api.interceptors.request.use(config => {
@@ -66,6 +69,7 @@ api.interceptors.response.use(
             try {
                 const token = await refreshAccessToken();
 
+                originalRequest.headers = originalRequest.headers || {};
                 originalRequest.headers.Authorization = `Bearer ${token}`;
 
                 return api(originalRequest);
@@ -78,5 +82,25 @@ api.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
+export const getAccessToken = () => accessToken;
+
+export const isAccessTokenExpired = () => {
+    if (!accessToken) return true;
+
+    try {
+        const payload = JSON.parse(
+            atob(accessToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))
+        );
+
+        if (!payload.exp) return true;
+
+        // Margen de 30 segundos para evitar expiraciones durante una petición
+        return Date.now() >= payload.exp * 1000 - 30000;
+
+    } catch {
+        return true;
+    }
+};
 
 export default api;

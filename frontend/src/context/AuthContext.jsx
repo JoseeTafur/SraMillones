@@ -2,8 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 // import axios from 'axios';
 import api, {
     apiAuth,
+    refreshAccessToken,
     setAccessToken,
-    refreshAccessToken
 } from "../services/api";
 
 const AuthContext = createContext();
@@ -62,11 +62,12 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-        await refreshAccessToken();
 
-        const response = await api.get('/auth/me');
+      await refreshAccessToken();
 
-        aplicarSesion(response.data.data);
+      const response = await api.get('/v2/auth/me');
+
+      aplicarSesion(response.data.data);
 
     } catch (error) {
         setAccessToken(null);
@@ -96,7 +97,7 @@ export const AuthProvider = ({ children }) => {
 
         setAccessToken(resultado.data.accessToken);
 
-        const meResponse = await api.get('/auth/me');
+        const meResponse = await api.get('/v2/auth/me');
         const usuario = meResponse.data.data;
 
         aplicarSesion(usuario);

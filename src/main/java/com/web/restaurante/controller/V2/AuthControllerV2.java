@@ -76,11 +76,11 @@ public class AuthControllerV2 {
                     required = false
             ) String refreshToken
     ) {
+        ResponseCookie cookie = CookieUtil.eliminar();
+
         if (refreshToken != null && !refreshToken.isBlank()) {
             authenticationService.logout(refreshToken);
         }
-
-        ResponseCookie cookie = CookieUtil.eliminar();
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())

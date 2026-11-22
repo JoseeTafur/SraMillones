@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';    // Regresado a dos niveles (../../)
 import Toast from '../../components/common/Toast';        // Regresado a dos niveles (../../)
@@ -13,8 +13,24 @@ export const LoginPage = () => {
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(false);
   
-  const { login } = useAuth();
+  const { login, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!authLoading && user) {
+        const rol = (user.rol || '').toUpperCase();
+
+        if (rol.includes('MESERO') || rol.includes('MOZO')) {
+            navigate('/admin/mesas', { replace: true });
+        } else if (rol.includes('CAJA') || rol.includes('CAJERO')) {
+            navigate('/admin/caja', { replace: true });
+        } else if (rol.includes('COCINA')) {
+            navigate('/admin/cocina', { replace: true });
+        } else {
+            navigate('/admin/dashboard', { replace: true });
+        }
+    }
+}, [user, authLoading, navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -49,7 +65,7 @@ export const LoginPage = () => {
           message: 'Sesión iniciada correctamente.'
         });
 
-        const rol = (res.user?.rol || '').toUpperCase();
+        const rol = (res.user?.perfil || '').toUpperCase();
 
         setTimeout(() => {
           if (rol.includes('MESERO') || rol.includes('MOZO')) {
@@ -84,6 +100,10 @@ export const LoginPage = () => {
       setLoading(false);
     }
   };
+
+  if (authLoading || user) {
+    return null;
+}
 
   return (
     <div className="login-wrapper">
