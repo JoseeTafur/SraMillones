@@ -1,47 +1,47 @@
-import axios from 'axios';
+import api from './api'
 
-const API_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/usuarios/api`;
+const API_URL = "/usuarios/api";
 
 export const usuarioService = {
   // Obtener rol y datos de la sesión activa
   getRolSesion: async () => {
-    const response = await axios.get(`${API_URL}/rol-sesion`, { withCredentials: true });
+    const response = await api.get(`${API_URL}/rol-sesion`);
     return response.data;
   },
 
   // Listar todos los usuarios
   listar: async () => {
-    const response = await axios.get(`${API_URL}/listar`, { withCredentials: true });
+    const response = await api.get(`${API_URL}/listar`);
     return response.data;
   },
 
   // Listar perfiles
   listarPerfiles: async () => {
-    const response = await axios.get(`${API_URL}/perfiles`, { withCredentials: true });
+    const response = await api.get(`${API_URL}/perfiles`);
     return response.data;
   },
 
   // Obtener usuario por ID
   obtenerPorId: async (id) => {
-    const response = await axios.get(`${API_URL}/obtener/${id}`, { withCredentials: true });
+    const response = await api.get(`${API_URL}/obtener/${id}`);
     return response.data;
   },
 
   // Guardar o actualizar
   guardar: async (usuarioData) => {
-    const response = await axios.post(`${API_URL}/guardar`, usuarioData, { withCredentials: true });
+    const response = await api.post(`${API_URL}/guardar`, usuarioData);
     return response.data;
   },
 
   // Alternar estado
   cambiarEstado: async (id) => {
-    const response = await axios.post(`${API_URL}/cambiar-estado/${id}`, {}, { withCredentials: true });
+    const response = await api.post(`${API_URL}/cambiar-estado/${id}`, {});
     return response.data;
   },
 
   // Eliminar usuario
   eliminar: async (id) => {
-    const response = await axios.delete(`${API_URL}/eliminar/${id}`, { withCredentials: true });
+    const response = await api.delete(`${API_URL}/eliminar/${id}`);
     return response.data;
   }
 };

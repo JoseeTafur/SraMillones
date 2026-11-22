@@ -1,9 +1,12 @@
 package com.web.restaurante.service;
 
+import com.web.restaurante.dto.usuario.TokenUsuarioDTO;
+import com.web.restaurante.mapper.UsuarioMapper;
 import com.web.restaurante.model.Usuario;
 import com.web.restaurante.repository.UsuarioRepository;
 import com.web.restaurante.repository.PerfilRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +22,7 @@ public class UsuarioService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final PerfilRepository perfilRepository;
     private final AuditoriaService auditoriaService;
+    private final UsuarioMapper usuarioMapper;
 
     @Transactional(readOnly = true)
     public List<Usuario> listar() {
@@ -33,6 +37,20 @@ public class UsuarioService {
     @Transactional(readOnly = true)
     public Optional<Usuario> encontrarPorUsuario(String usuario) {
         return usuarioRepository.findByUsuarioAndEstadoNot(usuario, 2);
+    }
+
+    @Transactional(readOnly = true)
+    public Usuario encontrarPorCorreoOUsuario(String identificador) {
+        List<Usuario> usuarios = usuarioRepository.findByCorreoIgnoreCase(identificador);
+
+        if (usuarios.isEmpty()) {
+            usuarios = usuarioRepository.findByUsuarioIgnoreCase(identificador);
+        }
+
+        return usuarios.stream()
+                .filter(u -> u.getEstado() == 1)
+                .findFirst()
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
     }
 
     @Transactional
@@ -176,6 +194,11 @@ public class UsuarioService {
         );
 
         System.out.println("🧹 [La Jama Security] Cuenta ID #" + id + " purgada y credenciales originales liberadas.");
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<TokenUsuarioDTO> getTokenUsuarioDTOById(Long id) {
+        return usuarioRepository.findById(id).map(usuarioMapper::toTokenDTO);
     }
 
     @Transactional(readOnly = true)

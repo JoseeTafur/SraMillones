@@ -1,14 +1,15 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+// import axios from 'axios';
+import api, { apiAuth, setAccessToken } from "../services/api";
 
 const AuthContext = createContext();
 
-const API_AUTH_URL = `${import.meta.env.VITE_API_BASE_URL}/api/auth`;
+// const API_AUTH_URL = `${import.meta.env.VITE_API_BASE_URL}/api/auth`;
 
-const apiAuth = axios.create({
-  baseURL: API_AUTH_URL,
-  withCredentials: true
-});
+// const apiAuth = axios.create({
+//   baseURL: API_AUTH_URL,
+//   withCredentials: true
+// });
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -16,14 +17,22 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   const aplicarSesion = (data) => {
-    if (!data || !data.success) return false;
+    if (!data) return false;
+
+    // setUser({
+    //   id: data.usuarioId || 1,
+    //   nombre: data.usaurio || 'Usuario',
+    //   rol: data.rol || 'INVITADO',
+    //   empleado: data.empleadoNombre,
+    //   turno: data.turno
+    // });
 
     setUser({
-      id: data.usuarioId || 1,
-      nombre: data.nombreUsuario || 'Usuario',
-      rol: data.rol || 'INVITADO',
+      id: data.id,
+      nombre: data.usuario,
+      rol: data.perfil,
       empleado: data.empleadoNombre,
-      turno: data.turno
+      turno: data.turno,
     });
 
     // 🟢 Mapeo DINÁMICO de permisos desde MySQL
@@ -49,40 +58,67 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      const response = await apiAuth.get('/me');
-      if (response.data && response.data.success) {
-        aplicarSesion(response.data);
-      } else {
+        const refreshResponse = await apiAuth.post('/refresh');
+        const resultado = refreshResponse.data.body;
+
+        if (!resultado?.success) {
+            throw new Error('No se pudo renovar la sesión');
+        }
+
+        setAccessToken(resultado.data.accessToken);
+
+        const response = await api.get('/auth/me');
+
+        aplicarSesion(response.data.data);
+
+    } catch (error) {
+        setAccessToken(null);
         setUser(null);
         setPermisos([]);
-      }
-    } catch (error) {
-      setUser(null);
-      setPermisos([]);
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
 
   useEffect(() => {
     checkAuth();
   }, []);
 
-  const login = async (usuario, clave) => {
+  const login = async (identificador, clave) => {
     try {
-      const response = await apiAuth.post('/login', { usuario, clave });
-      if (response.data && response.data.success) {
-        aplicarSesion(response.data);
-        return { success: true, user: response.data };
-      }
-      return { success: false, message: response.data.message || 'Credenciales incorrectas' };
+        const response = await apiAuth.post('/login', { identificador, clave });
+
+        const resultado = response.data.body;
+
+        if (!resultado?.success) {
+            return {
+                success: false,
+                message: resultado?.message || 'Credenciales incorrectas'
+            };
+        }
+
+        setAccessToken(resultado.data.accessToken);
+
+        const meResponse = await api.get('/auth/me');
+        const usuario = meResponse.data.data;
+
+        aplicarSesion(usuario);
+
+        return { success: true, user: usuario };
+
     } catch (err) {
-      return { 
-        success: false, 
-        message: err.response?.data?.message || 'Error de conexión con el servidor' 
-      };
+        setAccessToken(null);
+        setUser(null);
+        setPermisos([]);
+
+        return {
+            success: false,
+            message: err.response?.data?.body?.message ||
+                     err.response?.data?.message ||
+                     'Error de conexión con el servidor'
+        };
     }
-  };
+};
 
   const logout = async () => {
     try {

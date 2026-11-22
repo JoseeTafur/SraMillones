@@ -1,6 +1,7 @@
 package com.web.restaurante.util;
 
 import com.web.restaurante.dto.ApiResponseDTO;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 public final class ResponseUtil {
@@ -15,6 +16,11 @@ public final class ResponseUtil {
 
     public static <T> ResponseEntity<ApiResponseDTO<T>> ok(T data) {
         return ResponseEntity.ok(new ApiResponseDTO<>(true, "Acción exitosa", data));
+    }
+
+    public static <T> ResponseEntity<ApiResponseDTO<T>> error(String msg) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponseDTO<>(false, msg, null));
     }
 
 }
