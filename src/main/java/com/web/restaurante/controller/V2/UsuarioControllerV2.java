@@ -1,12 +1,10 @@
 package com.web.restaurante.controller.V2;
 
-import com.web.restaurante.dto.login.LoginResponseDTO;
 import com.web.restaurante.dto.usuario.TokenUsuarioDTO;
 import com.web.restaurante.model.Usuario;
 import com.web.restaurante.service.PerfilService;
 import com.web.restaurante.service.UsuarioService;
 import com.web.restaurante.util.ResponseUtil;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,19 +13,18 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 @RestController
 @RequestMapping(ApiRoutes.API_V2 + "/usuarios")
 @RequiredArgsConstructor
-public class UsuariosControllerV2 {
+public class UsuarioControllerV2 {
 
     private final UsuarioService usuarioService;
     private final PerfilService perfilService;
 
-    @GetMapping
+    @GetMapping("/listar")
     public ResponseEntity<?> listarUsuarios() {
         return ResponseUtil.ok(usuarioService.listar());
     }

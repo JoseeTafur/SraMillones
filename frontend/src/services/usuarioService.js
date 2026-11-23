@@ -1,6 +1,7 @@
 import api from './api'
 
-const API_URL = "/usuarios/api";
+// const API_URL = "/usuarios/api";
+const API_URL = "/v2/usuarios";
 
 export const usuarioService = {
   // Obtener rol y datos de la sesión activa
