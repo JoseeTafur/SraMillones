@@ -1,29 +1,24 @@
 import axios from 'axios';
+import api from './api';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
-const API_URL = `${BASE_URL}/api/mesas`;
+const API_URL = `${BASE_URL}/api/v2/mesas`;
 
-const mesaClient = axios.create({
-  baseURL: BASE_URL,
-  withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json'
-  }
-});
+const mesaClient = api;
 
 const mesaService = {
   obtenerPlanoSalon: async () => {
-    const res = await mesaClient.get('/api/mesas');
+    const res = await mesaClient.get(`${API_URL}`);
     return res.data;
   },
 
   obtenerPrecuenta: async (numeroMesa) => {
-    const res = await mesaClient.get(`/api/mesas/precuenta/${numeroMesa}`);
+    const res = await mesaClient.get(`${API_URL}/precuenta/${numeroMesa}`);
     return res.data;
   },
 
   cambiarDeMesa: async (idMesaOrigen, idMesaDestino) => {
-    const res = await mesaClient.post('/api/mesas/trasladar', {
+    const res = await mesaClient.post(`${API_URL}/trasladar`, {
       idMesaOrigen,
       idMesaDestino
     });
@@ -31,7 +26,7 @@ const mesaService = {
   },
 
   dividirComanda: async (idMesaOrigen, numeroMesaDestino, idsDetalles) => {
-    const res = await mesaClient.post('/api/mesas/dividir-comanda', {
+    const res = await mesaClient.post(`${API_URL}/dividir-comanda`, {
       idMesaOrigen,
       numeroMesaDestino,
       idsDetalles
@@ -40,7 +35,7 @@ const mesaService = {
   },
 
   agruparMesas: async (idMesaPrincipal, idsMesasHijas) => {
-    const res = await mesaClient.post('/api/mesas/unificar', {
+    const res = await mesaClient.post(`${API_URL}/unificar`, {
       idMesaPrincipal,
       idsMesasHijas
     });
@@ -48,31 +43,31 @@ const mesaService = {
   },
 
   desagruparMesa: async (idMesaPadre) => {
-    const res = await mesaClient.post(`/api/mesas/${idMesaPadre}/desagrupar`);
+    const res = await mesaClient.post(`${API_URL}/${idMesaPadre}/desagrupar`);
     return res.data;
   },
 
   desvincularMesa: async (idMesa) => {
-    const res = await mesaClient.post(`/api/mesas/${idMesa}/desvincular`);
+    const res = await mesaClient.post(`${API_URL}/${idMesa}/desvincular`);
     return res.data;
   },
 
   mudarAReservaMasivo: async (idsMesas) => {
-    const res = await mesaClient.post('/api/mesas/mudar-reserva-masivo', {
+    const res = await mesaClient.post(`${API_URL}/mudar-reserva-masivo`, {
       idsMesas
     });
     return res.data;
   },
 
   quitarDeReservaMasivo: async (idsMesas) => {
-    const res = await mesaClient.post('/api/mesas/quitar-reserva-masivo', {
+    const res = await mesaClient.post(`${API_URL}/quitar-reserva-masivo`, {
       idsMesas
     });
     return res.data;
   },
 
   confirmarPagoMultiticket: async (pedidoId, mesaId, listaTickets, idsDetallesPagados) => {
-    const res = await mesaClient.post(`/api/mesas/liquidar-multiticket/${pedidoId}`, {
+    const res = await mesaClient.post(`${API_URL}/liquidar-multiticket/${pedidoId}`, {
       mesaId,
       listaTickets,
       idsDetallesPagados
@@ -81,24 +76,24 @@ const mesaService = {
   },
 
   liberarMesa: async (idMesa) => {
-    const res = await mesaClient.post(`/api/mesas/${idMesa}/liberar`);
+    const res = await mesaClient.post(`${API_URL}/${idMesa}/liberar`);
     return res.data;
   },
 
   liberarMesaManual: async (numeroMesa) => {
-    const res = await mesaClient.post(`/api/mesas/liberar-manual/${numeroMesa}`);
+    const res = await mesaClient.post(`${API_URL}/liberar-manual/${numeroMesa}`);
     return res.data;
   },
 
   entregarPlatoIndividual: async (comandaId, detalleId) => {
     const response = await mesaClient.post(
-      `/api/mesas/entregar-item?comandaId=${comandaId}&detalleId=${detalleId}`
+      `${API_URL}/entregar-item?comandaId=${comandaId}&detalleId=${detalleId}`
     );
     return response.data;
   },
 
   procesarCobro: async (comandaId, mesaId, idsDetallesPagados, tickets) => {
-    const response = await mesaClient.post('/api/mesas/procesar-cobro', {
+    const response = await mesaClient.post(`${API_URL}/procesar-cobro`, {
       comandaId,
       mesaId,
       idsDetallesPagados,
