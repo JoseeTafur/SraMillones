@@ -6,3 +6,5 @@ export const loginBackend = async (usuario, clave) => {
   const response = await axios.post(`${API_URL}/login`, { usuario, clave });
   return response.data;
 };
+
+// No se usa este API?

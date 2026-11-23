@@ -59,27 +59,27 @@ public class ComandaController {
     }
 
     @GetMapping("/por-cobrar")
-public ResponseEntity<?> listarComandasPorCobrar() {
-    return ResponseEntity.ok(comandaRepository.findComandasConItemsPendientesPago());
-    }
+    public ResponseEntity<?> listarComandasPorCobrar() {
+        return ResponseEntity.ok(comandaRepository.findComandasConItemsPendientesPago());
+        }
 
-    @PostMapping("/liberar/{numeroMesa}")
-    public ResponseEntity<?> liberarMesaManual(@PathVariable Integer numeroMesa) {
+        @PostMapping("/liberar/{numeroMesa}")
+        public ResponseEntity<?> liberarMesaManual(@PathVariable Integer numeroMesa) {
+            try {
+                comandaService.liberarMesaManual(numeroMesa);
+                return ResponseEntity.ok(Map.of("success", true, "message", "Mesa #" + numeroMesa + " liberada con éxito."));
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
+            }
+        }
+
+        @DeleteMapping("/detalle/{detalleId}")
+    public ResponseEntity<?> eliminarDetalleComanda(@PathVariable Long detalleId) {
         try {
-            comandaService.liberarMesaManual(numeroMesa);
-            return ResponseEntity.ok(Map.of("success", true, "message", "Mesa #" + numeroMesa + " liberada con éxito."));
+            comandaService.eliminarDetalleComanda(detalleId);
+            return ResponseEntity.ok(Map.of("success", true, "message", "Ítem eliminado de la comanda."));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
         }
     }
-
-    @DeleteMapping("/detalle/{detalleId}")
-public ResponseEntity<?> eliminarDetalleComanda(@PathVariable Long detalleId) {
-    try {
-        comandaService.eliminarDetalleComanda(detalleId);
-        return ResponseEntity.ok(Map.of("success", true, "message", "Ítem eliminado de la comanda."));
-    } catch (Exception e) {
-        return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
-    }
-}
 }

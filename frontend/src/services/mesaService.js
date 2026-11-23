@@ -1,8 +1,7 @@
 import axios from 'axios';
 import api from './api';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
-const API_URL = `${BASE_URL}/api/v2/mesas`;
+const API_URL = `/v2/mesas`;
 
 const mesaClient = api;
 
@@ -103,7 +102,7 @@ const mesaService = {
   },
 
   eliminarItemComanda: async (detalleId) => {
-    const response = await mesaClient.delete(`/api/comandas/detalle/${detalleId}`);
+    const response = await mesaClient.delete(`/api/v2/comandas/detalle/${detalleId}`);
     return response.data;
   }
 };
