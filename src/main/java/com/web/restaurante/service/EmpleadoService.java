@@ -1,5 +1,7 @@
 package com.web.restaurante.service;
 
+import com.web.restaurante.dto.usuario.TokenUsuarioDTO;
+import com.web.restaurante.exception.RecursoNoEncontradoException;
 import com.web.restaurante.model.Cargo;
 import com.web.restaurante.model.Empleado;
 import com.web.restaurante.model.Usuario;
@@ -229,5 +231,11 @@ public class EmpleadoService {
                 throw new IllegalArgumentException("El DNI ya está registrado por otro empleado.");
             }
         }
+    }
+
+    // V2
+    public String obtenerTurnoPorIdUsuario(Long id) {
+        return empleadoRepository.obtenerTurnoPorIdUsuario(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("No se encontró el turno del usuario"));
     }
 }

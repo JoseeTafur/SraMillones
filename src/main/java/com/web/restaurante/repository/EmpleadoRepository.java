@@ -38,4 +38,7 @@ public interface EmpleadoRepository extends JpaRepository<Empleado, Long> {
     @Modifying
     @Query("UPDATE Empleado e SET e.estado = :nuevoEstado WHERE e.id = :id")
     void actualizarEstado(@Param("id") Long id, @Param("nuevoEstado") Integer nuevoEstado);
+
+    @Query("SELECT e.turno FROM Empleado e WHERE e.usuario.id = :id")
+    Optional<String> obtenerTurnoPorIdUsuario(Long id);
 }
