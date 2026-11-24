@@ -25,7 +25,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping(ApiRoutes.API_V2_ADMIN + "/caja")
+@RequestMapping(ApiRoutes.API_V2 + "/caja")
 @RequiredArgsConstructor
 public class CajaControllerV2 {
     private final CajaService cajaService;
