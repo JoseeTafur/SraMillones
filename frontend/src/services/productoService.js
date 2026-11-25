@@ -1,21 +1,18 @@
-import axios from 'axios';
+import api from './api';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
-const API_BASE_URL = `${BASE_URL}/api/admin/productos`;
+const API_URL = `/v2/admin/productos`;
+const API_URL_CARTA = "/v2/public/carta";
 
-const productoClient = axios.create({
-  baseURL: API_BASE_URL,
-  withCredentials: true
-});
+const productoClient = api;
 
 const productoService = {
   obtenerCatalogoInicial: async () => {
-    const response = await productoClient.get('');
+    const response = await productoClient.get(API_URL);
     return response.data;
   },
 
   obtenerPorId: async (id) => {
-    const response = await productoClient.get(`/${id}`);
+    const response = await productoClient.get(`${API_URL}/${id}`);
     return response.data;
   },
 
@@ -38,7 +35,7 @@ const productoService = {
       formData.append('eliminarImagen', urlLimpia === '');
     }
 
-    const response = await productoClient.post('/guardar', formData, {
+    const response = await productoClient.post(`${API_URL}/guardar`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -47,17 +44,17 @@ const productoService = {
   },
 
   cambiarEstado: async (id, estado) => {
-    const response = await productoClient.post(`/estado/${id}?estado=${estado}`);
+    const response = await productoClient.post(`${API_URL}/estado/${id}?estado=${estado}`);
     return response.data;
   },
 
   eliminarLogico: async (id) => {
-    const response = await productoClient.put(`/eliminar/${id}`);
+    const response = await productoClient.put(`${API_URL}/eliminar/${id}`);
     return response.data;
   },
 
   obtenerCartaPublica: async () => {
-    const response = await axios.get(`${BASE_URL}/api/public/carta`);
+    const response = await api.get(API_URL_CARTA);
     return response.data;
   }
 };
