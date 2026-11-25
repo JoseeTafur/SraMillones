@@ -22,5 +22,11 @@ public class Opcion {
 
     // ↵ Agrega estas líneas
     @Column(name="icono") 
-    private String icono; 
+    private String icono;
+
+    private Integer orden;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_grupo_opcion")
+    private GrupoOpcion grupoOpcion;
 }

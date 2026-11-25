@@ -3,11 +3,13 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import './Sidebar.css';
 import logoImage from '../../assets/logo.png';
+import { getSidebarOptions } from '../../services/sidebar.service';
 
 export const Sidebar = ({ isCollapsed }) => {
   const { user, permisos, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [opcionesSidebar, setOpcionesSidebar] = useState([]);
 
   const rolUpper = (user?.rol || '').toUpperCase();
   const esAdminAbsoluto = rolUpper.includes('SUPER') || rolUpper.includes('ADMIN');
@@ -18,6 +20,153 @@ export const Sidebar = ({ isCollapsed }) => {
       .map(p => (typeof p === 'string' ? p : p?.ruta))
       .filter(Boolean);
   }, [permisos]);
+
+  //#region V2
+
+  const cargarOpcionesSidebar = async () => {
+    try {
+      const res = await getSidebarOptions();
+      if (res && res.success) setOpcionesSidebar(filterMenu(sortOpciones(res.data)));
+    } catch (e) {
+      console.error("Error al cargar opciones sidebar:", e);
+      setToast({
+        type: 'error',
+        title: 'Error de Carga',
+        message: 'No se pudieron recuperar las opciones. Asegúrese de haber iniciado sesión.'
+      });
+    }
+  }
+
+  const sortOpciones = (opcionesRaw) => {
+    if (!opcionesRaw || (!opcionesRaw.grupoOpciones?.some(g => g.opciones?.length) && !opcionesRaw.opciones?.length)) {
+        setToast({
+            type: 'error',
+            title: 'Error de Carga',
+            message: 'No hay opciones para ordenar.'
+        });
+
+        return [];
+    }
+
+    const grupo = (opcionesRaw.grupoOpciones || [])
+        .filter(g => g.opciones?.length)
+        .map(g => ({
+            ...g,
+            opciones: [...g.opciones].sort((a, b) => a.orden - b.orden)
+        }));
+
+    const opciones = opcionesRaw.opciones || [];
+
+    return [...grupo, ...opciones].sort((a, b) => a.orden - b.orden);
+  }
+
+  const generarFragmentoOpcionSuelta = (item) => {
+    return (
+      <NavLink
+        key={item.ruta}
+        to={item.ruta}
+        className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+        title={isCollapsed ? item.nombre : ''}
+      >
+        <span className='nav-icon'>
+          <i data-lucide={item.icono}></i>
+        </span>
+        {!isCollapsed && <span className="nav-title">{item.nombre}</span>}
+        <span className="active-indicator"></span>
+      </NavLink>
+    );
+  }
+
+  const generarFragmentoGrupoOpciones = (item) => {
+    const isSubmenuOpen = openSubmenu === item.codigo;
+    const isCategoryActive = item.opciones.some(sub => sub.ruta === location.pathname);
+    const isExpanded = isSubmenuOpen || isCategoryActive;
+
+    return (
+      <div key={item.codigo} className={`nav-item-group ${isExpanded ? 'open' : ''}`}>
+        <div
+          className={`nav-item has-submenu ${isCategoryActive ? 'category-active' : ''}`}
+          onClick={() => toggleSubmenu(item.codigo)}
+          title={isCollapsed ? item.nombre : ''}
+        >
+          <span className='nav-icon'>
+            <i data-lucide={item.icono}></i>
+          </span>
+          {!isCollapsed && (
+            <>
+              <span className="nav-title">{item.nombre}</span>
+              <svg
+                className={`chevron-icon ${isExpanded ? 'rotate' : ''}`}
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </>
+          )}
+        </div>
+
+        {!isCollapsed && (
+          <div className={`submenu-wrapper ${isExpanded ? 'expanded' : ''}`}>
+            <div className="submenu-list">
+              {item.opciones.map(sub => (
+                <NavLink
+                  key={sub.ruta}
+                  to={sub.ruta}
+                  className={({ isActive }) => `submenu-item ${isActive ? 'active' : ''}`}
+                >
+                  {/* <span className="submenu-dot"></span> */}
+                  <i data-lucide={sub.icono} className='nav-sub-icon'></i>
+                  <span className="submenu-title">{sub.nombre}</span>
+                </NavLink>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  const filterMenu = (listaOpciones) => listaOpciones
+    .map(group => {
+      if (!group.opciones) {
+        const tieneAcceso = tienePermisoRuta(group.ruta);
+        return tieneAcceso ? group : null;
+      }
+      const submenusPermitidos = group.opciones.filter(sub => tienePermisoRuta(sub.ruta));
+      if (submenusPermitidos.length > 0) {
+        return { ...group, opciones: submenusPermitidos };
+      }
+      return null;
+    })
+    .filter(Boolean);
+
+  useEffect(() => {
+    const activeGroup = opcionesSidebar.find(item =>
+      item.opciones?.some(sub => sub.ruta === location.pathname)
+    );
+    if (activeGroup) {
+      setOpenSubmenu(activeGroup.codigo);
+    }
+  }, [location.pathname]);
+
+  useEffect(() => {
+    cargarOpcionesSidebar();
+  }, []);
+
+  // useEffect(() => {
+  //   console.log(opcionesSidebar);
+  // }, [opcionesSidebar]);
+
+  useEffect(() => {
+    window.lucide?.createIcons();
+  }, [opcionesSidebar]);
+
+  //#endregion
 
   const menuMasterConfig = [
     {
@@ -125,30 +274,30 @@ export const Sidebar = ({ isCollapsed }) => {
     });
   };
 
-  const filteredMenu = menuMasterConfig
-    .map(group => {
-      if (!group.submenu) {
-        const tieneAcceso = tienePermisoRuta(group.path);
-        return tieneAcceso ? group : null;
-      }
-      const submenusPermitidos = group.submenu.filter(sub => tienePermisoRuta(sub.path));
-      if (submenusPermitidos.length > 0) {
-        return { ...group, submenu: submenusPermitidos };
-      }
-      return null;
-    })
-    .filter(Boolean);
+  // const filteredMenu = menuMasterConfig
+  //   .map(group => {
+  //     if (!group.submenu) {
+  //       const tieneAcceso = tienePermisoRuta(group.path);
+  //       return tieneAcceso ? group : null;
+  //     }
+  //     const submenusPermitidos = group.submenu.filter(sub => tienePermisoRuta(sub.path));
+  //     if (submenusPermitidos.length > 0) {
+  //       return { ...group, submenu: submenusPermitidos };
+  //     }
+  //     return null;
+  //   })
+  //   .filter(Boolean);
 
   const [openSubmenu, setOpenSubmenu] = useState(null);
 
-  useEffect(() => {
-    const activeGroup = filteredMenu.find(item =>
-      item.submenu?.some(sub => sub.path === location.pathname)
-    );
-    if (activeGroup) {
-      setOpenSubmenu(activeGroup.key);
-    }
-  }, [location.pathname]);
+  // useEffect(() => {
+  //   const activeGroup = filteredMenu.find(item =>
+  //     item.submenu?.some(sub => sub.path === location.pathname)
+  //   );
+  //   if (activeGroup) {
+  //     setOpenSubmenu(activeGroup.key);
+  //   }
+  // }, [location.pathname]);
 
   const toggleSubmenu = (menuKey) => {
     setOpenSubmenu(prevKey => (prevKey === menuKey ? null : menuKey));
@@ -180,7 +329,16 @@ export const Sidebar = ({ isCollapsed }) => {
         )}
       </div>
 
-      <nav className="sidebar-nav">
+      <nav className='sidebar-nav'>
+        {
+          opcionesSidebar.map(item => {
+            if (!item.opciones) return generarFragmentoOpcionSuelta(item);
+            return generarFragmentoGrupoOpciones(item);
+          })
+        }
+      </nav>
+
+      {/* <nav className="sidebar-nav">
         {filteredMenu.map(item => {
           if (!item.submenu) {
             return (
@@ -246,7 +404,7 @@ export const Sidebar = ({ isCollapsed }) => {
             </div>
           );
         })}
-      </nav>
+      </nav> */}
 
       <div className="sidebar-footer">
         <button className="btn-logout-sidebar" onClick={handleLogout} title="Cerrar Sesión">
