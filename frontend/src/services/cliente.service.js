@@ -1,16 +1,12 @@
-import axios from 'axios';
+import api from './api';
 
-// Instancia configurada para enviar la cookie JSESSIONID automáticamente
-const api = axios.create({
-  baseURL: `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/clientes`,
-  withCredentials: true
-});
+const API_BASE = "/v2/clientes"
 
 export const clienteService = {
   // Buscar clientes por estado ('1' activos, '0' inactivos) y texto (nombre/DNI/correo)
   // GET /api/clientes?estado=&texto=&page=&size=
   buscar: async (estado = 'todos', texto = '', page = 0, size = 100) => {
-    const response = await api.get('', {
+    const response = await api.get(`${API_BASE}`, {
       params: { estado, texto, page, size }
     });
     return response.data;
@@ -19,7 +15,7 @@ export const clienteService = {
   // Obtener un cliente por su ID
   // GET /api/clientes/{id}
   obtener: async (id) => {
-    const response = await api.get(`/${id}`);
+    const response = await api.get(`${API_BASE}/${id}`);
     return response.data;
   },
 
