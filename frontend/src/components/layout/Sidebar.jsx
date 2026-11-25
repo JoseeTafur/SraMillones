@@ -71,7 +71,7 @@ export const Sidebar = ({ isCollapsed }) => {
       key: 'almacen',
       submenu: [
         { title: 'Gestión de Productos', path: '/admin/productos' },
-        { title: 'Ajuste de Stock', path: '/admin/productos-ajuste' }
+        { title: 'Ajuste de Precios', path: '/admin/productos-ajuste' }
       ]
     },
     {
