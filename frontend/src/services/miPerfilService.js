@@ -1,13 +1,10 @@
-import axios from 'axios';
+import api from './api';
 
-const api = axios.create({
-  baseURL: `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/mi-perfil`,
-  withCredentials: true
-});
+const API_URL = "/v2/mi-perfil";
 
 export const miPerfilService = {
   obtenerMiPerfil: async () => {
-    const response = await api.get('');
+    const response = await api.get(API_URL);
     return response.data;
   }
 };
