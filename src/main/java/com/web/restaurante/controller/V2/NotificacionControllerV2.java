@@ -79,7 +79,7 @@ public class NotificacionControllerV2 {
                 .orElseGet(() -> ResponseEntity.status(404).body(Map.of("success", false, "message", "No encontrada")));
     }
 
-    @PostMapping("/api/marcar-leido")
+    @PostMapping("/marcar-leido")
     public ResponseEntity<?> marcarTodoComoLeido(@AuthenticationPrincipal TokenUsuarioDTO session) {
         if (!tieneSesionActiva(session)) {
             return ResponseEntity.status(401).body(Map.of("success", false, "message", "Sesión inválida"));
