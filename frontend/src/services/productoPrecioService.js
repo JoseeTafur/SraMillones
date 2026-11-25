@@ -1,12 +1,10 @@
-import axios from 'axios';
+import api from './api';
 
-const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/admin/productos-precios`;
+const API_URL = `/v2/admin/productos-precios`;
 
 const productoPrecioService = {
   listarPrecios: async () => {
-    const response = await axios.get(`${API_BASE_URL}/listar`, {
-      withCredentials: true
-    });
+    const response = await api.get(`${API_URL}/listar`);
     return response.data;
   },
 
@@ -17,7 +15,7 @@ const productoPrecioService = {
       nuevoPrecio: parseFloat(item.nuevoPrecio ?? item.precio)
     }));
 
-    const response = await axios.post(`${API_BASE_URL}/actualizar-precios`, payloadLimpia, {
+    const response = await api.post(`${API_URL}/actualizar-precios`, payloadLimpia, {
       headers: { 'Content-Type': 'application/json' },
       withCredentials: true
     });
