@@ -1,6 +1,6 @@
-import axios from 'axios';
+import api from './api';
 
-const API_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/mesero`;
+const API_URL = `/v2/mesero`;
 
 export const meseroService = {
   // Cargar productos de la carta y mapa de agotados para una mesa
@@ -8,7 +8,7 @@ export const meseroService = {
     const params = { mesaId };
     if (pedidoId) params.pedidoId = pedidoId;
 
-    const res = await axios.get(`${API_URL}/nuevo`, {
+    const res = await api.get(`${API_URL}/nuevo`, {
       params,
       withCredentials: true
     });
@@ -17,7 +17,7 @@ export const meseroService = {
 
   // Enviar el pedido / comanda a cocina
   guardarPedido: async (pedidoData, mesaId) => {
-    const res = await axios.post(`${API_URL}/guardar`, pedidoData, {
+    const res = await api.post(`${API_URL}/guardar`, pedidoData, {
       params: { mesaId },
       withCredentials: true
     });
@@ -31,7 +31,7 @@ export const meseroService = {
     params.append("detalleId", detalleId);
     params.append("esMerma", esMerma);
 
-    const res = await axios.post(`${API_URL}/comanda/eliminar-item`, params, {
+    const res = await api.post(`${API_URL}/comanda/eliminar-item`, params, {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       withCredentials: true
     });
@@ -40,7 +40,7 @@ export const meseroService = {
 
   // Marcar el pedido como servido/entregado en mesa
   marcarPedidoEnMesa: async (pedidoId) => {
-    const res = await axios.post(`${API_URL}/marcar-en-mesa/${pedidoId}`, {}, {
+    const res = await api.post(`${API_URL}/marcar-en-mesa/${pedidoId}`, {}, {
       withCredentials: true
     });
     return res.data;
@@ -48,7 +48,7 @@ export const meseroService = {
 
   // Finalizar la atención de la mesa
   finalizarAtencion: async (pedidoId, mesaId) => {
-    const res = await axios.post(`${API_URL}/finalizar-atencion/${pedidoId}`, {}, {
+    const res = await api.post(`${API_URL}/finalizar-atencion/${pedidoId}`, {}, {
       params: { mesaId },
       withCredentials: true
     });
@@ -57,7 +57,7 @@ export const meseroService = {
 
   // Preparar precuenta
   prepararCuenta: async (pedidoId) => {
-    const res = await axios.post(`${API_URL}/preparar-cuenta/${pedidoId}`, {}, {
+    const res = await api.post(`${API_URL}/preparar-cuenta/${pedidoId}`, {}, {
       withCredentials: true
     });
     return res.data;
