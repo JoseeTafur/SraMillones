@@ -1,5 +1,6 @@
 package com.web.restaurante.controller.V2;
 
+import com.web.restaurante.mapper.EmpleadoMapper;
 import com.web.restaurante.model.Empleado;
 import com.web.restaurante.service.EmpleadoService;
 import com.web.restaurante.service.UsuarioService;
@@ -21,12 +22,13 @@ public class EmpleadoControllerV2 {
 
     private final EmpleadoService empleadoService;
     private final UsuarioService usuarioService;
+    private final EmpleadoMapper empleadoMapper;
 
     @GetMapping
     public ResponseEntity<?> listar() {
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
-        response.put("data", empleadoService.listar());
+        response.put("data", empleadoService.listar2());
         return ResponseEntity.ok(response);
     }
 
@@ -34,7 +36,7 @@ public class EmpleadoControllerV2 {
     public ResponseEntity<?> listarCargos() {
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
-        response.put("data", empleadoService.listarCargos());
+        response.put("data", empleadoService.listarCargos2());
         return ResponseEntity.ok(response);
     }
 
@@ -42,7 +44,7 @@ public class EmpleadoControllerV2 {
     public ResponseEntity<?> listarUsuariosDisponibles() {
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
-        response.put("data", usuarioService.listar());
+        response.put("data", usuarioService.listar2());
         return ResponseEntity.ok(response);
     }
 
@@ -52,7 +54,7 @@ public class EmpleadoControllerV2 {
                 .map(emp -> {
                     Map<String, Object> response = new HashMap<>();
                     response.put("success", true);
-                    response.put("data", emp);
+                    response.put("data", empleadoMapper.toDTO(emp));
                     return ResponseEntity.ok(response);
                 })
                 .orElse(ResponseEntity.notFound().build());
@@ -71,7 +73,7 @@ public class EmpleadoControllerV2 {
         }
 
         response.put("success", true);
-        response.put("data", resultado);
+        response.put("data", resultado.stream().map(empleadoMapper::toDTO).toList());
         return ResponseEntity.ok(response);
     }
 
@@ -112,7 +114,7 @@ public class EmpleadoControllerV2 {
 
             Empleado guardado = empleadoService.guardar(empleado);
             response.put("success", true);
-            response.put("data", guardado);
+            response.put("data", empleadoMapper.toDTO(guardado));
             response.put("message", empleado.getId() != null
                     ? "Empleado actualizado correctamente"
                     : "Empleado registrado correctamente");
@@ -136,7 +138,7 @@ public class EmpleadoControllerV2 {
             Empleado emp = empleadoService.alternarEstado(id);
             response.put("success", true);
             response.put("message", "Estado del empleado actualizado correctamente");
-            response.put("data", emp);
+            response.put("data", empleadoMapper.toDTO(emp));
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             response.put("success", false);

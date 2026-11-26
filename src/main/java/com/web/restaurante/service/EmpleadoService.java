@@ -1,7 +1,11 @@
 package com.web.restaurante.service;
 
+import com.web.restaurante.dto.cargo.CargoDTO;
+import com.web.restaurante.dto.empleado.EmpleadoDTO;
 import com.web.restaurante.dto.usuario.TokenUsuarioDTO;
 import com.web.restaurante.exception.RecursoNoEncontradoException;
+import com.web.restaurante.mapper.CargoMapper;
+import com.web.restaurante.mapper.EmpleadoMapper;
 import com.web.restaurante.model.Cargo;
 import com.web.restaurante.model.Empleado;
 import com.web.restaurante.model.Usuario;
@@ -22,10 +26,18 @@ public class EmpleadoService {
     private final EmpleadoRepository empleadoRepository;
     private final CargoRepository cargoRepository;
     private final AuditoriaService auditoriaService;
+    private final EmpleadoMapper empleadoMapper;
+    private final CargoMapper cargoMapper;
 
     @Transactional(readOnly = true)
     public List<Empleado> listar() {
         return empleadoRepository.listarNoEliminados();
+    }
+
+    @Transactional(readOnly = true)
+    public List<EmpleadoDTO> listar2() {
+        return empleadoRepository.listarNoEliminados()
+                .stream().map(empleadoMapper::toDTO).toList();
     }
 
     @Transactional(readOnly = true)
@@ -215,6 +227,12 @@ public class EmpleadoService {
     @Transactional(readOnly = true)
     public List<Cargo> listarCargos() {
         return cargoRepository.listarActivos();
+    }
+
+    @Transactional(readOnly = true)
+    public List<CargoDTO> listarCargos2() {
+        return cargoRepository.listarActivos()
+                .stream().map(cargoMapper::toDTO).toList();
     }
 
     private void validarId(Long id) {
