@@ -1,5 +1,6 @@
 package com.web.restaurante.controller.V2;
 
+import com.web.restaurante.mapper.PerfilMapper;
 import com.web.restaurante.model.Perfil;
 import com.web.restaurante.service.PerfilService;
 import lombok.RequiredArgsConstructor;
@@ -18,13 +19,14 @@ import java.util.stream.Collectors;
 public class PerfilControllerV2 {
 
     private final PerfilService perfilService;
+    private final PerfilMapper perfilMapper;
 
     @GetMapping("/listar")
     @ResponseBody
     public ResponseEntity<?> listarPerfilesApi() {
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
-        response.put("data", perfilService.listar());
+        response.put("data", perfilService.listar2());
         return ResponseEntity.ok(response);
     }
 
@@ -66,7 +68,7 @@ public class PerfilControllerV2 {
             Perfil perfilGuardado = perfilService.guardar(perfil);
             response.put("success", true);
             response.put("message", perfil.getId() != null ? "Perfil actualizado correctamente" : "Perfil creado correctamente");
-            response.put("perfil", perfilGuardado);
+            response.put("perfil", perfilMapper.toDTO(perfilGuardado));
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
@@ -83,7 +85,7 @@ public class PerfilControllerV2 {
             Perfil perfil = perfilService.alternarEstado(id);
             response.put("success", true);
             response.put("message", "Estado del perfil actualizado correctamente");
-            response.put("data", perfil);
+            response.put("data", perfilMapper.toDTO(perfil));
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             response.put("success", false);
@@ -97,7 +99,7 @@ public class PerfilControllerV2 {
     public ResponseEntity<?> listarOpcionesApi() {
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
-        response.put("data", perfilService.listarOpciones());
+        response.put("data", perfilService.listarOpciones2());
         return ResponseEntity.ok(response);
     }
 

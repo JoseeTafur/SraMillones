@@ -1,5 +1,9 @@
 package com.web.restaurante.service;
 
+import com.web.restaurante.dto.perfil.PerfilDTO;
+import com.web.restaurante.dto.sidebar.OpcionDTO;
+import com.web.restaurante.mapper.OpcionMapper;
+import com.web.restaurante.mapper.PerfilMapper;
 import com.web.restaurante.model.Opcion;
 import com.web.restaurante.model.Perfil;
 import com.web.restaurante.repository.OpcionRepository;
@@ -21,10 +25,18 @@ public class PerfilService {
     private final OpcionRepository opcionRepository;
     private final UsuarioRepository usuarioRepository;
     private final AuditoriaService auditoriaService;
+    private final PerfilMapper perfilMapper;
+    private final OpcionMapper opcionMapper;
 
     @Transactional(readOnly = true)
     public List<Perfil> listar() {
         return perfilRepository.findAllByEstadoNot(2);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PerfilDTO> listar2() {
+        return perfilRepository.findAllByEstadoNot(2)
+                .stream().map(perfilMapper::toDTO).toList();
     }
 
     @Transactional(readOnly = true)
@@ -179,6 +191,12 @@ public class PerfilService {
     @Transactional(readOnly = true)
     public List<Opcion> listarOpciones() {
         return opcionRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public List<OpcionDTO> listarOpciones2() {
+        return opcionRepository.findAll()
+                .stream().map(opcionMapper::toDTO).toList();
     }
 
     private boolean esNombreDuplicado(String nombre, Long id) {
