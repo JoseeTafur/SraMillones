@@ -1,6 +1,7 @@
 package com.web.restaurante.controller.V2;
 
 import com.web.restaurante.dto.usuario.TokenUsuarioDTO;
+import com.web.restaurante.mapper.UsuarioMapper;
 import com.web.restaurante.model.Usuario;
 import com.web.restaurante.service.PerfilService;
 import com.web.restaurante.service.UsuarioService;
@@ -23,15 +24,16 @@ public class UsuarioControllerV2 {
 
     private final UsuarioService usuarioService;
     private final PerfilService perfilService;
+    private final UsuarioMapper usuarioMapper;
 
     @GetMapping("/listar")
     public ResponseEntity<?> listarUsuarios() {
-        return ResponseUtil.ok(usuarioService.listar());
+        return ResponseUtil.ok(usuarioService.listar2());
     }
 
     @GetMapping("/perfiles")
     public ResponseEntity<?> listarPerfiles() {
-        return ResponseUtil.ok(perfilService.listar());
+        return ResponseUtil.ok(perfilService.listar2());
     }
 
     @GetMapping("/rol-sesion")
@@ -65,7 +67,7 @@ public class UsuarioControllerV2 {
             Usuario usuarioGuardado = usuarioService.guardar(usuario);
 
             response.put("success", true);
-            response.put("usuario", usuarioGuardado);
+            response.put("usuario", usuarioMapper.toDTO(usuarioGuardado));
             response.put("message", usuario.getId() != null ? "Usuario actualizado correctamente" : "Usuario creado correctamente");
             return ResponseEntity.ok(response);
 
@@ -77,7 +79,7 @@ public class UsuarioControllerV2 {
 
     @GetMapping("/obtener/{id}")
     public ResponseEntity<?> obtenerUsuario(@PathVariable Long id) {
-        return ResponseUtil.ok(usuarioService.obtenerPorId(id));
+        return ResponseUtil.ok(usuarioService.obtenerPorId2(id));
     }
 
     @PostMapping("/cambiar-estado/{id}")

@@ -7,7 +7,7 @@ import com.web.restaurante.model.Usuario;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = PerfilMapper.class)
 public interface UsuarioMapper {
     UsuarioDTO toDTO(Usuario usuario);
 

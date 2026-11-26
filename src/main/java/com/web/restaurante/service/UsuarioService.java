@@ -1,6 +1,8 @@
 package com.web.restaurante.service;
 
 import com.web.restaurante.dto.usuario.TokenUsuarioDTO;
+import com.web.restaurante.dto.usuario.UsuarioDTO;
+import com.web.restaurante.exception.RecursoNoEncontradoException;
 import com.web.restaurante.exception.SolicitudIncorrectaException;
 import com.web.restaurante.mapper.UsuarioMapper;
 import com.web.restaurante.model.Usuario;
@@ -31,8 +33,20 @@ public class  UsuarioService {
     }
 
     @Transactional(readOnly = true)
+    public List<UsuarioDTO> listar2() {
+        return usuarioRepository.findAllByEstadoNot(2)
+                .stream().map(usuarioMapper::toDTO).toList();
+    }
+
+    @Transactional(readOnly = true)
     public Optional<Usuario> obtenerPorId(Long id) {
         return usuarioRepository.findById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public UsuarioDTO obtenerPorId2(Long id) {
+        return usuarioMapper.toDTO(usuarioRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("No")));
     }
 
     @Transactional(readOnly = true)
